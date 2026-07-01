@@ -14,6 +14,21 @@ export function formatWire(value: WireValue): string {
 }
 
 /**
+ * Order players for the Target dropdown: everyone except the acting player
+ * first, then the actor last. Self-targeting is legal (some mission rules allow
+ * a self-dual-cut) but rare, so it is de-prioritised rather than removed.
+ */
+export function targetPlayerOrder(
+	players: Player[],
+	actorId: string,
+): Player[] {
+	return [
+		...players.filter((p) => p.id !== actorId),
+		...players.filter((p) => p.id === actorId),
+	];
+}
+
+/**
  * The seat that should act next: the Captain seeds the rotation, and after each
  * logged move play passes to the seat clockwise (next index) of the last actor.
  * Returns the player id, or `undefined` when there are no players.

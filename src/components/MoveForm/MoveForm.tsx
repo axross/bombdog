@@ -7,6 +7,7 @@ import {
 	type SelectOption,
 } from "@/components/SelectField/SelectField";
 import { WirePad } from "@/components/WirePad/WirePad";
+import { targetPlayerOrder } from "@/lib/game";
 import { EQUIPMENT_OPTIONS, type MoveType, type Player } from "@/lib/types";
 import type { DraftFields } from "./draft";
 import styles from "./MoveForm.module.css";
@@ -56,9 +57,14 @@ function MoveFields({
 	fields: DraftFields;
 	onFieldsChange: (fields: DraftFields) => void;
 }) {
-	const playerOptions: SelectOption[] = players.map((p) => ({
+	// Targets list everyone, but the acting player is pushed last (self-target
+	// is legal yet rare) and flagged so it reads clearly.
+	const targetOptions: SelectOption[] = targetPlayerOrder(
+		players,
+		fields.actorId,
+	).map((p) => ({
 		value: p.id,
-		label: p.name,
+		label: p.id === fields.actorId ? `${p.name} (self)` : p.name,
 	}));
 	const update = (patch: Partial<DraftFields>) =>
 		onFieldsChange({ ...fields, ...patch });
@@ -77,7 +83,7 @@ function MoveFields({
 					label="Target"
 					value={fields.targetId}
 					onValueChange={(targetId) => update({ targetId })}
-					options={playerOptions}
+					options={targetOptions}
 					placeholder="Target player"
 				/>
 			)}

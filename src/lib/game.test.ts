@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { formatWire, getPlayerName, nextActorId } from "./game";
+import {
+	formatWire,
+	getPlayerName,
+	nextActorId,
+	targetPlayerOrder,
+} from "./game";
 import type { DualCutMove, Player } from "./types";
 
 const players: Player[] = [
@@ -57,5 +62,23 @@ describe("nextActorId", () => {
 
 	it("falls back to the Captain when the last actor is unknown", () => {
 		expect(nextActorId(players, 2, [dualCut("gone", 1)])).toBe("c");
+	});
+});
+
+describe("targetPlayerOrder", () => {
+	it("moves the acting player to the end", () => {
+		expect(targetPlayerOrder(players, "a").map((p) => p.id)).toEqual([
+			"b",
+			"c",
+			"a",
+		]);
+	});
+
+	it("keeps seat order when the actor is not in the list", () => {
+		expect(targetPlayerOrder(players, "zzz").map((p) => p.id)).toEqual([
+			"a",
+			"b",
+			"c",
+		]);
 	});
 });
