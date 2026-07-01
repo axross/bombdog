@@ -8,7 +8,7 @@ const baseURL = `http://localhost:${PORT}`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 export default defineConfig({
-	testDir: "./e2e",
+	testDir: "./e2e/tests",
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,

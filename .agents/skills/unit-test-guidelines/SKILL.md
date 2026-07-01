@@ -69,9 +69,24 @@ These defaults are intentionally short. Follow the linked references for example
 
 **Guidelines:**
 
-- MUST colocate Vitest tests following the project's colocated unit-test file naming convention unless an existing local pattern requires a different location.
-- MUST import the test framework's APIs explicitly if Vitest requires it, rather than relying on implicit global-scope symbols.
-- MUST use the project's chosen test-case function consistently and not mix it with an alternative spelling within the same project.
-- MUST run unit tests through `npm run test:unit` unless investigating a targeted failure.
-- MUST run `npm run format` and `npm run lint` after adding or changing unit tests, plus `npm run typecheck` when the project has a type-check step.
-- SHOULD prefer integration or e2e tests when confidence depends on framework runtime wiring, the data layer, browser behavior, rendering, routing, or user-facing UI.
+- MUST colocate Vitest tests next to their subject as `<name>.spec.ts(x)` (kebab-case).
+- MUST import test APIs explicitly from `vitest` (`describe`, `it`, `expect`, `beforeEach`, …); do not rely on globals.
+- MUST use `it(...)` for scenarios (not `test(...)`), and structure names as a behavior report:
+  - `describe("<subject>")` groups by the exported contract under test.
+  - **Callable subjects** (functions, methods) get a trailing `()`: `describe("buildDraft()")`, `describe("nextActorId()")`.
+  - **React components** are written in angle brackets: `describe("<MoveComposer>")`, `describe("<MoveLog>")`.
+  - **Non-callable** subjects (schemas, type/object contracts) get no suffix.
+  - Nest shared conditions under `describe("when …")`; write `it(...)` names as behavior sentences ("returns…", "rejects…", "clears…"); do not repeat the subject in every `it`.
+- SHOULD prefer manual fakes of the smallest boundary a unit calls over module mocks; do not mock the module under test or neighbouring pure helpers. Keep any mock near the imports it affects.
+- MUST run unit tests through `npm run test` (Vitest) unless investigating a targeted failure.
+- MUST run `npm run format`, `npm run lint`, and `npm run typecheck` after adding or changing unit tests.
+- SHOULD prefer e2e tests when confidence depends on framework runtime wiring, the data layer, browser behavior, rendering, routing, or user-facing UI.
+
+**Coverage and project-specific patterns:**
+
+- MUST measure coverage with `npm run test:coverage` (V8 provider; thresholds ~95% for branch/function/line/statement). Only framework route entrypoints (`src/app/layout.tsx`, `src/app/page.tsx`) and spec files are excluded; every other module carries real branches worth covering.
+- MUST assert the branch's **distinguishing observable output**, not merely that the element still renders — reaching a branch for the coverage number is necessary but not sufficient. A test that renders a conditional-highlight/state and only asserts `toBeInTheDocument()` would still pass if the branch were deleted; assert the difference (the toggled class/attribute, the changed text, the emitted call) plus a negative case where practical.
+- MUST seed the zustand store directly via `useTrackerStore.setState({ players, captainIndex, moves, redoStack, hasHydrated })` and reset it in `afterEach`. For components that trigger IndexedDB rehydration on mount (e.g. `<TrackerApp>`), `vi.spyOn(useTrackerStore.persist, "rehydrate").mockResolvedValue(...)` in `beforeEach` so hydration can't clobber the seeded state.
+- To cover the IndexedDB-backed storage adapter under jsdom (which has no `indexedDB`), mock `idb-keyval`, `vi.stubGlobal("indexedDB", {})`, `vi.resetModules()`, then `await import(...)` the module so it selects the backed branch (see `idb-storage.backed.spec.ts`).
+- MUST query Radix primitives by their real roles: a `ToggleGroup` root is `radiogroup` (items are `radio`, selection reflected via `toBeChecked()`); a `Select` trigger is `combobox` but its **portaled listbox cannot be opened under jsdom** (`hasPointerCapture` is unimplemented), so assert Select-driven behavior from seeded state/props instead of opening it; `Dialog`/`AlertDialog` content is portaled yet reachable through `screen`.
+- For branches only reachable through real browser behavior — CSS-animation close callbacks (Radix Presence unmounts synchronously under jsdom), or defensive guards the UI prevents — cover them with e2e instead and mark the unit-unreachable line with `/* v8 ignore next */` plus a one-line reason. Prefer deleting provably-dead code over ignoring it.
