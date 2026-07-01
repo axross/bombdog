@@ -4,6 +4,7 @@ import {
 	composer,
 	moveLog,
 	moveRow,
+	pickTarget,
 	startTracking,
 } from "../helpers/tracker";
 
@@ -18,7 +19,7 @@ test("logs, edits, undoes/redoes, persists across reload, and resets", async ({
 	});
 
 	await test.step("Log a dual cut (Player 1 → Player 2, wire 9, success)", async () => {
-		await chooseInComposer(page, "target", "Player 2");
+		await pickTarget(page, "Player 2");
 		await composer(page).getByTestId("wire-9").click();
 		await composer(page).getByTestId("outcome-success").click();
 		await composer(page).getByTestId("log-move").click();
@@ -79,9 +80,8 @@ test("logs, edits, undoes/redoes, persists across reload, and resets", async ({
 	});
 });
 
-// Regression: after logging a move the target Select must reset with the rest
-// of the form. It used to flip to uncontrolled mode and keep a stale value, so
-// "Log move" stayed disabled for the next move until the target was re-toggled.
+// Regression: logging a move must reset the whole composer (including the target
+// segmented control) so the next move can be entered and logged cleanly.
 test("re-enables Log move for the next dual cut without re-toggling target", async ({
 	page,
 }) => {
@@ -90,7 +90,7 @@ test("re-enables Log move for the next dual cut without re-toggling target", asy
 	});
 
 	await test.step("Log a first dual cut (Player 1 → Player 2)", async () => {
-		await chooseInComposer(page, "target", "Player 2");
+		await pickTarget(page, "Player 2");
 		await composer(page).getByTestId("wire-9").click();
 		await composer(page).getByTestId("outcome-success").click();
 		await composer(page).getByTestId("log-move").click();
@@ -99,7 +99,7 @@ test("re-enables Log move for the next dual cut without re-toggling target", asy
 
 	await test.step("Reset actor to Player 1 and pick the same target again", async () => {
 		await chooseInComposer(page, "acting", "Player 1");
-		await chooseInComposer(page, "target", "Player 2");
+		await pickTarget(page, "Player 2");
 		await composer(page).getByTestId("wire-3").click();
 		await composer(page).getByTestId("outcome-success").click();
 	});

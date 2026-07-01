@@ -3,6 +3,7 @@
 import { Tabs } from "radix-ui";
 import type { JSX } from "react";
 import { OutcomeToggle } from "@/components/outcome-toggle/outcome-toggle";
+import { PlayerPicker } from "@/components/player-picker/player-picker";
 import {
 	SelectField,
 	type SelectOption,
@@ -78,14 +79,13 @@ function MoveFields({
 	return (
 		<div className={css.fields}>
 			{needsTarget && (
-				// The acting player is intentionally included: some mission rules
-				// allow a self-dual-cut.
-				<SelectField
+				// A segmented control (one tap). The acting player is intentionally
+				// included last: some mission rules allow a self-dual-cut.
+				<PlayerPicker
 					label="Target"
 					value={fields.targetId}
 					onValueChange={(targetId) => update({ targetId })}
 					options={targetOptions}
-					placeholder="Target player"
 					data-testid="target"
 				/>
 			)}

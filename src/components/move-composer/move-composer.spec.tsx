@@ -62,14 +62,14 @@ describe("<MoveComposer>", () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
-		// Dual cut is the default and targets another player.
+		// Dual cut is the default and targets another player (segmented control).
 		expect(
-			screen.getByRole("combobox", { name: "Target" }),
+			screen.getByRole("radiogroup", { name: "Target" }),
 		).toBeInTheDocument();
 
 		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
 		expect(
-			screen.queryByRole("combobox", { name: "Target" }),
+			screen.queryByRole("radiogroup", { name: "Target" }),
 		).not.toBeInTheDocument();
 	});
 });

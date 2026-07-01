@@ -35,3 +35,14 @@ export async function chooseInComposer(
 	await composer(page).getByTestId(fieldTestId).click();
 	await page.getByRole("option", { name: optionName, exact: true }).click();
 }
+
+/** Pick a target player from the segmented control (a single tap). */
+export async function pickTarget(
+	page: Page,
+	playerName: string,
+): Promise<void> {
+	await composer(page)
+		.getByTestId("target")
+		.getByRole("radio", { name: playerName, exact: true })
+		.click();
+}
