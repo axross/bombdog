@@ -41,7 +41,7 @@ describe("MoveComposer", () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
-		await user.click(screen.getByRole("radio", { name: "Solo cut" }));
+		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
 		// Solo cut needs no target/outcome; the actor defaults to the Captain.
 		await user.click(screen.getByRole("radio", { name: "Wire 7" }));
 
@@ -67,7 +67,7 @@ describe("MoveComposer", () => {
 			screen.getByRole("combobox", { name: "Target" }),
 		).toBeInTheDocument();
 
-		await user.click(screen.getByRole("radio", { name: "Solo cut" }));
+		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
 		expect(
 			screen.queryByRole("combobox", { name: "Target" }),
 		).not.toBeInTheDocument();

@@ -32,7 +32,7 @@ test("logs, edits, undoes/redoes, persists across reload, and resets", async ({
 	await expect(log.getByText(/fail/)).toBeVisible();
 
 	// --- Log a second move (solo cut, wire 5) ---
-	await composer.getByRole("radio", { name: "Solo cut" }).click();
+	await composer.getByRole("tab", { name: "Solo cut" }).click();
 	await composer.getByRole("radio", { name: "Wire 5" }).click();
 	await composer.getByRole("button", { name: "Log move" }).click();
 	await expect(log.getByText("#2")).toBeVisible();

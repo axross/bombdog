@@ -43,7 +43,7 @@ export function TrackerApp() {
 	return (
 		<div className={styles.app}>
 			<header className={styles.header}>
-				<h1 className={styles.brand}>💣 Bomb Busters</h1>
+				<h1 className={styles.brand}>💣 Bombdog</h1>
 				{currentActorId && (
 					<span className={styles.turn}>
 						<span className={styles.turnLabel}>Turn</span>

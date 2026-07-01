@@ -4,14 +4,75 @@
 	gap: var(--space-3);
 }
 
-.players {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: var(--space-3);
+/* The action type and its dependent inputs share one bordered card so the
+   dependency is visually obvious. */
+.card {
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	overflow: hidden;
+	background: var(--surface);
 }
 
-.players:has(> :only-child) {
-	grid-template-columns: 1fr;
+.tabs {
+	display: flex;
+	overflow-x: auto;
+	background: var(--surface-3);
+	border-bottom: 1px solid var(--border);
+	scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+	display: none;
+}
+
+.tab {
+	flex: 1 0 auto;
+	min-height: 44px;
+	padding: 0 var(--space-4);
+	background: transparent;
+	color: var(--text-muted);
+	border: none;
+	border-bottom: 2px solid transparent;
+	font-weight: 600;
+	font-size: 0.9rem;
+	white-space: nowrap;
+
+	&:hover {
+		color: var(--text);
+	}
+
+	&[data-state="active"] {
+		color: var(--accent);
+		background: var(--surface);
+		border-bottom-color: var(--accent);
+	}
+}
+
+/* Static action label used in edit mode, where the type can't change. */
+.staticHeader {
+	min-height: 44px;
+	display: flex;
+	align-items: center;
+	padding: 0 var(--space-4);
+	background: var(--surface-3);
+	border-bottom: 1px solid var(--border);
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--text);
+}
+
+.panel {
+	padding: var(--space-4);
+
+	&:focus-visible {
+		outline: none;
+	}
+}
+
+.fields {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
 }
 
 .equipment {

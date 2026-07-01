@@ -48,9 +48,9 @@ export function PlayerSetup() {
 	return (
 		<main className={styles.setup}>
 			<header className={styles.header}>
-				<h1 className={styles.title}>💣 Bomb Busters Tracker</h1>
+				<h1 className={styles.title}>💣 Bombdog</h1>
 				<p className={styles.tagline}>
-					Log every player's turn. Nothing to memorise.
+					Log every player's turn in Bomb Busters. Nothing to memorise.
 				</p>
 			</header>
 

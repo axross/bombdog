@@ -1,6 +1,6 @@
 "use client";
 
-import { ActionSelector } from "@/components/ActionSelector/ActionSelector";
+import { Tabs } from "radix-ui";
 import { OutcomeToggle } from "@/components/OutcomeToggle/OutcomeToggle";
 import {
 	SelectField,
@@ -14,11 +14,25 @@ import styles from "./MoveForm.module.css";
 interface MoveFormProps {
 	players: Player[];
 	type: MoveType;
-	/** When provided, the action-type selector is shown (add mode). */
+	/** When provided, the action-type tabs are shown (add mode). */
 	onTypeChange?: (type: MoveType) => void;
 	fields: DraftFields;
 	onFieldsChange: (fields: DraftFields) => void;
 }
+
+const ACTIONS: { type: MoveType; label: string }[] = [
+	{ type: "dual-cut", label: "Dual cut" },
+	{ type: "solo-cut", label: "Solo cut" },
+	{ type: "double-detector", label: "Double detector" },
+	{ type: "equipment", label: "Equipment" },
+];
+
+const ACTION_LABEL: Record<MoveType, string> = {
+	"dual-cut": "Dual cut",
+	"solo-cut": "Solo cut",
+	"double-detector": "Double detector",
+	equipment: "Equipment",
+};
 
 const EQUIPMENT_SELECT_OPTIONS: SelectOption[] = EQUIPMENT_OPTIONS.map(
 	(name) => ({
@@ -28,17 +42,20 @@ const EQUIPMENT_SELECT_OPTIONS: SelectOption[] = EQUIPMENT_OPTIONS.map(
 );
 
 /**
- * The shared input body for adding and editing a move. It renders exactly the
- * controls the chosen action needs (see the composer input matrix), so add and
- * edit always stay consistent.
+ * The action-dependent controls that live inside the tab panel. Kept separate
+ * so the add (tabs) and edit (fixed type) paths render identical inputs.
  */
-export function MoveForm({
-	players,
+function MoveFields({
 	type,
-	onTypeChange,
+	players,
 	fields,
 	onFieldsChange,
-}: MoveFormProps) {
+}: {
+	type: MoveType;
+	players: Player[];
+	fields: DraftFields;
+	onFieldsChange: (fields: DraftFields) => void;
+}) {
 	const playerOptions: SelectOption[] = players.map((p) => ({
 		value: p.id,
 		label: p.name,
@@ -52,31 +69,18 @@ export function MoveForm({
 		type === "dual-cut" || type === "solo-cut" || type === "double-detector";
 
 	return (
-		<div className={styles.form}>
-			{onTypeChange && (
-				<ActionSelector value={type} onValueChange={onTypeChange} />
-			)}
-
-			<div className={styles.players}>
+		<div className={styles.fields}>
+			{needsTarget && (
+				// The acting player is intentionally included: some mission rules
+				// allow a self-dual-cut.
 				<SelectField
-					label="Acting"
-					value={fields.actorId}
-					onValueChange={(actorId) => update({ actorId })}
+					label="Target"
+					value={fields.targetId}
+					onValueChange={(targetId) => update({ targetId })}
 					options={playerOptions}
-					placeholder="Who is acting?"
+					placeholder="Target player"
 				/>
-				{needsTarget && (
-					// The acting player is intentionally included: some mission rules
-					// allow a self-dual-cut.
-					<SelectField
-						label="Target"
-						value={fields.targetId}
-						onValueChange={(targetId) => update({ targetId })}
-						options={playerOptions}
-						placeholder="Target player"
-					/>
-				)}
-			</div>
+			)}
 
 			{needsWire && (
 				<WirePad
@@ -112,6 +116,83 @@ export function MoveForm({
 							placeholder="e.g. moved detonator back one"
 						/>
 					</label>
+				</div>
+			)}
+		</div>
+	);
+}
+
+/**
+ * The shared input body for adding and editing a move. The acting player comes
+ * first (it applies to every action); the action type is chosen with tabs whose
+ * panel holds exactly the controls that action needs. In edit mode the type is
+ * fixed, so the tab strip is replaced by a static header.
+ */
+export function MoveForm({
+	players,
+	type,
+	onTypeChange,
+	fields,
+	onFieldsChange,
+}: MoveFormProps) {
+	const playerOptions: SelectOption[] = players.map((p) => ({
+		value: p.id,
+		label: p.name,
+	}));
+
+	return (
+		<div className={styles.form}>
+			<SelectField
+				label="Acting"
+				value={fields.actorId}
+				onValueChange={(actorId) => onFieldsChange({ ...fields, actorId })}
+				options={playerOptions}
+				placeholder="Who is acting?"
+			/>
+
+			{onTypeChange ? (
+				<Tabs.Root
+					className={styles.card}
+					value={type}
+					onValueChange={(next) => onTypeChange(next as MoveType)}
+				>
+					<Tabs.List className={styles.tabs} aria-label="Action type">
+						{ACTIONS.map((action) => (
+							<Tabs.Trigger
+								key={action.type}
+								value={action.type}
+								className={styles.tab}
+							>
+								{action.label}
+							</Tabs.Trigger>
+						))}
+					</Tabs.List>
+					{ACTIONS.map((action) => (
+						<Tabs.Content
+							key={action.type}
+							value={action.type}
+							className={styles.panel}
+						>
+							<MoveFields
+								type={action.type}
+								players={players}
+								fields={fields}
+								onFieldsChange={onFieldsChange}
+							/>
+						</Tabs.Content>
+					))}
+				</Tabs.Root>
+			) : (
+				<div className={styles.card}>
+					<p className={styles.staticHeader}>{ACTION_LABEL[type]}</p>
+					<div className={styles.panel}>
+						<MoveFields
+							type={type}
+							players={players}
+							fields={fields}
+							onFieldsChange={onFieldsChange}
+						/>
+					</div>
 				</div>
 			)}
 		</div>

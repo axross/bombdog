@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Bomb Busters Tracker",
+	title: "Bombdog",
 	description:
 		"Log every player's turn in the board game Bomb Busters — dual cuts, solo cuts, double detectors, and equipment — with persistent history.",
 };
