@@ -23,20 +23,24 @@ export function MoveEditor({
 }: MoveEditorProps): JSX.Element {
 	const updateMove = useTrackerStore((s) => s.updateMove);
 	const [fields, setFields] = useState(() => fieldsFromMove(move));
+	// Drive `open` locally so closing plays the exit animation before the parent
+	// unmounts us: Radix keeps the content mounted while data-state="closed"
+	// animates, and onAnimationEnd then hands control back to the parent.
+	const [open, setOpen] = useState(true);
 
 	const draft = buildDraft(move.type, fields);
 
 	const handleSave = () => {
 		if (!draft) return;
 		updateMove(move.id, draft);
-		onClose();
+		setOpen(false);
 	};
 
 	return (
 		<Dialog.Root
-			open
-			onOpenChange={(open) => {
-				if (!open) onClose();
+			open={open}
+			onOpenChange={(next) => {
+				if (!next) setOpen(false);
 			}}
 		>
 			<Dialog.Portal>
@@ -45,6 +49,11 @@ export function MoveEditor({
 					className={css.content}
 					aria-describedby={undefined}
 					data-testid="move-editor"
+					onAnimationEnd={(event) => {
+						// Unmount only after the exit animation on the content itself
+						// (guard against the enter animation and bubbled child events).
+						if (!open && event.target === event.currentTarget) onClose();
+					}}
 				>
 					<Dialog.Title className={css.title}>
 						Edit move #{move.seq}

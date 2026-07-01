@@ -27,23 +27,29 @@
 			overflow: hidden;
 			/* Owns the gap to the actions row so the spacing collapses too. */
 			padding-block-end: var(--space-4);
-			/* Stays visible while the height animates, then hides so the clipped
-			   inputs leave the a11y tree and stop being focusable/measurable. */
-			transition: visibility 0s;
+			opacity: 1;
+			/* Expanding: fade in and become visible immediately. */
+			transition:
+				opacity var(--motion) var(--ease-standard),
+				visibility 0s;
 		}
 
 		.collapsed .collapsibleInner {
+			/* Collapsing: fade out together with the shrinking height, then flip
+			   to hidden so the clipped inputs leave the a11y tree and stop being
+			   focusable/measurable. */
+			opacity: 0;
 			visibility: hidden;
-			transition-delay: var(--motion);
+			transition:
+				opacity var(--motion) var(--ease-standard),
+				visibility 0s var(--motion);
 		}
 
 		@media (prefers-reduced-motion: reduce) {
-			.collapsible {
-				transition: none;
-			}
-
+			.collapsible,
+			.collapsibleInner,
 			.collapsed .collapsibleInner {
-				transition-delay: 0s;
+				transition: none;
 			}
 		}
 
