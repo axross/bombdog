@@ -33,11 +33,16 @@ export async function startTrackingWith(
 	page: Page,
 	{ names, captainIndex = 0 }: { names: string[]; captainIndex?: number },
 ): Promise<void> {
+	// The roster must fit the stepper's range (MIN_PLAYERS 2 … MAX_PLAYERS 5);
+	// outside it the Add/Remove button is disabled and the loop below would hang
+	// until timeout, so fail fast with a clear message instead.
+	const target = names.length;
+	if (target < 2 || target > 5) {
+		throw new Error(`startTrackingWith needs 2–5 names, got ${target}`);
+	}
+
 	await gotoApp(page);
 	const setup = page.getByTestId("setup");
-
-	// The stepper starts at 3 seats; add/remove to reach names.length.
-	const target = names.length;
 	for (let n = 3; n < target; n++) {
 		await setup.getByRole("button", { name: "Add a player" }).click();
 	}

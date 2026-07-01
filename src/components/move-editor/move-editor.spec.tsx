@@ -117,11 +117,12 @@ describe("<MoveEditor>", () => {
 		expect(screen.getByTestId("save")).toBeDisabled();
 	});
 
-	it("does not close on the entrance animation (only the exit)", () => {
+	it("does not close while open when an animationEnd fires", () => {
 		const onClose = vi.fn();
 		render(<MoveEditor move={dualCut} players={players} onClose={onClose} />);
 
-		// While still open, an animationEnd must not trigger onClose.
+		// An animationEnd while still open (e.g. the entrance animation) must not
+		// trigger onClose. The exit-animation close path is covered by e2e.
 		fireEvent.animationEnd(screen.getByTestId("move-editor"));
 		expect(onClose).not.toHaveBeenCalled();
 	});

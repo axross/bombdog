@@ -15,6 +15,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+	// Runs even if a test throws mid-way, so a stubbed global can't leak into
+	// the next test in this worker.
+	vi.unstubAllGlobals();
 	useTrackerStore.setState({
 		players: [],
 		captainIndex: 0,
@@ -143,6 +146,6 @@ describe("<PlayerSetup>", () => {
 		expect(players).toHaveLength(3);
 		expect(new Set(players.map((p) => p.id)).size).toBe(3);
 		for (const p of players) expect(p.id).toMatch(/^p_/);
-		vi.unstubAllGlobals();
+		// Restoration happens in afterEach so it survives an early assertion failure.
 	});
 });

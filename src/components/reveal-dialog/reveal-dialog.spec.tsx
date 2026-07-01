@@ -88,7 +88,10 @@ describe("<RevealDialog>", () => {
 		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
 
-	it("highlights the currently-recorded numeric value", () => {
+	// The highlight is a hashed CSS-module `selected` class; assert it toggles on
+	// the recorded cell and is absent from a sibling (reaching the branch alone
+	// wouldn't prove anything).
+	it("highlights the currently-recorded numeric value only", () => {
 		render(
 			<RevealDialog
 				open
@@ -97,11 +100,15 @@ describe("<RevealDialog>", () => {
 				current={8}
 			/>,
 		);
-		// The selected class is applied; the cell is still present and reachable.
-		expect(screen.getByRole("button", { name: "Wire 8" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Wire 8" }).className).toMatch(
+			/selected/,
+		);
+		expect(
+			screen.getByRole("button", { name: "Wire 7" }).className,
+		).not.toMatch(/selected/);
 	});
 
-	it("highlights the currently-recorded Yellow value", () => {
+	it("highlights the currently-recorded Yellow value only", () => {
 		render(
 			<RevealDialog
 				open
@@ -111,11 +118,14 @@ describe("<RevealDialog>", () => {
 			/>,
 		);
 		expect(
-			screen.getByRole("button", { name: "Yellow wire" }),
-		).toBeInTheDocument();
+			screen.getByRole("button", { name: "Yellow wire" }).className,
+		).toMatch(/selected/);
+		expect(
+			screen.getByRole("button", { name: "Wire 1" }).className,
+		).not.toMatch(/selected/);
 	});
 
-	it("highlights the currently-recorded Unknown value", () => {
+	it("highlights the currently-recorded Unknown value only", () => {
 		render(
 			<RevealDialog
 				open
@@ -125,7 +135,10 @@ describe("<RevealDialog>", () => {
 			/>,
 		);
 		expect(
-			screen.getByRole("button", { name: "Unknown wire" }),
-		).toBeInTheDocument();
+			screen.getByRole("button", { name: "Unknown wire" }).className,
+		).toMatch(/selected/);
+		expect(
+			screen.getByRole("button", { name: "Yellow wire" }).className,
+		).not.toMatch(/selected/);
 	});
 });

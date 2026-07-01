@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTrackerStore } from "./tracker-store";
 import type { MoveDraft, Player } from "./types";
 
@@ -179,24 +179,14 @@ describe("hydration", () => {
 });
 
 describe("createId fallback", () => {
-	const original = globalThis.crypto?.randomUUID;
-
+	// Unconditional restore that survives an early failure and doesn't depend on
+	// crypto.randomUUID being present at load time.
 	afterEach(() => {
-		if (original) {
-			Object.defineProperty(globalThis.crypto, "randomUUID", {
-				value: original,
-				configurable: true,
-				writable: true,
-			});
-		}
+		vi.unstubAllGlobals();
 	});
 
 	it("generates a non-empty id without crypto.randomUUID", () => {
-		Object.defineProperty(globalThis.crypto, "randomUUID", {
-			value: undefined,
-			configurable: true,
-			writable: true,
-		});
+		vi.stubGlobal("crypto", { randomUUID: undefined });
 
 		state().addMove(dual);
 		const move = state().moves[0];

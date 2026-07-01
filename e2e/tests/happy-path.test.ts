@@ -8,6 +8,8 @@ import {
 	logSoloCut,
 	moveLog,
 	moveRow,
+	pickTarget,
+	selectWire,
 	startTracking,
 	startTrackingWith,
 } from "../helpers/tracker";
@@ -57,15 +59,31 @@ test.describe("logging each action type", () => {
 
 	test("dual cut — fail records the actual wire", async ({ page }) => {
 		await startTracking(page);
-		await logDualCut(page, {
-			target: "Player 2",
-			wire: 9,
-			outcome: { reveal: 8 },
+
+		await test.step("Compose the cut; Log move is blocked until the reveal", async () => {
+			await pickTarget(page, "Player 2");
+			await selectWire(page, 9);
+			await composer(page).getByTestId("outcome-fail").click();
+			// A fail can't be logged until the actual wire value is recorded.
+			await expect(composer(page).getByTestId("log-move")).toBeDisabled();
 		});
 
-		const badge = moveRow(page, 1).getByTestId("badge");
-		await expect(badge).toHaveAttribute("data-outcome", "fail");
-		await expect(badge).toHaveAttribute("data-revealed", "8");
+		await test.step("Record the actual wire (8) in the popup", async () => {
+			await page.getByTestId("reveal-dialog").getByTestId("reveal-8").click();
+			await expect(page.getByTestId("reveal-dialog")).toBeHidden();
+			// The chosen value is echoed on the Fail button and unblocks logging.
+			await expect(composer(page).getByTestId("outcome-fail")).toContainText(
+				"(8)",
+			);
+			await expect(composer(page).getByTestId("log-move")).toBeEnabled();
+		});
+
+		await test.step("Log it and see the revealed value in the history", async () => {
+			await composer(page).getByTestId("log-move").click();
+			const badge = moveRow(page, 1).getByTestId("badge");
+			await expect(badge).toHaveAttribute("data-outcome", "fail");
+			await expect(badge).toHaveAttribute("data-revealed", "8");
+		});
 	});
 
 	test("solo cut — no target or outcome", async ({ page }) => {
@@ -128,74 +146,101 @@ test.describe("session flow", () => {
 		page,
 	}) => {
 		await startTracking(page);
-		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
-		await logSoloCut(page, { wire: 5 });
-		await expect(moveRow(page, 2)).toBeVisible();
 
-		// Undo both moves back to empty.
-		await composer(page).getByTestId("undo").click();
-		await composer(page).getByTestId("undo").click();
-		await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
+		await test.step("Log two moves", async () => {
+			await logDualCut(page, {
+				target: "Player 2",
+				wire: 9,
+				outcome: "success",
+			});
+			await logSoloCut(page, { wire: 5 });
+			await expect(moveRow(page, 2)).toBeVisible();
+		});
 
-		// Redo restores the first move.
-		await composer(page).getByTestId("redo").click();
-		await expect(moveRow(page, 1)).toBeVisible();
-		await expect(moveRow(page, 2)).toHaveCount(0);
+		await test.step("Undo both back to empty", async () => {
+			await composer(page).getByTestId("undo").click();
+			await composer(page).getByTestId("undo").click();
+			await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
+		});
 
-		// Logging a fresh move invalidates the remaining redo history.
-		await logSoloCut(page, { wire: 7 });
-		await expect(moveRow(page, 2)).toBeVisible();
-		await expect(composer(page).getByTestId("redo")).toBeDisabled();
+		await test.step("Redo restores only the first move", async () => {
+			await composer(page).getByTestId("redo").click();
+			await expect(moveRow(page, 1)).toBeVisible();
+			await expect(moveRow(page, 2)).toHaveCount(0);
+		});
+
+		await test.step("A fresh move invalidates the remaining redo history", async () => {
+			await logSoloCut(page, { wire: 7 });
+			await expect(moveRow(page, 2)).toBeVisible();
+			await expect(composer(page).getByTestId("redo")).toBeDisabled();
+		});
 	});
 
 	test("edits a logged move in place", async ({ page }) => {
 		await startTracking(page);
-		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
-		await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
-			"data-outcome",
-			"success",
-		);
 
-		await moveRow(page, 1).getByTestId("edit").click();
-		const editor = page.getByTestId("move-editor");
-		await editor.getByTestId("outcome-fail").click();
-		await page.getByTestId("reveal-dialog").getByTestId("reveal-8").click();
-		await editor.getByTestId("save").click();
+		await test.step("Log a successful dual cut", async () => {
+			await logDualCut(page, {
+				target: "Player 2",
+				wire: 9,
+				outcome: "success",
+			});
+			await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
+				"data-outcome",
+				"success",
+			);
+		});
 
-		const badge = moveRow(page, 1).getByTestId("badge");
-		await expect(badge).toHaveAttribute("data-outcome", "fail");
-		await expect(badge).toHaveAttribute("data-revealed", "8");
+		await test.step("Edit it to a failed cut revealing wire 8", async () => {
+			await moveRow(page, 1).getByTestId("edit").click();
+			const editor = page.getByTestId("move-editor");
+			await editor.getByTestId("outcome-fail").click();
+			await page.getByTestId("reveal-dialog").getByTestId("reveal-8").click();
+			await editor.getByTestId("save").click();
+
+			const badge = moveRow(page, 1).getByTestId("badge");
+			await expect(badge).toHaveAttribute("data-outcome", "fail");
+			await expect(badge).toHaveAttribute("data-revealed", "8");
+		});
 	});
 
 	test("collapses and expands the composer", async ({ page }) => {
 		await startTracking(page);
-		await expect(composer(page).getByTestId("acting")).toBeVisible();
 
-		await composer(page).getByTestId("toggle-composer").click();
-		await expect(composer(page).getByTestId("acting")).toBeHidden();
-		// Undo/redo stay; Log move hides with the form.
-		await expect(composer(page).getByTestId("undo")).toBeVisible();
-		await expect(composer(page).getByTestId("log-move")).toBeHidden();
+		await test.step("Collapse hides the form and Log move; undo/redo stay", async () => {
+			await expect(composer(page).getByTestId("acting")).toBeVisible();
+			await composer(page).getByTestId("toggle-composer").click();
+			await expect(composer(page).getByTestId("acting")).toBeHidden();
+			await expect(composer(page).getByTestId("undo")).toBeVisible();
+			await expect(composer(page).getByTestId("log-move")).toBeHidden();
+		});
 
-		await composer(page).getByTestId("toggle-composer").click();
-		await expect(composer(page).getByTestId("acting")).toBeVisible();
-		await expect(composer(page).getByTestId("log-move")).toBeVisible();
+		await test.step("Expand restores the form and Log move", async () => {
+			await composer(page).getByTestId("toggle-composer").click();
+			await expect(composer(page).getByTestId("acting")).toBeVisible();
+			await expect(composer(page).getByTestId("log-move")).toBeVisible();
+		});
 	});
 
 	test("persists the full session across a reload", async ({ page }) => {
 		await startTracking(page);
-		await logDualCut(page, {
-			target: "Player 2",
-			wire: 9,
-			outcome: { reveal: "yellow" },
-		});
-		await logSoloCut(page, { wire: 5 });
 
-		await page.reload();
-		await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
-			"data-revealed",
-			"Y",
-		);
-		await expect(moveRow(page, 2)).toBeVisible();
+		await test.step("Log a failed cut and a solo cut", async () => {
+			await logDualCut(page, {
+				target: "Player 2",
+				wire: 9,
+				outcome: { reveal: "yellow" },
+			});
+			await logSoloCut(page, { wire: 5 });
+		});
+
+		await test.step("Reload and confirm both moves rehydrate from IndexedDB", async () => {
+			await page.reload();
+			await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
+				"data-revealed",
+				"Y",
+			);
+			await expect(moveRow(page, 2)).toBeVisible();
+		});
 	});
 });
