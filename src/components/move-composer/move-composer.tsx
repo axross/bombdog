@@ -86,7 +86,7 @@ export function MoveComposer(): JSX.Element {
 				<div className={css.history}>
 					<button
 						type="button"
-						className={css.icon}
+						className={clsx(css.icon, css.toggle)}
 						onClick={() => setCollapsed((c) => !c)}
 						aria-label={collapsed ? "Expand composer" : "Collapse composer"}
 						aria-expanded={!collapsed}

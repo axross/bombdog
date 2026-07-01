@@ -25,13 +25,20 @@
 		.collapsibleInner {
 			min-block-size: 0;
 			overflow: hidden;
-			/* Owns the gap to the actions row so the spacing collapses too. */
-			padding-block-end: var(--space-4);
 			opacity: 1;
 			/* Expanding: fade in and become visible immediately. */
 			transition:
 				opacity var(--motion) var(--ease-standard),
 				visibility 0s;
+
+			/* Gap to the actions row, as a clippable spacer rather than padding:
+			   padding on this grid item can't shrink below its own height, so it
+			   would leave a residual band when collapsed. Content clips to 0. */
+			&::after {
+				content: "";
+				display: block;
+				block-size: var(--space-4);
+			}
 		}
 
 		.collapsed .collapsibleInner {
@@ -63,6 +70,12 @@
 		.history {
 			display: flex;
 			gap: var(--space-2);
+		}
+
+		/* Extra separation: the collapse toggle is a different action group from
+		   undo/redo, so widen the space between it and the history buttons. */
+		.toggle {
+			margin-inline-end: var(--space-2);
 		}
 
 		.icon {
