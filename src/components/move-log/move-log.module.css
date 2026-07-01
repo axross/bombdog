@@ -101,12 +101,12 @@
 		}
 
 		.chipBlue {
-			color: var(--accent-contrast);
+			color: var(--wire-blue-contrast);
 			background-color: var(--wire-blue);
 		}
 
 		.chipYellow {
-			color: var(--wire-yellow-text);
+			color: var(--wire-yellow-contrast);
 			background-color: var(--wire-yellow);
 		}
 

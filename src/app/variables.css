@@ -22,26 +22,30 @@
 		--slate-11: oklch(50.2% 0.0136 264.4); /* #60646c */
 		--slate-12: oklch(24.1% 0.0097 248.2); /* #1c2024 */
 
-		/* Accent ramp — blue */
-		--blue-3: oklch(96% 0.0201 238.7); /* #e6f4fe */
-		--blue-4: oklch(93.8% 0.035 234.8); /* #d5efff */
-		--blue-7: oklch(81% 0.0887 243.1); /* #8ec8f6 */
-		--blue-8: oklch(73.4% 0.1214 243.1); /* #5eb1ef */
-		--blue-9: oklch(64.9% 0.193 251.8); /* #0090ff */
-		--blue-10: oklch(62.2% 0.1831 251.7); /* #0588f0 */
+		/* Accent ramp — plum */
+		--plum-8: oklch(74.1% 0.1202 322.2); /* #cf91d8 */
+		--plum-9: oklch(57.9% 0.1877 322.1); /* #ab4aba */
+		--plum-10: oklch(55.2% 0.1812 322.2); /* #a144af */
 
-		/* Yellow wire ramp — amber */
+		/* Blue wire ramp — sky (step 9 is light, so it pairs with dark text) */
+		--sky-3: oklch(96% 0.024 219.7); /* #e1f6fd */
+		--sky-4: oklch(93.6% 0.0351 219.2); /* #d1f0fa */
+		--sky-7: oklch(80.6% 0.0716 225.5); /* #8dcae3 */
+		--sky-9: oklch(86.1% 0.1027 217.8); /* #7ce2fe */
+		--sky-11: oklch(52.5% 0.1079 232.5); /* #00749e */
+
+		/* Yellow wire ramp — amber (step 9 is light, so it pairs with dark text) */
 		--amber-3: oklch(97% 0.0684 100.4); /* #fff7c2 */
 		--amber-4: oklch(94.5% 0.1034 97.9); /* #ffee9c */
 		--amber-7: oklch(82.7% 0.1224 86.7); /* #e9c162 */
 		--amber-9: oklch(85.4% 0.1572 84.1); /* #ffc53d */
-		--amber-12: oklch(35.2% 0.0486 54.2); /* #4f3422 */
+		--amber-11: oklch(57.1% 0.1291 63.9); /* #ab6400 */
 
-		/* Danger ramp — red */
-		--red-4: oklch(92.2% 0.0401 16); /* #ffdbdc */
-		--red-9: oklch(62.6% 0.1933 23); /* #e5484d */
-		--red-10: oklch(59.9% 0.1947 24); /* #dc3e42 */
-		--red-11: oklch(55.7% 0.1974 25.2); /* #ce2c31 */
+		/* Danger ramp — tomato */
+		--tomato-4: oklch(92.1% 0.041 34.8); /* #ffdcd3 */
+		--tomato-9: oklch(62.7% 0.1936 33.3); /* #e54d2e */
+		--tomato-10: oklch(60.3% 0.1947 33.2); /* #dd4425 */
+		--tomato-11: oklch(56.6% 0.1978 32.7); /* #d13415 */
 
 		/* Success ramp — grass */
 		--grass-4: oklch(93.5% 0.0381 146.5); /* #daf1db */
@@ -60,32 +64,38 @@
 		--text: var(--slate-12);
 		--text-muted: var(--slate-11);
 
-		/* Accent (blue) */
-		--accent: var(--blue-9);
-		--accent-hover: var(--blue-10);
+		/* Accent (plum). plum-9 is dark enough to pair with white. */
+		--accent: var(--plum-9);
+		--accent-hover: var(--plum-10);
 		--accent-contrast: oklch(100% 0 0);
-		--focus-ring: var(--blue-8);
+		--focus-ring: var(--plum-8);
 
-		/* Wire colours. Soft = step 3 (UI element background at rest); the -hover
-		   variant = step 4 (hovered UI element background); the solid = step 9. */
-		--wire-blue: var(--blue-9);
-		--wire-blue-soft: var(--blue-3);
-		--wire-blue-soft-hover: var(--blue-4);
-		--wire-blue-border: var(--blue-7);
+		/* Wire colours. soft = step 3 (rest background), -hover = step 4, border =
+		   step 7, solid (selected) = step 9. Both wire hues use a light step 9, so:
+		   -text is the readable step 11 for the number on the soft background, and
+		   -contrast is a fixed dark for text on the solid (step 9 is identical in
+		   both schemes, so the contrast must not flip). */
+		--wire-blue: var(--sky-9);
+		--wire-blue-soft: var(--sky-3);
+		--wire-blue-soft-hover: var(--sky-4);
+		--wire-blue-border: var(--sky-7);
+		--wire-blue-text: var(--sky-11);
+		--wire-blue-contrast: oklch(35.1% 0.0572 242.4); /* sky-12 #1d3e56 */
 		--wire-yellow: var(--amber-9);
 		--wire-yellow-soft: var(--amber-3);
 		--wire-yellow-soft-hover: var(--amber-4);
 		--wire-yellow-border: var(--amber-7);
-		--wire-yellow-text: var(--amber-12);
+		--wire-yellow-text: var(--amber-11);
+		--wire-yellow-contrast: oklch(35.2% 0.0486 54.2); /* amber-12 #4f3422 */
 
-		/* Outcome & danger */
+		/* Outcome & danger (danger = tomato) */
 		--success: var(--grass-9);
 		--success-soft: var(--grass-4);
 		--success-text: var(--grass-11);
-		--danger: var(--red-9);
-		--danger-hover: var(--red-10);
-		--danger-soft: var(--red-4);
-		--danger-text: var(--red-11);
+		--danger: var(--tomato-9);
+		--danger-hover: var(--tomato-10);
+		--danger-soft: var(--tomato-4);
+		--danger-text: var(--tomato-11);
 
 		/* Spacing scale */
 		--space-1: 0.25rem;
@@ -129,23 +139,26 @@
 		--slate-11: oklch(76.9% 0.0096 258.3); /* #b0b4ba */
 		--slate-12: oklch(94.9% 0.0029 264.5); /* #edeef0 */
 
-		--blue-3: oklch(27.4% 0.0663 253.9); /* #0d2847 */
-		--blue-4: oklch(32% 0.0968 252.3); /* #003362 */
-		--blue-7: oklch(47.4% 0.1219 253.1); /* #205d9e */
-		--blue-8: oklch(54.1% 0.1395 253.2); /* #2870bd */
-		--blue-9: oklch(64.9% 0.193 251.8); /* #0090ff */
-		--blue-10: oklch(68.8% 0.1693 251.4); /* #3b9eff */
+		--plum-8: oklch(54.5% 0.1281 321.9); /* #92549c */
+		--plum-9: oklch(57.9% 0.1877 322.1); /* #ab4aba */
+		--plum-10: oklch(61.6% 0.1818 322.3); /* #b658c4 */
+
+		--sky-3: oklch(27.1% 0.0535 251.3); /* #112840 */
+		--sky-4: oklch(32.1% 0.0703 248.7); /* #113555 */
+		--sky-7: oklch(48.8% 0.0982 240.8); /* #1f6692 */
+		--sky-9: oklch(86.1% 0.1027 217.8); /* #7ce2fe */
+		--sky-11: oklch(79.3% 0.0991 231.6); /* #75c7f0 */
 
 		--amber-3: oklch(25.8% 0.0442 74.5); /* #302008 */
 		--amber-4: oklch(29.6% 0.0627 73.9); /* #3f2700 */
 		--amber-7: oklch(45.4% 0.0824 75); /* #714f19 */
 		--amber-9: oklch(85.4% 0.1572 84.1); /* #ffc53d */
-		--amber-12: oklch(93.5% 0.0717 86.1); /* #ffe7b3 */
+		--amber-11: oklch(86.2% 0.173 89); /* #ffca16 */
 
-		--red-4: oklch(28.9% 0.0951 14.3); /* #500f1c */
-		--red-9: oklch(62.6% 0.1933 23); /* #e5484d */
-		--red-10: oklch(66.3% 0.1774 22.9); /* #ec5d5e */
-		--red-11: oklch(78% 0.1281 22.1); /* #ff9592 */
+		--tomato-4: oklch(29% 0.0866 27.8); /* #4e1511 */
+		--tomato-9: oklch(62.7% 0.1936 33.3); /* #e54d2e */
+		--tomato-10: oklch(66.4% 0.1786 34.1); /* #ec6142 */
+		--tomato-11: oklch(77.9% 0.131 34.9); /* #ff977d */
 
 		--grass-4: oklch(31.9% 0.0527 150.3); /* #1d3a24 */
 		--grass-9: oklch(65.1% 0.1468 147.4); /* #46a758 */

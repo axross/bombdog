@@ -32,7 +32,7 @@
 			font-family: var(--font-mono);
 			font-size: 1rem;
 			font-weight: 600;
-			color: var(--wire-blue);
+			color: var(--wire-blue-text);
 			background-color: var(--wire-blue-soft);
 			border: 1px solid var(--wire-blue-border);
 			border-radius: var(--radius-sm);
@@ -43,7 +43,7 @@
 
 			&[data-state="on"] {
 				background-color: var(--wire-blue);
-				color: var(--accent-contrast);
+				color: var(--wire-blue-contrast);
 				border-color: var(--wire-blue);
 			}
 		}
@@ -59,7 +59,7 @@
 
 			&[data-state="on"] {
 				background-color: var(--wire-yellow);
-				color: var(--wire-yellow-text);
+				color: var(--wire-yellow-contrast);
 				border-color: var(--wire-yellow);
 			}
 		}
