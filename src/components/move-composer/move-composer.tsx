@@ -121,8 +121,9 @@ export function MoveComposer(): JSX.Element {
 				</div>
 				<button
 					type="submit"
-					className={css.primary}
+					className={clsx(css.primary, collapsed && css.hidden)}
 					disabled={!draft}
+					inert={collapsed}
 					data-testid="log-move"
 				>
 					Log move

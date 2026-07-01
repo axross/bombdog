@@ -155,12 +155,14 @@ test("collapses and expands the composer", async ({ page }) => {
 		await expect(composer(page).getByTestId("acting")).toBeVisible();
 		await composer(page).getByTestId("toggle-composer").click();
 		await expect(composer(page).getByTestId("acting")).toBeHidden();
-		// The undo/redo/log controls stay available.
-		await expect(composer(page).getByTestId("log-move")).toBeVisible();
+		// Undo/redo stay available; Log move hides along with the form.
+		await expect(composer(page).getByTestId("undo")).toBeVisible();
+		await expect(composer(page).getByTestId("log-move")).toBeHidden();
 	});
 
-	await test.step("Expand restores the form", async () => {
+	await test.step("Expand restores the form and Log move", async () => {
 		await composer(page).getByTestId("toggle-composer").click();
 		await expect(composer(page).getByTestId("acting")).toBeVisible();
+		await expect(composer(page).getByTestId("log-move")).toBeVisible();
 	});
 });

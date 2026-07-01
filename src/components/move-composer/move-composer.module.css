@@ -110,6 +110,11 @@
 			border: 1px solid var(--accent);
 			border-radius: var(--radius-sm);
 			font-weight: 700;
+			/* Expanding: fade/scale back in and become visible immediately. */
+			transition:
+				opacity var(--motion) var(--ease-standard),
+				transform var(--motion) var(--ease-emphasized),
+				visibility 0s;
 
 			&:hover:not(:disabled) {
 				background-color: var(--accent-hover);
@@ -118,6 +123,26 @@
 			&:disabled {
 				opacity: 0.5;
 				cursor: not-allowed;
+			}
+
+			/* Hidden while the composer is collapsed: fade and shrink out with the
+			   form, then flip to hidden so it leaves the a11y tree and stops being
+			   clickable. Compound selector so opacity wins over :disabled. */
+			&.hidden {
+				opacity: 0;
+				visibility: hidden;
+				transform: scale(0.96);
+				pointer-events: none;
+				transition:
+					opacity var(--motion) var(--ease-standard),
+					transform var(--motion) var(--ease-emphasized),
+					visibility 0s var(--motion);
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.primary {
+				transition: none;
 			}
 		}
 	}
