@@ -1,6 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
+import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
 import { formatRevealed, getPlayerName } from "@/lib/game";
@@ -42,6 +43,13 @@ function OutcomeBadge({
 	revealed?: RevealedWire;
 }): JSX.Element {
 	const showReveal = outcome === "fail" && revealed !== undefined;
+	const Icon = outcome === "success" ? Check : X;
+	const text =
+		outcome === "success"
+			? "success"
+			: showReveal
+				? `fail (${formatRevealed(revealed)})`
+				: "fail";
 	return (
 		<span
 			className={clsx(
@@ -52,8 +60,8 @@ function OutcomeBadge({
 			data-outcome={outcome}
 			data-revealed={showReveal ? formatRevealed(revealed) : undefined}
 		>
-			{outcome === "success" ? "✔ success" : "✕ fail"}
-			{showReveal ? ` (${formatRevealed(revealed)})` : ""}
+			<Icon size={14} aria-hidden />
+			{text}
 		</span>
 	);
 }
@@ -106,9 +114,7 @@ function MoveRow({
 					</span>
 					{hasTarget && (
 						<>
-							<span className={css.arrow} aria-hidden="true">
-								→
-							</span>
+							<ArrowRight className={css.arrow} size={16} aria-hidden />
 							<span className={css.actor}>
 								{getPlayerName(players, move.targetId)}
 							</span>
@@ -127,7 +133,8 @@ function MoveRow({
 				aria-label={`Edit move #${move.seq}`}
 				data-testid="edit"
 			>
-				✎<span className={css.editText}> Edit</span>
+				<Pencil size={15} aria-hidden />
+				<span className={css.editText}>Edit</span>
 			</button>
 		</div>
 	);

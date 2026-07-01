@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, ChevronUp, Redo2, Undo2 } from "lucide-react";
 import { type JSX, useState } from "react";
 import {
 	buildDraft,
@@ -82,7 +83,11 @@ export function MoveComposer(): JSX.Element {
 						aria-expanded={!collapsed}
 						data-testid="toggle-composer"
 					>
-						{collapsed ? "▴" : "▾"}
+						{collapsed ? (
+							<ChevronUp size={20} aria-hidden />
+						) : (
+							<ChevronDown size={20} aria-hidden />
+						)}
 					</button>
 					<button
 						type="button"
@@ -92,7 +97,7 @@ export function MoveComposer(): JSX.Element {
 						aria-label="Undo"
 						data-testid="undo"
 					>
-						↶
+						<Undo2 size={20} aria-hidden />
 					</button>
 					<button
 						type="button"
@@ -102,7 +107,7 @@ export function MoveComposer(): JSX.Element {
 						aria-label="Redo"
 						data-testid="redo"
 					>
-						↷
+						<Redo2 size={20} aria-hidden />
 					</button>
 				</div>
 				<button

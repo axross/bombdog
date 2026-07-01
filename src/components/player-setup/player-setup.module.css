@@ -20,8 +20,16 @@
 		}
 
 		.title {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-2);
 			font-size: clamp(1.5rem, 5vw, 2rem);
 			font-weight: 800;
+		}
+
+		.titleIcon {
+			flex: none;
+			color: var(--accent);
 		}
 
 		.tagline {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Bomb } from "lucide-react";
 import { type JSX, useEffect } from "react";
 import { MoveComposer } from "@/components/move-composer/move-composer";
 import { MoveLog } from "@/components/move-log/move-log";
@@ -43,7 +44,10 @@ export function TrackerApp(): JSX.Element {
 	return (
 		<div className={css.app} data-testid="app">
 			<header className={css.header} data-testid="header">
-				<h1 className={css.brand}>💣 Bombdog</h1>
+				<h1 className={css.brand}>
+					<Bomb className={css.brandIcon} size={22} aria-hidden />
+					Bombdog
+				</h1>
 				{currentActorId && (
 					<span className={css.turn}>
 						<span className={css.turnLabel}>Turn</span>

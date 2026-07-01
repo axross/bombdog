@@ -1,6 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
+import { Check, X } from "lucide-react";
 import { type JSX, useState } from "react";
 import { RevealDialog } from "@/components/reveal-dialog/reveal-dialog";
 import { formatRevealed } from "@/lib/game";
@@ -48,7 +49,8 @@ export function OutcomeToggle({
 					onClick={() => onChange("success", null)}
 					data-testid="outcome-success"
 				>
-					✔ Success
+					<Check size={18} aria-hidden />
+					Success
 				</button>
 				<button
 					type="button"
@@ -57,7 +59,8 @@ export function OutcomeToggle({
 					onClick={() => setDialogOpen(true)}
 					data-testid="outcome-fail"
 				>
-					✕ Fail
+					<X size={18} aria-hidden />
+					Fail
 					{isFail && revealed !== null ? ` (${formatRevealed(revealed)})` : ""}
 				</button>
 			</div>

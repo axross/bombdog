@@ -88,6 +88,8 @@
 		}
 
 		.indicator {
+			display: inline-flex;
+			align-items: center;
 			color: currentcolor;
 		}
 	}

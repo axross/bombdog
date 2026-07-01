@@ -1,6 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
+import { Check, ChevronDown } from "lucide-react";
 import { Select } from "radix-ui";
 import type { JSX } from "react";
 import css from "./select-field.module.css";
@@ -49,7 +50,9 @@ export function SelectField({
 					data-testid={dataTestId}
 				>
 					<Select.Value placeholder={placeholder} />
-					<Select.Icon className={css.icon}>▾</Select.Icon>
+					<Select.Icon className={css.icon}>
+						<ChevronDown size={16} aria-hidden />
+					</Select.Icon>
 				</Select.Trigger>
 				<Select.Portal>
 					<Select.Content
@@ -66,7 +69,7 @@ export function SelectField({
 								>
 									<Select.ItemText>{option.label}</Select.ItemText>
 									<Select.ItemIndicator className={css.indicator}>
-										✓
+										<Check size={16} aria-hidden />
 									</Select.ItemIndicator>
 								</Select.Item>
 							))}

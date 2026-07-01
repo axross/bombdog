@@ -1,5 +1,6 @@
 "use client";
 
+import { Bomb } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import { type JSX, useState } from "react";
 import { useTrackerStore } from "@/lib/tracker-store";
@@ -48,7 +49,10 @@ export function PlayerSetup(): JSX.Element {
 	return (
 		<main className={css.setup} data-testid="setup">
 			<header className={css.header}>
-				<h1 className={css.title}>💣 Bombdog</h1>
+				<h1 className={css.title}>
+					<Bomb className={css.titleIcon} size={28} aria-hidden />
+					Bombdog
+				</h1>
 				<p className={css.tagline}>
 					Log every player's turn in Bomb Busters. Nothing to memorise.
 				</p>
