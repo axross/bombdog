@@ -126,20 +126,21 @@ export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 5;
 
 /**
- * Known equipment families. The exact number→effect mapping is mission-
- * dependent (see the game overview), so the user picks a family and may add a
- * free-text note.
+ * The equipment cards, in unlock-number order. The number in each label is the
+ * wire value whose pair unlocks that equipment. The composer also offers a
+ * free-text note for anything mission-specific.
  */
 export const EQUIPMENT_OPTIONS = [
-	"Extra Double Detector",
-	"Triple Detector",
-	"Super Detector",
-	"X-ray",
-	"Y-ray",
-	"Radar",
-	"Detonator relief",
-	"Protection",
-	"Free cut / reveal",
-	"Toolbox",
-	"Other",
+	"Label ≠ (1)",
+	"Walkie-Talkies (2)",
+	"Triple Detector (3)",
+	"Post-it (4)",
+	"Super Detector (5)",
+	"Rewinder (6)",
+	"Emergency Batteries (7)",
+	"General Rader (8)",
+	"Stabilizer (9)",
+	"X or Y Ray (10)",
+	"Coffee Mag (11)",
+	"Label ＝ (12)",
 ] as const;
