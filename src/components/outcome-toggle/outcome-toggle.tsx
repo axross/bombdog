@@ -39,7 +39,7 @@ export function OutcomeToggle({
 			aria-label={label ?? "Outcome"}
 			data-testid={dataTestId}
 		>
-			{label && <legend className={css.label}>{label}</legend>}
+			{label && <span className={css.label}>{label}</span>}
 			<div className={css.buttons}>
 				<button
 					type="button"
