@@ -72,4 +72,42 @@ describe("<MoveComposer>", () => {
 			screen.queryByRole("radiogroup", { name: "Target" }),
 		).not.toBeInTheDocument();
 	});
+
+	it("drops an incompatible Yellow wire when switching to Double detector", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+
+		// Pick Yellow on a dual cut, then switch to the blue-only detector.
+		await user.click(screen.getByRole("radio", { name: "Yellow wire" }));
+		expect(screen.getByRole("radio", { name: "Yellow wire" })).toBeChecked();
+
+		await user.click(screen.getByRole("tab", { name: "Double detector" }));
+		// The detector offers no Yellow, and the incompatible selection is cleared
+		// (so no blue wire is pre-checked either).
+		expect(
+			screen.queryByRole("radio", { name: "Yellow wire" }),
+		).not.toBeInTheDocument();
+		expect(screen.getByRole("radio", { name: "Wire 5" })).not.toBeChecked();
+	});
+
+	it("collapses and expands the composer via the toggle", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+
+		const collapse = screen.getByRole("button", { name: "Collapse composer" });
+		expect(collapse).toHaveAttribute("aria-expanded", "true");
+
+		await user.click(collapse);
+		const expand = screen.getByRole("button", { name: "Expand composer" });
+		expect(expand).toHaveAttribute("aria-expanded", "false");
+		// While collapsed the Log move button is removed from the a11y tree (inert).
+		expect(screen.getByRole("button", { name: "Log move" })).toHaveAttribute(
+			"inert",
+		);
+
+		await user.click(expand);
+		expect(
+			screen.getByRole("button", { name: "Collapse composer" }),
+		).toHaveAttribute("aria-expanded", "true");
+	});
 });

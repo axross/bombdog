@@ -81,3 +81,11 @@ These defaults are intentionally short. Follow the linked references for example
 - MUST run unit tests through `npm run test` (Vitest) unless investigating a targeted failure.
 - MUST run `npm run format`, `npm run lint`, and `npm run typecheck` after adding or changing unit tests.
 - SHOULD prefer e2e tests when confidence depends on framework runtime wiring, the data layer, browser behavior, rendering, routing, or user-facing UI.
+
+**Coverage and project-specific patterns:**
+
+- MUST measure coverage with `npm run test:coverage` (V8 provider; thresholds ~95% for branch/function/line/statement). Only framework route entrypoints (`src/app/layout.tsx`, `src/app/page.tsx`) and spec files are excluded; every other module carries real branches worth covering.
+- MUST seed the zustand store directly via `useTrackerStore.setState({ players, captainIndex, moves, redoStack, hasHydrated })` and reset it in `afterEach`. For components that trigger IndexedDB rehydration on mount (e.g. `<TrackerApp>`), `vi.spyOn(useTrackerStore.persist, "rehydrate").mockResolvedValue(...)` in `beforeEach` so hydration can't clobber the seeded state.
+- To cover the IndexedDB-backed storage adapter under jsdom (which has no `indexedDB`), mock `idb-keyval`, `vi.stubGlobal("indexedDB", {})`, `vi.resetModules()`, then `await import(...)` the module so it selects the backed branch (see `idb-storage.backed.spec.ts`).
+- MUST query Radix primitives by their real roles: a `ToggleGroup` root is `radiogroup` (items are `radio`, selection reflected via `toBeChecked()`); a `Select` trigger is `combobox` but its **portaled listbox cannot be opened under jsdom** (`hasPointerCapture` is unimplemented), so assert Select-driven behavior from seeded state/props instead of opening it; `Dialog`/`AlertDialog` content is portaled yet reachable through `screen`.
+- For branches only reachable through real browser behavior — CSS-animation close callbacks (Radix Presence unmounts synchronously under jsdom), or defensive guards the UI prevents — cover them with e2e instead and mark the unit-unreachable line with `/* v8 ignore next */` plus a one-line reason. Prefer deleting provably-dead code over ignoring it.

@@ -49,13 +49,11 @@ export function nextActorId(
 	moves: Move[],
 ): string | undefined {
 	if (players.length === 0) return undefined;
-	if (moves.length === 0) {
-		return players[captainIndex % players.length]?.id ?? players[0].id;
-	}
+	// `players` is non-empty here, so the modulo index is always in bounds.
+	const captainSeatId = players[captainIndex % players.length].id;
+	if (moves.length === 0) return captainSeatId;
 	const lastActorId = moves[moves.length - 1].actorId;
 	const lastSeat = players.findIndex((p) => p.id === lastActorId);
-	if (lastSeat === -1) {
-		return players[captainIndex % players.length]?.id ?? players[0].id;
-	}
+	if (lastSeat === -1) return captainSeatId;
 	return players[(lastSeat + 1) % players.length].id;
 }

@@ -185,6 +185,9 @@ export function MoveLog(): JSX.Element {
 					key={editingMove.id}
 					move={editingMove}
 					players={players}
+					// Runs on the editor's exit animation (e2e-covered; jsdom unmounts
+					// the dialog synchronously, so the close callback never fires here).
+					/* v8 ignore next */
 					onClose={() => setEditingId(null)}
 				/>
 			)}

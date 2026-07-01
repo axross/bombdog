@@ -13,6 +13,7 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:unit": "vitest run",
+		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test"
 	},
 	"dependencies": {
@@ -36,6 +37,7 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"@vitejs/plugin-react": "^6.0.3",
+		"@vitest/coverage-v8": "^4.1.9",
 		"jsdom": "^29.1.1",
 		"typescript": "^5",
 		"vitest": "^4.1.9"

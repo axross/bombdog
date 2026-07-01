@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTrackerStore } from "./tracker-store";
 import type { MoveDraft, Player } from "./types";
 
@@ -40,6 +40,15 @@ describe("configurePlayers()", () => {
 		state().configurePlayers(players, 2);
 		expect(state().players).toHaveLength(3);
 		expect(state().captainIndex).toBe(2);
+	});
+});
+
+describe("setCaptain()", () => {
+	it("updates only the captain seat", () => {
+		state().configurePlayers(players, 0);
+		state().setCaptain(2);
+		expect(state().captainIndex).toBe(2);
+		expect(state().players).toHaveLength(3);
 	});
 });
 
@@ -126,6 +135,15 @@ describe("updateMove()", () => {
 		expect(state().moves[0]).toMatchObject(dual);
 	});
 
+	it("ignores an unknown move id", () => {
+		state().addMove(dual);
+		const before = state().moves[0];
+
+		state().updateMove("does-not-exist", { ...dual, outcome: "fail" });
+		expect(state().moves).toHaveLength(1);
+		expect(state().moves[0]).toEqual(before);
+	});
+
 	it("clears the redo stack", () => {
 		state().addMove(dual);
 		state().addMove(solo);
@@ -147,5 +165,42 @@ describe("reset()", () => {
 		expect(state().players).toHaveLength(0);
 		expect(state().moves).toHaveLength(0);
 		expect(state().redoStack).toHaveLength(0);
+	});
+});
+
+describe("hydration", () => {
+	it("flips hasHydrated once rehydration completes", async () => {
+		useTrackerStore.setState({ hasHydrated: false });
+		expect(state().hasHydrated).toBe(false);
+
+		await useTrackerStore.persist.rehydrate();
+		expect(state().hasHydrated).toBe(true);
+	});
+});
+
+describe("createId fallback", () => {
+	const original = globalThis.crypto?.randomUUID;
+
+	afterEach(() => {
+		if (original) {
+			Object.defineProperty(globalThis.crypto, "randomUUID", {
+				value: original,
+				configurable: true,
+				writable: true,
+			});
+		}
+	});
+
+	it("generates a non-empty id without crypto.randomUUID", () => {
+		Object.defineProperty(globalThis.crypto, "randomUUID", {
+			value: undefined,
+			configurable: true,
+			writable: true,
+		});
+
+		state().addMove(dual);
+		const move = state().moves[0];
+		expect(move.id).toBeTruthy();
+		expect(move.id.startsWith("m_")).toBe(true);
 	});
 });

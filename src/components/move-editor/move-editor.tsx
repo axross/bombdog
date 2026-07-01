@@ -52,6 +52,9 @@ export function MoveEditor({
 					onAnimationEnd={(event) => {
 						// Unmount only after the exit animation on the content itself
 						// (guard against the enter animation and bubbled child events).
+						// The close path runs on the exit animation, which jsdom never
+						// fires (Radix unmounts synchronously); it's covered by e2e.
+						/* v8 ignore next */
 						if (!open && event.target === event.currentTarget) onClose();
 					}}
 				>

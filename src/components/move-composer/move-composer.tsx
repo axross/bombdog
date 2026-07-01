@@ -37,6 +37,9 @@ export function MoveComposer(): JSX.Element {
 
 	const seatAfter = (actorId: string): string => {
 		const seat = players.findIndex((p) => p.id === actorId);
+		// The actor is always a seated player in normal flow; the -1 branch and
+		// the `?? actorId` fallback are defensive guards the UI can't reach.
+		/* v8 ignore next 2 */
 		const nextSeat = seat === -1 ? 0 : (seat + 1) % players.length;
 		return players[nextSeat]?.id ?? actorId;
 	};
@@ -51,6 +54,8 @@ export function MoveComposer(): JSX.Element {
 
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
+		// Defensive: the submit button is disabled whenever `draft` is null.
+		/* v8 ignore next */
 		if (!draft) return;
 		addMove(draft);
 		// Prepare for the next turn: advance the suggested actor, clear inputs.

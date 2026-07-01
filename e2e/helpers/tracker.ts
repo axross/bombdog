@@ -1,10 +1,63 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
+/** A wire the pad can select: a blue number or the yellow wire. */
+export type Wire = number | "yellow";
+/** A revealed actual value recorded when a cut fails. */
+export type Revealed = number | "yellow" | "unknown";
+
+/**
+ * Navigate to the app and neutralise the Next.js dev-tools badge. Served by
+ * `npm run dev`, that badge sits bottom-left inside a `<nextjs-portal>` and
+ * intercepts pointer events on the composer's bottom controls (collapse /
+ * undo / redo). Hiding it makes those clicks land reliably; it is a no-op
+ * against a production build where the badge is absent.
+ */
+export async function gotoApp(page: Page): Promise<void> {
+	await page.goto("/");
+	await page.addStyleTag({ content: "nextjs-portal{display:none!important}" });
+}
+
 /** Complete the setup screen with the default players and open the tracker. */
 export async function startTracking(page: Page): Promise<void> {
-	await page.goto("/");
+	await gotoApp(page);
 	await page.getByTestId("setup").getByTestId("start").click();
-	await expect(page.getByTestId("composer")).toBeVisible();
+	await expect(composer(page)).toBeVisible();
+}
+
+/**
+ * Drive the setup screen with a specific roster and Captain, then open the
+ * tracker. `names` sets the player count (one entry per seat, min 2 / max 5);
+ * `captainIndex` is the zero-based seat that holds the Captain (default 0).
+ */
+export async function startTrackingWith(
+	page: Page,
+	{ names, captainIndex = 0 }: { names: string[]; captainIndex?: number },
+): Promise<void> {
+	await gotoApp(page);
+	const setup = page.getByTestId("setup");
+
+	// The stepper starts at 3 seats; add/remove to reach names.length.
+	const target = names.length;
+	for (let n = 3; n < target; n++) {
+		await setup.getByRole("button", { name: "Add a player" }).click();
+	}
+	for (let n = 3; n > target; n--) {
+		await setup.getByRole("button", { name: "Remove a player" }).click();
+	}
+
+	for (const [i, name] of names.entries()) {
+		const input = setup.getByRole("textbox", {
+			name: `Name of player ${i + 1}`,
+		});
+		await input.fill(name);
+	}
+
+	await setup
+		.getByRole("radio", { name: `Make player ${captainIndex + 1} the Captain` })
+		.click();
+
+	await setup.getByTestId("start").click();
+	await expect(composer(page)).toBeVisible();
 }
 
 /** The bottom-half move composer. */
@@ -22,6 +75,11 @@ export function moveRow(page: Page, seq: number): Locator {
 	return moveLog(page).locator(`[data-testid="move"][data-seq="${seq}"]`);
 }
 
+/** The app header, which carries the brand and the current-turn indicator. */
+export function header(page: Page): Locator {
+	return page.getByTestId("header");
+}
+
 /**
  * Open a SelectField (by its test id, scoped to the composer) and choose an
  * option. Options are Radix-portaled with the `option` role, so they are
@@ -36,6 +94,11 @@ export async function chooseInComposer(
 	await page.getByRole("option", { name: optionName, exact: true }).click();
 }
 
+/** Set the acting player from the "Acting" dropdown. */
+export async function setActor(page: Page, playerName: string): Promise<void> {
+	await chooseInComposer(page, "acting", playerName);
+}
+
 /** Pick a target player from the segmented control (a single tap). */
 export async function pickTarget(
 	page: Page,
@@ -45,4 +108,104 @@ export async function pickTarget(
 		.getByTestId("target")
 		.getByRole("radio", { name: playerName, exact: true })
 		.click();
+}
+
+const wireTestId = (wire: Wire) =>
+	wire === "yellow" ? "wire-yellow" : `wire-${wire}`;
+const revealTestId = (value: Revealed) =>
+	value === "yellow"
+		? "reveal-yellow"
+		: value === "unknown"
+			? "reveal-unknown"
+			: `reveal-${value}`;
+
+/** Tap a wire on the composer's wire pad. */
+export async function selectWire(page: Page, wire: Wire): Promise<void> {
+	await composer(page).getByTestId(wireTestId(wire)).click();
+}
+
+/**
+ * Set the outcome. `success` taps Success; a `reveal` value taps Fail and then
+ * records the actual wire in the popup that opens.
+ */
+export async function setOutcome(
+	page: Page,
+	outcome: "success" | { reveal: Revealed },
+): Promise<void> {
+	if (outcome === "success") {
+		await composer(page).getByTestId("outcome-success").click();
+		return;
+	}
+	await composer(page).getByTestId("outcome-fail").click();
+	await page
+		.getByTestId("reveal-dialog")
+		.getByTestId(revealTestId(outcome.reveal))
+		.click();
+	await expect(page.getByTestId("reveal-dialog")).toBeHidden();
+}
+
+/** Submit the composed move. */
+export async function logMove(page: Page): Promise<void> {
+	await composer(page).getByTestId("log-move").click();
+}
+
+interface CutOptions {
+	actor?: string;
+	target: string;
+	wire: Wire;
+	outcome: "success" | { reveal: Revealed };
+}
+
+/** Compose and log a dual cut. */
+export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
+	await composer(page).getByTestId("tab-dual-cut").click();
+	if (opts.actor) await setActor(page, opts.actor);
+	await pickTarget(page, opts.target);
+	await selectWire(page, opts.wire);
+	await setOutcome(page, opts.outcome);
+	await logMove(page);
+}
+
+/** Compose and log a double detector (blue wires only, no yellow). */
+export async function logDoubleDetector(
+	page: Page,
+	opts: CutOptions,
+): Promise<void> {
+	await composer(page).getByTestId("tab-double-detector").click();
+	if (opts.actor) await setActor(page, opts.actor);
+	await pickTarget(page, opts.target);
+	await selectWire(page, opts.wire);
+	await setOutcome(page, opts.outcome);
+	await logMove(page);
+}
+
+/** Compose and log a solo cut (no target, no outcome). */
+export async function logSoloCut(
+	page: Page,
+	{ actor, wire }: { actor?: string; wire: Wire },
+): Promise<void> {
+	await composer(page).getByTestId("tab-solo-cut").click();
+	if (actor) await setActor(page, actor);
+	await selectWire(page, wire);
+	await logMove(page);
+}
+
+/** Compose and log an equipment action, optionally with a note. */
+export async function logEquipment(
+	page: Page,
+	{
+		actor,
+		equipment,
+		note,
+	}: { actor?: string; equipment: string; note?: string },
+): Promise<void> {
+	await composer(page).getByTestId("tab-equipment").click();
+	if (actor) await setActor(page, actor);
+	await chooseInComposer(page, "equipment", equipment);
+	if (note) {
+		await composer(page)
+			.getByRole("textbox", { name: "Note (optional)" })
+			.fill(note);
+	}
+	await logMove(page);
 }

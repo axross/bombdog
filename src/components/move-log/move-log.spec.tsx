@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
@@ -73,5 +74,70 @@ describe("<MoveLog>", () => {
 		seed([]);
 		render(<MoveLog />);
 		expect(screen.getByText(/No moves yet/)).toBeInTheDocument();
+	});
+
+	it("renders the detail of every action type", () => {
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "solo-cut",
+				actorId: "a",
+				value: "yellow",
+			},
+			{
+				id: "2",
+				seq: 2,
+				at: 2,
+				type: "double-detector",
+				actorId: "b",
+				targetId: "a",
+				value: 6,
+				outcome: "fail",
+				revealed: "unknown",
+			},
+			{
+				id: "3",
+				seq: 3,
+				at: 3,
+				type: "dual-cut",
+				actorId: "a",
+				targetId: "b",
+				value: 4,
+				outcome: "fail",
+				revealed: 8,
+			},
+			{
+				id: "4",
+				seq: 4,
+				at: 4,
+				type: "equipment",
+				actorId: "b",
+				equipment: "Radar",
+				note: "seat 3 is empty",
+			},
+		]);
+		render(<MoveLog />);
+
+		expect(screen.getByText("Solo cut")).toBeInTheDocument();
+		// The Yellow wire renders its dedicated chip.
+		expect(screen.getByLabelText("Yellow wire")).toBeInTheDocument();
+		expect(screen.getByText("Double detector")).toBeInTheDocument();
+		// A failed detector shows the revealed "?" (unknown) on its badge…
+		expect(screen.getByText(/fail \(\?\)/)).toBeInTheDocument();
+		// …and a failed dual cut shows the numeric revealed value.
+		expect(screen.getByText(/fail \(8\)/)).toBeInTheDocument();
+		// Equipment notes are appended after an em dash.
+		expect(screen.getByText(/seat 3 is empty/)).toBeInTheDocument();
+	});
+
+	it("opens the move editor when an edit control is used", async () => {
+		const user = userEvent.setup();
+		render(<MoveLog />);
+
+		await user.click(screen.getByRole("button", { name: "Edit move #1" }));
+		expect(screen.getByTestId("move-editor")).toBeInTheDocument();
+		expect(screen.getByText("Edit move #1")).toBeInTheDocument();
 	});
 });
