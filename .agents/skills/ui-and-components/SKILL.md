@@ -37,6 +37,7 @@ under `:where(:root.dark)`, so the semantic tokens flip automatically.
 - MUST merge the component's own class with an incoming `className` via `clsx(css.root, className)` (from `clsx`); never join class names with template literals.
 - MUST NOT set `position`, `margin`, or non-full `width`/`height` on a component's root element — pass those from the parent via `className` (page-level screen shells are the documented exception).
 - MUST draw color, spacing, radius, and font values from the tokens in `variables.css`; do not hard-code them. Prefer logical properties (`margin-block`, `padding-inline`, `min-block-size`, `inset-inline-*`) and `@container` queries over `@media` for width-driven layout (`body` is a container).
+- MUST pick the color-ramp step that matches the element's role, per the Radix scale: **1** app background, **2** subtle background, **3** UI-element background (rest), **4** hovered UI-element background, **5** active/selected UI-element background, **6** subtle borders/separators, **7** interactive element borders & focus rings, **8** hovered element border, **9** solid fill, **10** hovered solid fill, **11** low-contrast (muted) text, **12** high-contrast text. A tinted control follows rest **3** → hover **4** → selected solid **9**; do not use a hover step (4) as a rest background. Derive hover/active from an adjacent step, not an ad-hoc `color-mix`.
 - MUST NOT import another component's CSS Module.
 
 ## Motion and Transitions

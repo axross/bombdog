@@ -21,6 +21,7 @@
 		--slate-12: oklch(24% 0.02 264);
 
 		/* Accent ramp — blue, hue 254 */
+		--blue-3: oklch(95% 0.045 254);
 		--blue-4: oklch(92% 0.06 254);
 		--blue-7: oklch(72% 0.12 254);
 		--blue-8: oklch(66% 0.15 254);
@@ -28,6 +29,7 @@
 		--blue-10: oklch(53% 0.18 254);
 
 		/* Yellow wire ramp — amber/gold, hue 82 (intrinsically light) */
+		--amber-3: oklch(95.5% 0.05 82);
 		--amber-4: oklch(93% 0.07 82);
 		--amber-7: oklch(80% 0.11 82);
 		--amber-9: oklch(84% 0.16 82);
@@ -62,12 +64,15 @@
 		--accent-contrast: oklch(100% 0 0);
 		--focus-ring: var(--blue-8);
 
-		/* Wire colours */
+		/* Wire colours. Soft = step 3 (UI element background at rest); the -hover
+		   variant = step 4 (hovered UI element background); the solid = step 9. */
 		--wire-blue: var(--blue-9);
-		--wire-blue-soft: var(--blue-4);
+		--wire-blue-soft: var(--blue-3);
+		--wire-blue-soft-hover: var(--blue-4);
 		--wire-blue-border: var(--blue-7);
 		--wire-yellow: var(--amber-9);
-		--wire-yellow-soft: var(--amber-4);
+		--wire-yellow-soft: var(--amber-3);
+		--wire-yellow-soft-hover: var(--amber-4);
 		--wire-yellow-border: var(--amber-7);
 		--wire-yellow-text: var(--amber-12);
 
@@ -121,12 +126,14 @@
 		--slate-11: oklch(72% 0.014 264);
 		--slate-12: oklch(95% 0.01 264);
 
+		--blue-3: oklch(27% 0.08 254);
 		--blue-4: oklch(30% 0.09 254);
 		--blue-7: oklch(45% 0.13 254);
 		--blue-8: oklch(52% 0.15 254);
 		--blue-9: oklch(62% 0.18 254);
 		--blue-10: oklch(67% 0.17 254);
 
+		--amber-3: oklch(28% 0.045 82);
 		--amber-4: oklch(32% 0.05 82);
 		--amber-7: oklch(46% 0.08 82);
 		--amber-9: oklch(84% 0.16 82);
