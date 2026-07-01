@@ -1,0 +1,152 @@
+.log {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.scroll {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: var(--space-4);
+}
+
+.empty {
+	display: grid;
+	place-items: center;
+	height: 100%;
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	list-style: none;
+}
+
+.row {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-3);
+	background: var(--surface-2);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.seq {
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--text-muted);
+}
+
+.content {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+}
+
+.headline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.actor {
+	font-weight: 600;
+}
+
+.arrow {
+	color: var(--text-muted);
+}
+
+.kind {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.detail {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.equipment {
+	font-size: 0.9rem;
+	color: var(--text);
+}
+
+.chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 26px;
+	height: 26px;
+	padding: 0 var(--space-2);
+	font-family: var(--font-mono);
+	font-weight: 700;
+	font-size: 0.85rem;
+	border-radius: var(--radius-sm);
+}
+
+.chipBlue {
+	color: var(--accent-contrast);
+	background: var(--wire-blue);
+}
+
+.chipYellow {
+	color: var(--wire-yellow-text);
+	background: var(--wire-yellow);
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	height: 26px;
+	padding: 0 var(--space-2);
+	font-size: 0.8rem;
+	font-weight: 600;
+	border-radius: var(--radius-sm);
+}
+
+.success {
+	color: var(--success-text);
+	background: var(--success-soft);
+}
+
+.fail {
+	color: var(--danger-text);
+	background: var(--danger-soft);
+}
+
+.edit {
+	display: inline-flex;
+	align-items: center;
+	min-height: 36px;
+	padding: 0 var(--space-2);
+	color: var(--text-muted);
+	background: transparent;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	font-size: 0.85rem;
+
+	&:hover {
+		color: var(--text);
+		background: var(--surface-3);
+	}
+}
+
+@media (max-width: 24rem) {
+	.editText {
+		display: none;
+	}
+}

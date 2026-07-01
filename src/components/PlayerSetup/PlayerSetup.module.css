@@ -1,0 +1,143 @@
+.setup {
+	width: min(100vw, var(--app-max-width));
+	margin: 0 auto;
+	min-height: 100dvh;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-5);
+	padding: var(--space-6) var(--space-4)
+		max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+.header {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.title {
+	font-size: clamp(1.5rem, 5vw, 2rem);
+	font-weight: 800;
+}
+
+.tagline {
+	color: var(--text-muted);
+}
+
+.counter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--space-3) var(--space-4);
+	background: var(--surface-2);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.counterLabel {
+	font-weight: 600;
+}
+
+.stepper {
+	display: flex;
+	align-items: center;
+	gap: var(--space-4);
+}
+
+.stepButton {
+	width: 44px;
+	height: 44px;
+	font-size: 1.4rem;
+	background: var(--surface-3);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+
+	&:hover:not(:disabled) {
+		background: var(--surface-hover);
+	}
+
+	&:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+}
+
+.count {
+	min-width: 1.5ch;
+	font-family: var(--font-mono);
+	font-size: 1.25rem;
+	font-weight: 700;
+	text-align: center;
+}
+
+.seats {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.seat {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-2) var(--space-3);
+	background: var(--surface-2);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.radio {
+	flex-shrink: 0;
+	width: 26px;
+	height: 26px;
+	background: var(--surface);
+	border: 2px solid var(--border-strong);
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+
+	&[data-state="checked"] {
+		border-color: var(--accent);
+	}
+}
+
+.radioDot {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--accent);
+}
+
+.nameInput {
+	flex: 1;
+	min-width: 0;
+	min-height: 40px;
+	padding: 0 var(--space-3);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+}
+
+.captainTag {
+	flex-shrink: 0;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--accent);
+}
+
+.start {
+	margin-top: auto;
+	min-height: 52px;
+	background: var(--accent);
+	color: var(--accent-contrast);
+	border: none;
+	border-radius: var(--radius);
+	font-size: 1.05rem;
+	font-weight: 700;
+
+	&:hover {
+		background: var(--accent-hover);
+	}
+}
