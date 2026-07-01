@@ -1,50 +1,52 @@
-/* Design tokens, authored in OKLCH. High-chroma solids intentionally sit
-   outside the sRGB gamut, so browsers on wide-gamut (Display P3) screens render
-   them richer while sRGB screens gamut-map them gracefully — no separate P3
-   file needed. Declared at zero specificity via `:where(:root)` so component
-   styles can always override; placed in the `variables` layer.
+/* Design tokens. The colour ramps mirror the official Radix Colors scales
+   (slate, blue, amber, red, grass) synced from radix-ui/colors `src/light.ts`
+   and `src/dark.ts`, encoded in OKLCH. The hex in the trailing comment on each
+   line is the exact Radix sRGB source value. OKLCH keeps the authoring
+   perceptual and lets browsers gamut-map cleanly; swap in the radix `*-p3`
+   scales later if wide-gamut richness is wanted. Declared at zero specificity
+   via `:where(:root)` so component styles can override; in the `variables` layer.
 
-   Colours are organised as Radix-style perceptual ramps (step 1 = lightest app
-   background … step 12 = highest-contrast text). Dark mode re-declares the ramp
-   steps under `:where(:root.dark)`; the semantic tokens below reference the
-   ramps, so they flip automatically. */
+   Step 1 = lightest app background … step 12 = highest-contrast text. Only the
+   steps the app actually uses are declared. Dark mode re-declares the ramp steps
+   under `:where(:root.dark)`; the semantic tokens below reference the ramps, so
+   they flip automatically. */
 @layer variables {
 	:where(:root) {
-		/* Neutral ramp — slate (cool grey), hue 264 */
-		--slate-1: oklch(99% 0.004 264);
-		--slate-2: oklch(97.5% 0.005 264);
-		--slate-3: oklch(95.5% 0.007 264);
-		--slate-4: oklch(93% 0.009 264);
-		--slate-6: oklch(88% 0.012 264);
-		--slate-8: oklch(78% 0.016 264);
-		--slate-11: oklch(50% 0.016 264);
-		--slate-12: oklch(24% 0.02 264);
+		/* Neutral ramp — slate */
+		--slate-1: oklch(99.1% 0.0013 286.4); /* #fcfcfd */
+		--slate-2: oklch(98.3% 0.0026 286.4); /* #f9f9fb */
+		--slate-3: oklch(95.6% 0.004 286.3); /* #f0f0f3 */
+		--slate-4: oklch(93.2% 0.0054 286.3); /* #e8e8ec */
+		--slate-6: oklch(88.7% 0.0095 286.2); /* #d9d9e0 */
+		--slate-8: oklch(79.4% 0.0156 277.8); /* #b9bbc6 */
+		--slate-11: oklch(50.2% 0.0136 264.4); /* #60646c */
+		--slate-12: oklch(24.1% 0.0097 248.2); /* #1c2024 */
 
-		/* Accent ramp — blue, hue 254 */
-		--blue-3: oklch(95% 0.045 254);
-		--blue-4: oklch(92% 0.06 254);
-		--blue-7: oklch(72% 0.12 254);
-		--blue-8: oklch(66% 0.15 254);
-		--blue-9: oklch(58% 0.18 254);
-		--blue-10: oklch(53% 0.18 254);
+		/* Accent ramp — blue */
+		--blue-3: oklch(96% 0.0201 238.7); /* #e6f4fe */
+		--blue-4: oklch(93.8% 0.035 234.8); /* #d5efff */
+		--blue-7: oklch(81% 0.0887 243.1); /* #8ec8f6 */
+		--blue-8: oklch(73.4% 0.1214 243.1); /* #5eb1ef */
+		--blue-9: oklch(64.9% 0.193 251.8); /* #0090ff */
+		--blue-10: oklch(62.2% 0.1831 251.7); /* #0588f0 */
 
-		/* Yellow wire ramp — amber/gold, hue 82 (intrinsically light) */
-		--amber-3: oklch(95.5% 0.05 82);
-		--amber-4: oklch(93% 0.07 82);
-		--amber-7: oklch(80% 0.11 82);
-		--amber-9: oklch(84% 0.16 82);
-		--amber-12: oklch(40% 0.06 82);
+		/* Yellow wire ramp — amber */
+		--amber-3: oklch(97% 0.0684 100.4); /* #fff7c2 */
+		--amber-4: oklch(94.5% 0.1034 97.9); /* #ffee9c */
+		--amber-7: oklch(82.7% 0.1224 86.7); /* #e9c162 */
+		--amber-9: oklch(85.4% 0.1572 84.1); /* #ffc53d */
+		--amber-12: oklch(35.2% 0.0486 54.2); /* #4f3422 */
 
-		/* Danger ramp — red, hue 27 */
-		--red-4: oklch(93% 0.05 27);
-		--red-9: oklch(58% 0.2 27);
-		--red-10: oklch(53% 0.2 27);
-		--red-11: oklch(52% 0.19 27);
+		/* Danger ramp — red */
+		--red-4: oklch(92.2% 0.0401 16); /* #ffdbdc */
+		--red-9: oklch(62.6% 0.1933 23); /* #e5484d */
+		--red-10: oklch(59.9% 0.1947 24); /* #dc3e42 */
+		--red-11: oklch(55.7% 0.1974 25.2); /* #ce2c31 */
 
-		/* Success ramp — grass, hue 150 */
-		--grass-4: oklch(93% 0.06 150);
-		--grass-9: oklch(62% 0.15 150);
-		--grass-11: oklch(48% 0.12 150);
+		/* Success ramp — grass */
+		--grass-4: oklch(93.5% 0.0381 146.5); /* #daf1db */
+		--grass-9: oklch(65.1% 0.1468 147.4); /* #46a758 */
+		--grass-11: oklch(52.6% 0.1294 147.2); /* #2a7e3b */
 
 		/* ------- Semantic tokens (reference the ramps above) ------- */
 
@@ -114,38 +116,39 @@
 		--font-mono: var(--font-geist-mono), ui-monospace, monospace;
 	}
 
-	/* Dark scheme: re-declare the ramp steps (semantic tokens inherit). Solid
-	   step-9 colours stay bright in both schemes; backgrounds/borders/text flip. */
+	/* Dark scheme: re-declare the ramp steps (semantic tokens inherit), synced
+	   from radix-ui/colors `src/dark.ts`. Solid step-9 colours are identical in
+	   both schemes; backgrounds/borders/text flip. */
 	:where(:root.dark) {
-		--slate-1: oklch(16% 0.006 264);
-		--slate-2: oklch(19% 0.008 264);
-		--slate-3: oklch(23% 0.01 264);
-		--slate-4: oklch(27% 0.012 264);
-		--slate-6: oklch(36% 0.014 264);
-		--slate-8: oklch(48% 0.018 264);
-		--slate-11: oklch(72% 0.014 264);
-		--slate-12: oklch(95% 0.01 264);
+		--slate-1: oklch(17.9% 0.0041 286); /* #111113 */
+		--slate-2: oklch(21.3% 0.0042 264.5); /* #18191b */
+		--slate-3: oklch(25.2% 0.0058 271.2); /* #212225 */
+		--slate-4: oklch(28.3% 0.007 248.1); /* #272a2d */
+		--slate-6: oklch(34.7% 0.0103 254); /* #363a3f */
+		--slate-8: oklch(48.9% 0.0155 251.7); /* #5a6169 */
+		--slate-11: oklch(76.9% 0.0096 258.3); /* #b0b4ba */
+		--slate-12: oklch(94.9% 0.0029 264.5); /* #edeef0 */
 
-		--blue-3: oklch(27% 0.08 254);
-		--blue-4: oklch(30% 0.09 254);
-		--blue-7: oklch(45% 0.13 254);
-		--blue-8: oklch(52% 0.15 254);
-		--blue-9: oklch(62% 0.18 254);
-		--blue-10: oklch(67% 0.17 254);
+		--blue-3: oklch(27.4% 0.0663 253.9); /* #0d2847 */
+		--blue-4: oklch(32% 0.0968 252.3); /* #003362 */
+		--blue-7: oklch(47.4% 0.1219 253.1); /* #205d9e */
+		--blue-8: oklch(54.1% 0.1395 253.2); /* #2870bd */
+		--blue-9: oklch(64.9% 0.193 251.8); /* #0090ff */
+		--blue-10: oklch(68.8% 0.1693 251.4); /* #3b9eff */
 
-		--amber-3: oklch(28% 0.045 82);
-		--amber-4: oklch(32% 0.05 82);
-		--amber-7: oklch(46% 0.08 82);
-		--amber-9: oklch(84% 0.16 82);
-		--amber-12: oklch(90% 0.09 82);
+		--amber-3: oklch(25.8% 0.0442 74.5); /* #302008 */
+		--amber-4: oklch(29.6% 0.0627 73.9); /* #3f2700 */
+		--amber-7: oklch(45.4% 0.0824 75); /* #714f19 */
+		--amber-9: oklch(85.4% 0.1572 84.1); /* #ffc53d */
+		--amber-12: oklch(93.5% 0.0717 86.1); /* #ffe7b3 */
 
-		--red-4: oklch(30% 0.08 27);
-		--red-9: oklch(60% 0.21 27);
-		--red-10: oklch(65% 0.2 27);
-		--red-11: oklch(72% 0.17 27);
+		--red-4: oklch(28.9% 0.0951 14.3); /* #500f1c */
+		--red-9: oklch(62.6% 0.1933 23); /* #e5484d */
+		--red-10: oklch(66.3% 0.1774 22.9); /* #ec5d5e */
+		--red-11: oklch(78% 0.1281 22.1); /* #ff9592 */
 
-		--grass-4: oklch(30% 0.07 150);
-		--grass-9: oklch(64% 0.16 150);
-		--grass-11: oklch(72% 0.13 150);
+		--grass-4: oklch(31.9% 0.0527 150.3); /* #1d3a24 */
+		--grass-9: oklch(65.1% 0.1468 147.4); /* #46a758 */
+		--grass-11: oklch(78% 0.1419 148.5); /* #71d083 */
 	}
 }
