@@ -4,14 +4,17 @@ import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
-import { formatRevealed, getPlayerName } from "@/lib/game";
+import { MoveFilter } from "@/components/move-filter/move-filter";
+import { filterMoves, formatRevealed, getPlayerName } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
-import type {
-	Move,
-	MoveType,
-	Player,
-	RevealedWire,
-	WireValue,
+import {
+	EMPTY_MOVE_FILTER,
+	type MoveFilter as Filter,
+	type Move,
+	type MoveType,
+	type Player,
+	type RevealedWire,
+	type WireValue,
 } from "@/lib/types";
 import css from "./move-log.module.css";
 
@@ -145,14 +148,18 @@ export function MoveLog(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
 	const moves = useTrackerStore((s) => s.moves);
 	const [editingId, setEditingId] = useState<string | null>(null);
+	const [filter, setFilter] = useState<Filter>(EMPTY_MOVE_FILTER);
 	const scrollRef = useRef<HTMLDivElement>(null);
 
-	// Keep the newest move (bottom) in view as the log grows.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: re-scroll when the move count changes
+	const visibleMoves = filterMoves(moves, filter);
+
+	// Keep the newest visible move (bottom) in view as the log grows or the
+	// filter changes.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: re-scroll when the visible count changes
 	useEffect(() => {
 		const el = scrollRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
-	}, [moves.length]);
+	}, [visibleMoves.length]);
 
 	const editingMove = moves.find((m) => m.id === editingId) ?? null;
 
@@ -162,12 +169,19 @@ export function MoveLog(): JSX.Element {
 			aria-label="Move history"
 			data-testid="move-log"
 		>
+			<div className={css.toolbar}>
+				<MoveFilter filter={filter} onChange={setFilter} />
+			</div>
 			<div className={css.scroll} ref={scrollRef}>
 				{moves.length === 0 ? (
 					<p className={css.empty}>No moves yet. Log the first turn below.</p>
+				) : visibleMoves.length === 0 ? (
+					<p className={css.empty} data-testid="filtered-empty">
+						No moves match the filter.
+					</p>
 				) : (
 					<ol className={css.list}>
-						{moves.map((move) => (
+						{visibleMoves.map((move) => (
 							<li key={move.id}>
 								<MoveRow
 									move={move}

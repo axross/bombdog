@@ -80,6 +80,17 @@ export function moveRow(page: Page, seq: number): Locator {
 	return moveLog(page).locator(`[data-testid="move"][data-seq="${seq}"]`);
 }
 
+/** Open the move-log filter dialog from its toolbar trigger. */
+export async function openFilter(page: Page): Promise<void> {
+	await moveLog(page).getByTestId("filter").click();
+	await expect(page.getByTestId("filter-dialog")).toBeVisible();
+}
+
+/** The move-log filter dialog. */
+export function filterDialog(page: Page): Locator {
+	return page.getByTestId("filter-dialog");
+}
+
 /** The app header, which carries the brand and the current-turn indicator. */
 export function header(page: Page): Locator {
 	return page.getByTestId("header");

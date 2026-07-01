@@ -1,7 +1,13 @@
 // Pure, UI-agnostic helpers for the tracker. Kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
-import type { Move, Player, RevealedWire, WireValue } from "./types";
+import type {
+	Move,
+	MoveFilter,
+	Player,
+	RevealedWire,
+	WireValue,
+} from "./types";
 
 /** Resolve a player's display name, tolerant of unknown ids. */
 export function getPlayerName(players: Player[], id: string): string {
@@ -33,6 +39,31 @@ export function targetPlayerOrder(
 		...players.filter((p) => p.id !== actorId),
 		...players.filter((p) => p.id === actorId),
 	];
+}
+
+/** Whether a move survives the log filter (`true` = shown, `false` = hidden). */
+export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
+	if (
+		filter.excludeSuccessfulDualCut &&
+		move.type === "dual-cut" &&
+		move.outcome === "success"
+	) {
+		return false;
+	}
+	if (filter.excludeSoloCut && move.type === "solo-cut") {
+		return false;
+	}
+	return true;
+}
+
+/** Apply the log filter, preserving the original move order. */
+export function filterMoves(moves: Move[], filter: MoveFilter): Move[] {
+	return moves.filter((move) => isMoveVisible(move, filter));
+}
+
+/** True when the filter excludes at least one move type. */
+export function isFilterActive(filter: MoveFilter): boolean {
+	return filter.excludeSuccessfulDualCut || filter.excludeSoloCut;
 }
 
 /**

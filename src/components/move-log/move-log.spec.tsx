@@ -140,4 +140,31 @@ describe("<MoveLog>", () => {
 		expect(screen.getByTestId("move-editor")).toBeInTheDocument();
 		expect(screen.getByText("Edit move #1")).toBeInTheDocument();
 	});
+
+	it("hides moves excluded by the filter", async () => {
+		const user = userEvent.setup();
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "dual-cut",
+				actorId: "a",
+				targetId: "b",
+				value: 9,
+				outcome: "success",
+			},
+			{ id: "2", seq: 2, at: 2, type: "solo-cut", actorId: "b", value: 5 },
+		]);
+		render(<MoveLog />);
+		expect(screen.getAllByTestId("move")).toHaveLength(2);
+
+		await user.click(screen.getByTestId("filter"));
+		await user.click(screen.getByTestId("filter-exclude-both"));
+		await user.click(screen.getByTestId("filter-done"));
+
+		// Both moves are excluded, so the filtered-empty state shows instead.
+		expect(screen.queryByTestId("move")).not.toBeInTheDocument();
+		expect(screen.getByTestId("filtered-empty")).toBeInTheDocument();
+	});
 });
