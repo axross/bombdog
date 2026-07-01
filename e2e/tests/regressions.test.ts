@@ -31,7 +31,7 @@ test("re-enables Log move for the next dual cut without re-toggling target", asy
 		await setOutcome(page, "success");
 	});
 
-	await test.step("Log move is enabled without re-toggling the target", async () => {
+	await test.step("Verify Log move is enabled without re-toggling the target", async () => {
 		await expect(composer(page).getByTestId("log-move")).toBeEnabled();
 		await composer(page).getByTestId("log-move").click();
 		await expect(moveRow(page, 2)).toBeVisible();

@@ -227,7 +227,7 @@ describe("<MoveForm>", () => {
 		}
 	});
 
-	describe("edit mode (no onTypeChange)", () => {
+	describe("when in edit mode (no onTypeChange)", () => {
 		it("renders a static action header instead of interactive tabs", () => {
 			render(<Harness initialType="double-detector" withTabs={false} />);
 

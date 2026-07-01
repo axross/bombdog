@@ -60,7 +60,7 @@ test.describe("logging each action type", () => {
 	test("dual cut — fail records the actual wire", async ({ page }) => {
 		await startTracking(page);
 
-		await test.step("Compose the cut; Log move is blocked until the reveal", async () => {
+		await test.step("Compose the cut and verify Log move is blocked until the reveal", async () => {
 			await pickTarget(page, "Player 2");
 			await selectWire(page, 9);
 			await composer(page).getByTestId("outcome-fail").click();
@@ -78,7 +78,7 @@ test.describe("logging each action type", () => {
 			await expect(composer(page).getByTestId("log-move")).toBeEnabled();
 		});
 
-		await test.step("Log it and see the revealed value in the history", async () => {
+		await test.step("Log it and verify the revealed value in the history", async () => {
 			await composer(page).getByTestId("log-move").click();
 			const badge = moveRow(page, 1).getByTestId("badge");
 			await expect(badge).toHaveAttribute("data-outcome", "fail");
@@ -163,13 +163,13 @@ test.describe("session flow", () => {
 			await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 		});
 
-		await test.step("Redo restores only the first move", async () => {
+		await test.step("Redo and verify only the first move returns", async () => {
 			await composer(page).getByTestId("redo").click();
 			await expect(moveRow(page, 1)).toBeVisible();
 			await expect(moveRow(page, 2)).toHaveCount(0);
 		});
 
-		await test.step("A fresh move invalidates the remaining redo history", async () => {
+		await test.step("Log a fresh move and verify redo is cleared", async () => {
 			await logSoloCut(page, { wire: 7 });
 			await expect(moveRow(page, 2)).toBeVisible();
 			await expect(composer(page).getByTestId("redo")).toBeDisabled();
@@ -207,7 +207,7 @@ test.describe("session flow", () => {
 	test("collapses and expands the composer", async ({ page }) => {
 		await startTracking(page);
 
-		await test.step("Collapse hides the form and Log move; undo/redo stay", async () => {
+		await test.step("Collapse and verify the form and Log move hide while undo/redo stay", async () => {
 			await expect(composer(page).getByTestId("acting")).toBeVisible();
 			await composer(page).getByTestId("toggle-composer").click();
 			await expect(composer(page).getByTestId("acting")).toBeHidden();
@@ -215,7 +215,7 @@ test.describe("session flow", () => {
 			await expect(composer(page).getByTestId("log-move")).toBeHidden();
 		});
 
-		await test.step("Expand restores the form and Log move", async () => {
+		await test.step("Expand and verify the form and Log move return", async () => {
 			await composer(page).getByTestId("toggle-composer").click();
 			await expect(composer(page).getByTestId("acting")).toBeVisible();
 			await expect(composer(page).getByTestId("log-move")).toBeVisible();

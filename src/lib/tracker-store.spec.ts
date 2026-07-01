@@ -75,6 +75,23 @@ describe("addMove()", () => {
 			"equipment",
 		]);
 	});
+
+	describe("when crypto.randomUUID is unavailable", () => {
+		// Unconditional restore that survives an early failure and doesn't depend
+		// on crypto.randomUUID being present at load time.
+		afterEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it("still generates a non-empty fallback id", () => {
+			vi.stubGlobal("crypto", { randomUUID: undefined });
+
+			state().addMove(dual);
+			const move = state().moves[0];
+			expect(move.id).toBeTruthy();
+			expect(move.id.startsWith("m_")).toBe(true);
+		});
+	});
 });
 
 describe("undoLastMove() / redoMove()", () => {
@@ -168,29 +185,12 @@ describe("reset()", () => {
 	});
 });
 
-describe("hydration", () => {
+describe("persist.rehydrate()", () => {
 	it("flips hasHydrated once rehydration completes", async () => {
 		useTrackerStore.setState({ hasHydrated: false });
 		expect(state().hasHydrated).toBe(false);
 
 		await useTrackerStore.persist.rehydrate();
 		expect(state().hasHydrated).toBe(true);
-	});
-});
-
-describe("createId fallback", () => {
-	// Unconditional restore that survives an early failure and doesn't depend on
-	// crypto.randomUUID being present at load time.
-	afterEach(() => {
-		vi.unstubAllGlobals();
-	});
-
-	it("generates a non-empty id without crypto.randomUUID", () => {
-		vi.stubGlobal("crypto", { randomUUID: undefined });
-
-		state().addMove(dual);
-		const move = state().moves[0];
-		expect(move.id).toBeTruthy();
-		expect(move.id.startsWith("m_")).toBe(true);
 	});
 });
