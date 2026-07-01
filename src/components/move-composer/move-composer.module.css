@@ -22,14 +22,19 @@
 			gap: var(--space-2);
 		}
 
-		.secondary {
+		.icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-inline-size: 44px;
 			min-block-size: 44px;
-			padding-inline: var(--space-3);
+			padding-inline: var(--space-2);
+			font-size: 1.1rem;
+			line-height: 1;
 			background-color: var(--surface-3);
 			color: var(--text);
 			border: 1px solid var(--border);
 			border-radius: var(--radius-sm);
-			font-weight: 600;
 
 			&:hover:not(:disabled) {
 				background-color: var(--surface-hover);

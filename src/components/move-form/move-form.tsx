@@ -92,6 +92,7 @@ function MoveFields({
 
 			{needsWire && (
 				<WirePad
+					label="Wire"
 					value={fields.value}
 					onValueChange={(value) => update({ value })}
 					blueOnly={type === "double-detector"}
@@ -101,6 +102,7 @@ function MoveFields({
 
 			{needsOutcome && (
 				<OutcomeToggle
+					label="Result"
 					outcome={fields.outcome}
 					revealed={fields.revealed}
 					onChange={(outcome, revealed) => update({ outcome, revealed })}

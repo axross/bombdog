@@ -12,6 +12,8 @@ interface OutcomeToggleProps {
 	revealed: RevealedWire | null;
 	/** Sets both at once: success clears the revealed value; fail records it. */
 	onChange: (outcome: Outcome, revealed: RevealedWire | null) => void;
+	/** Optional heading shown above the buttons. */
+	label?: string;
 	className?: string;
 	"data-testid"?: string;
 }
@@ -24,6 +26,7 @@ export function OutcomeToggle({
 	outcome,
 	revealed,
 	onChange,
+	label,
 	className,
 	"data-testid": dataTestId,
 }: OutcomeToggleProps): JSX.Element {
@@ -33,28 +36,31 @@ export function OutcomeToggle({
 	return (
 		<fieldset
 			className={clsx(css.group, className)}
-			aria-label="Outcome"
+			aria-label={label ?? "Outcome"}
 			data-testid={dataTestId}
 		>
-			<button
-				type="button"
-				className={clsx(css.item, css.success)}
-				aria-pressed={outcome === "success"}
-				onClick={() => onChange("success", null)}
-				data-testid="outcome-success"
-			>
-				✔ Success
-			</button>
-			<button
-				type="button"
-				className={clsx(css.item, css.fail)}
-				aria-pressed={isFail}
-				onClick={() => setDialogOpen(true)}
-				data-testid="outcome-fail"
-			>
-				✕ Fail
-				{isFail && revealed !== null ? ` (${formatRevealed(revealed)})` : ""}
-			</button>
+			{label && <legend className={css.label}>{label}</legend>}
+			<div className={css.buttons}>
+				<button
+					type="button"
+					className={clsx(css.item, css.success)}
+					aria-pressed={outcome === "success"}
+					onClick={() => onChange("success", null)}
+					data-testid="outcome-success"
+				>
+					✔ Success
+				</button>
+				<button
+					type="button"
+					className={clsx(css.item, css.fail)}
+					aria-pressed={isFail}
+					onClick={() => setDialogOpen(true)}
+					data-testid="outcome-fail"
+				>
+					✕ Fail
+					{isFail && revealed !== null ? ` (${formatRevealed(revealed)})` : ""}
+				</button>
+			</div>
 
 			<RevealDialog
 				open={dialogOpen}

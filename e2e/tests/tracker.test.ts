@@ -144,3 +144,23 @@ test("records the revealed wire when a cut fails", async ({ page }) => {
 		await expect(badge).toHaveAttribute("data-revealed", "Y");
 	});
 });
+
+// The composer can collapse to give the move history a larger view area.
+test("collapses and expands the composer", async ({ page }) => {
+	await test.step("Start tracking", async () => {
+		await startTracking(page);
+	});
+
+	await test.step("Collapse hides the form inputs", async () => {
+		await expect(composer(page).getByTestId("acting")).toBeVisible();
+		await composer(page).getByTestId("toggle-composer").click();
+		await expect(composer(page).getByTestId("acting")).toBeHidden();
+		// The undo/redo/log controls stay available.
+		await expect(composer(page).getByTestId("log-move")).toBeVisible();
+	});
+
+	await test.step("Expand restores the form", async () => {
+		await composer(page).getByTestId("toggle-composer").click();
+		await expect(composer(page).getByTestId("acting")).toBeVisible();
+	});
+});

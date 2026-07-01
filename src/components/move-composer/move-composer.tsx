@@ -26,6 +26,7 @@ export function MoveComposer(): JSX.Element {
 		nextActorId(players, captainIndex, moves) ?? players[0]?.id ?? "";
 
 	const [type, setType] = useState<MoveType>("dual-cut");
+	const [collapsed, setCollapsed] = useState(false);
 	const [fields, setFields] = useState<DraftFields>(() =>
 		emptyDraftFields(suggestedActor),
 	);
@@ -61,33 +62,47 @@ export function MoveComposer(): JSX.Element {
 			aria-label="Log a move"
 			data-testid="composer"
 		>
-			<MoveForm
-				players={players}
-				type={type}
-				onTypeChange={handleTypeChange}
-				fields={fields}
-				onFieldsChange={setFields}
-			/>
+			{!collapsed && (
+				<MoveForm
+					players={players}
+					type={type}
+					onTypeChange={handleTypeChange}
+					fields={fields}
+					onFieldsChange={setFields}
+				/>
+			)}
 
 			<div className={css.actions}>
 				<div className={css.history}>
 					<button
 						type="button"
-						className={css.secondary}
-						onClick={undoLastMove}
-						disabled={moves.length === 0}
-						data-testid="undo"
+						className={css.icon}
+						onClick={() => setCollapsed((c) => !c)}
+						aria-label={collapsed ? "Expand composer" : "Collapse composer"}
+						aria-expanded={!collapsed}
+						data-testid="toggle-composer"
 					>
-						↶ Undo
+						{collapsed ? "▴" : "▾"}
 					</button>
 					<button
 						type="button"
-						className={css.secondary}
+						className={css.icon}
+						onClick={undoLastMove}
+						disabled={moves.length === 0}
+						aria-label="Undo"
+						data-testid="undo"
+					>
+						↶
+					</button>
+					<button
+						type="button"
+						className={css.icon}
 						onClick={redoMove}
 						disabled={redoCount === 0}
+						aria-label="Redo"
 						data-testid="redo"
 					>
-						↷ Redo
+						↷
 					</button>
 				</div>
 				<button
