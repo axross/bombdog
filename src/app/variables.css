@@ -22,10 +22,10 @@
 		--slate-11: oklch(50.2% 0.0136 264.4); /* #60646c */
 		--slate-12: oklch(24.1% 0.0097 248.2); /* #1c2024 */
 
-		/* Accent ramp — plum */
-		--plum-8: oklch(74.1% 0.1202 322.2); /* #cf91d8 */
-		--plum-9: oklch(57.9% 0.1877 322.1); /* #ab4aba */
-		--plum-10: oklch(55.2% 0.1812 322.2); /* #a144af */
+		/* Accent ramp — blue */
+		--blue-8: oklch(73.4% 0.1214 243.1); /* #5eb1ef */
+		--blue-9: oklch(64.9% 0.193 251.8); /* #0090ff */
+		--blue-10: oklch(62.2% 0.1831 251.7); /* #0588f0 */
 
 		/* Blue wire ramp — sky (step 9 is light, so it pairs with dark text) */
 		--sky-3: oklch(96% 0.024 219.7); /* #e1f6fd */
@@ -64,11 +64,11 @@
 		--text: var(--slate-12);
 		--text-muted: var(--slate-11);
 
-		/* Accent (plum). plum-9 is dark enough to pair with white. */
-		--accent: var(--plum-9);
-		--accent-hover: var(--plum-10);
+		/* Accent (blue). blue-9 is dark enough to pair with white. */
+		--accent: var(--blue-9);
+		--accent-hover: var(--blue-10);
 		--accent-contrast: oklch(100% 0 0);
-		--focus-ring: var(--plum-8);
+		--focus-ring: var(--blue-8);
 
 		/* Wire colours. soft = step 3 (rest background), -hover = step 4, border =
 		   step 7, solid (selected) = step 9. Both wire hues use a light step 9, so:
@@ -139,9 +139,9 @@
 		--slate-11: oklch(76.9% 0.0096 258.3); /* #b0b4ba */
 		--slate-12: oklch(94.9% 0.0029 264.5); /* #edeef0 */
 
-		--plum-8: oklch(54.5% 0.1281 321.9); /* #92549c */
-		--plum-9: oklch(57.9% 0.1877 322.1); /* #ab4aba */
-		--plum-10: oklch(61.6% 0.1818 322.3); /* #b658c4 */
+		--blue-8: oklch(54.1% 0.1395 253.2); /* #2870bd */
+		--blue-9: oklch(64.9% 0.193 251.8); /* #0090ff */
+		--blue-10: oklch(68.8% 0.1693 251.4); /* #3b9eff */
 
 		--sky-3: oklch(27.1% 0.0535 251.3); /* #112840 */
 		--sky-4: oklch(32.1% 0.0703 248.7); /* #113555 */
