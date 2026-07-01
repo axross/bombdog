@@ -19,7 +19,7 @@ history that persists in the browser until you reset. Built with
 
 - **Next.js 16** (App Router) + **React 19**
 - **TypeScript** (strict), path alias `@/*` → `src/*`
-- **Radix UI** primitives + **Radix Colors**, styled with **CSS Modules** (no Tailwind)
+- **Radix UI** primitives, styled with **CSS Modules** (`@layer` + `@scope`) and **OKLCH / Display-P3** color tokens (no Tailwind)
 - **zustand** (+ `persist`) with **idb-keyval** for IndexedDB persistence
 - **Biome** — linting + formatting
 - **Vitest** + **Testing Library** — unit tests

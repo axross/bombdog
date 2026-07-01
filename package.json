@@ -16,7 +16,6 @@
 		"test:e2e": "playwright test"
 	},
 	"dependencies": {
-		"@radix-ui/colors": "^3.0.0",
 		"clsx": "^2.1.1",
 		"idb-keyval": "^6.2.6",
 		"next": "16.2.9",

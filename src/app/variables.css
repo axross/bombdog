@@ -1,10 +1,51 @@
-/* Design tokens. Declared at zero specificity via `:where(:root)` so component
-   styles can always override, and placed in the `variables` layer. Colours map
-   to Radix Colors scale steps by their semantic role (see globals.css for the
-   scale imports); dark mode flips automatically because the `.dark` class on
-   <html> re-resolves the underlying scale steps. */
+/* Design tokens, authored in OKLCH. High-chroma solids intentionally sit
+   outside the sRGB gamut, so browsers on wide-gamut (Display P3) screens render
+   them richer while sRGB screens gamut-map them gracefully — no separate P3
+   file needed. Declared at zero specificity via `:where(:root)` so component
+   styles can always override; placed in the `variables` layer.
+
+   Colours are organised as Radix-style perceptual ramps (step 1 = lightest app
+   background … step 12 = highest-contrast text). Dark mode re-declares the ramp
+   steps under `:where(:root.dark)`; the semantic tokens below reference the
+   ramps, so they flip automatically. */
 @layer variables {
 	:where(:root) {
+		/* Neutral ramp — slate (cool grey), hue 264 */
+		--slate-1: oklch(99% 0.004 264);
+		--slate-2: oklch(97.5% 0.005 264);
+		--slate-3: oklch(95.5% 0.007 264);
+		--slate-4: oklch(93% 0.009 264);
+		--slate-6: oklch(88% 0.012 264);
+		--slate-8: oklch(78% 0.016 264);
+		--slate-11: oklch(50% 0.016 264);
+		--slate-12: oklch(24% 0.02 264);
+
+		/* Accent ramp — blue, hue 254 */
+		--blue-4: oklch(92% 0.06 254);
+		--blue-7: oklch(72% 0.12 254);
+		--blue-8: oklch(66% 0.15 254);
+		--blue-9: oklch(58% 0.18 254);
+		--blue-10: oklch(53% 0.18 254);
+
+		/* Yellow wire ramp — amber/gold, hue 82 (intrinsically light) */
+		--amber-4: oklch(93% 0.07 82);
+		--amber-7: oklch(80% 0.11 82);
+		--amber-9: oklch(84% 0.16 82);
+		--amber-12: oklch(40% 0.06 82);
+
+		/* Danger ramp — red, hue 27 */
+		--red-4: oklch(93% 0.05 27);
+		--red-9: oklch(58% 0.2 27);
+		--red-10: oklch(53% 0.2 27);
+		--red-11: oklch(52% 0.19 27);
+
+		/* Success ramp — grass, hue 150 */
+		--grass-4: oklch(93% 0.06 150);
+		--grass-9: oklch(62% 0.15 150);
+		--grass-11: oklch(48% 0.12 150);
+
+		/* ------- Semantic tokens (reference the ramps above) ------- */
+
 		/* Surfaces & text (neutral = slate) */
 		--surface: var(--slate-1);
 		--surface-2: var(--slate-2);
@@ -18,7 +59,7 @@
 		/* Accent (blue) */
 		--accent: var(--blue-9);
 		--accent-hover: var(--blue-10);
-		--accent-contrast: #fff;
+		--accent-contrast: oklch(100% 0 0);
 		--focus-ring: var(--blue-8);
 
 		/* Wire colours */
@@ -58,5 +99,38 @@
 		/* Typography */
 		--font-sans: var(--font-geist-sans), system-ui, sans-serif;
 		--font-mono: var(--font-geist-mono), ui-monospace, monospace;
+	}
+
+	/* Dark scheme: re-declare the ramp steps (semantic tokens inherit). Solid
+	   step-9 colours stay bright in both schemes; backgrounds/borders/text flip. */
+	:where(:root.dark) {
+		--slate-1: oklch(16% 0.006 264);
+		--slate-2: oklch(19% 0.008 264);
+		--slate-3: oklch(23% 0.01 264);
+		--slate-4: oklch(27% 0.012 264);
+		--slate-6: oklch(36% 0.014 264);
+		--slate-8: oklch(48% 0.018 264);
+		--slate-11: oklch(72% 0.014 264);
+		--slate-12: oklch(95% 0.01 264);
+
+		--blue-4: oklch(30% 0.09 254);
+		--blue-7: oklch(45% 0.13 254);
+		--blue-8: oklch(52% 0.15 254);
+		--blue-9: oklch(62% 0.18 254);
+		--blue-10: oklch(67% 0.17 254);
+
+		--amber-4: oklch(32% 0.05 82);
+		--amber-7: oklch(46% 0.08 82);
+		--amber-9: oklch(84% 0.16 82);
+		--amber-12: oklch(90% 0.09 82);
+
+		--red-4: oklch(30% 0.08 27);
+		--red-9: oklch(60% 0.21 27);
+		--red-10: oklch(65% 0.2 27);
+		--red-11: oklch(72% 0.17 27);
+
+		--grass-4: oklch(30% 0.07 150);
+		--grass-9: oklch(64% 0.16 150);
+		--grass-11: oklch(72% 0.13 150);
 	}
 }

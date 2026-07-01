@@ -24,9 +24,12 @@ Apply this skill for any user-facing work in bombdog: React components, pages, l
 ## Styling
 
 Global CSS lives in three files under `src/app/`, imported in this order by `layout.tsx`:
-`layers.css` (declares `@layer variables, base, components;`), `globals.css` (Radix Colors `@import`s +
-resets in `@layer base`), and `variables.css` (design tokens in `@layer variables`, declared at zero
-specificity via `:where(:root)`).
+`layers.css` (declares `@layer variables, base, components;`), `globals.css` (resets in `@layer base`),
+and `variables.css` (design tokens in `@layer variables`, declared at zero specificity via
+`:where(:root)`). Colour tokens are authored in **OKLCH** as Radix-style perceptual ramps (`--slate-*`,
+`--blue-*`, `--amber-*`, `--red-*`, `--grass-*`; step 1 = lightest background … 12 = highest-contrast
+text); high-chroma solids render in Display P3 on capable screens. Dark mode re-declares the ramp steps
+under `:where(:root.dark)`, so the semantic tokens flip automatically.
 
 - MUST style components with CSS Modules (`<component>.module.css`) imported as `import css from "./<component>.module.css"` (the identifier is `css`, not `styles`); there is no CSS framework.
 - MUST wrap every module's rules in `@layer components { @scope (.<root>) { :where(:scope) { … } .child { … } } }`. `:where(:scope)` styles the component root at zero specificity so `className` overrides win.

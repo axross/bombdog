@@ -1,17 +1,6 @@
-/* Radix Colors — light and dark scales. The dark files are scoped to `.dark`,
-   which a small blocking script in the layout toggles to match the OS setting.
-   Because the class lives on <html> (the :root element), overriding a scale
-   step there re-resolves every semantic token in variables.css. */
-@import "@radix-ui/colors/slate.css";
-@import "@radix-ui/colors/slate-dark.css";
-@import "@radix-ui/colors/blue.css";
-@import "@radix-ui/colors/blue-dark.css";
-@import "@radix-ui/colors/amber.css";
-@import "@radix-ui/colors/amber-dark.css";
-@import "@radix-ui/colors/red.css";
-@import "@radix-ui/colors/red-dark.css";
-@import "@radix-ui/colors/grass.css";
-@import "@radix-ui/colors/grass-dark.css";
+/* Colour tokens are authored in OKLCH in variables.css. A small blocking script
+   in the layout toggles the `.dark` class on <html> (the :root element) to match
+   the OS setting, which re-resolves every colour token. */
 
 /* Global resets and element defaults live in the `base` layer at zero
    specificity, so any component style in the `components` layer wins. */
