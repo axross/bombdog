@@ -32,7 +32,11 @@ export function SelectField({
 		// which is labelled via its own aria-label below.
 		<div className={styles.field}>
 			<span className={hideLabel ? styles.srOnly : styles.label}>{label}</span>
-			<Select.Root value={value || undefined} onValueChange={onValueChange}>
+			{/* Pass the empty string (not undefined) so the Select stays controlled:
+			    undefined flips Radix into uncontrolled mode, which desyncs from
+			    state after the field is reset (e.g. after logging a move). Radix
+			    shows the placeholder for an empty-string value. */}
+			<Select.Root value={value} onValueChange={onValueChange}>
 				<Select.Trigger className={styles.trigger} aria-label={label}>
 					<Select.Value placeholder={placeholder} />
 					<Select.Icon className={styles.icon}>▾</Select.Icon>
