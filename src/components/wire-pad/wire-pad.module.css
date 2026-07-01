@@ -1,0 +1,62 @@
+@layer components {
+	@scope (.wirePad) {
+		:where(:scope) {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: var(--space-2);
+
+			@container (width < 22rem) {
+				grid-template-columns: repeat(6, 1fr);
+			}
+		}
+
+		.wire {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-block-size: 44px;
+			padding: 0;
+			font-family: var(--font-mono);
+			font-size: 1rem;
+			font-weight: 600;
+			color: var(--wire-blue);
+			background-color: var(--wire-blue-soft);
+			border: 1px solid var(--wire-blue-border);
+			border-radius: var(--radius-sm);
+
+			&:hover {
+				background-color: color-mix(
+					in srgb,
+					var(--wire-blue-soft) 70%,
+					var(--wire-blue) 30%
+				);
+			}
+
+			&[data-state="on"] {
+				background-color: var(--wire-blue);
+				color: var(--accent-contrast);
+				border-color: var(--wire-blue);
+			}
+		}
+
+		.yellow {
+			color: var(--wire-yellow-text);
+			background-color: var(--wire-yellow-soft);
+			border-color: var(--wire-yellow-border);
+
+			&:hover {
+				background-color: color-mix(
+					in srgb,
+					var(--wire-yellow-soft) 65%,
+					var(--wire-yellow) 35%
+				);
+			}
+
+			&[data-state="on"] {
+				background-color: var(--wire-yellow);
+				color: var(--wire-yellow-text);
+				border-color: var(--wire-yellow);
+			}
+		}
+	}
+}

@@ -1,0 +1,5 @@
+/* Declare the cascade layer order once, up front, so it holds regardless of the
+   order in which the individual stylesheets are imported. Component styles live
+   in `components` (last = wins over base resets); design tokens in `variables`;
+   global resets in `base`. */
+@layer variables, base, components;

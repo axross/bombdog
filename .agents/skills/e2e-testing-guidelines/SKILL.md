@@ -29,3 +29,12 @@ See [conventions.md](./references/conventions.md) for:
 - Writing end-to-end tests
 - Reviewing end-to-end tests
 - Refactoring end-to-end tests
+
+## Project Defaults
+
+- MUST place specs under `e2e/tests/` named `<name>.test.ts`, and reusable helpers under `e2e/helpers/` (Playwright `testDir` is `e2e/tests`).
+- MUST run the suite with `npm run test:e2e`; point at a system Chromium via `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when Playwright's managed browser is unavailable.
+- MUST wrap each meaningful action/assertion group in `test.step("<human sentence>", …)` (steps may nest).
+- MUST locate elements with `getByTestId()`, chained to narrow scope (e.g. `composer(page).getByTestId("log-move")`); use `locator('[data-testid="…"][data-…="…"]')` for entity/state targeting. Reserve `getByRole` for elements without a test id (e.g. Radix-portaled `option`s); avoid `getByText` for control targeting.
+- MUST prefer locator-native, auto-waiting assertions (`toBeVisible`, `toBeEnabled`, `toHaveAttribute`); never use fixed sleeps — use `expect.poll` / `waitForFunction` when no native assertion fits.
+- SHOULD factor repeated navigation/setup into `e2e/helpers/` functions that take `page` and return `Locator`s or perform a named action.

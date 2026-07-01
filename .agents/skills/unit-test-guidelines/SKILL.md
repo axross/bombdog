@@ -69,9 +69,15 @@ These defaults are intentionally short. Follow the linked references for example
 
 **Guidelines:**
 
-- MUST colocate Vitest tests following the project's colocated unit-test file naming convention unless an existing local pattern requires a different location.
-- MUST import the test framework's APIs explicitly if Vitest requires it, rather than relying on implicit global-scope symbols.
-- MUST use the project's chosen test-case function consistently and not mix it with an alternative spelling within the same project.
-- MUST run unit tests through `npm run test:unit` unless investigating a targeted failure.
-- MUST run `npm run format` and `npm run lint` after adding or changing unit tests, plus `npm run typecheck` when the project has a type-check step.
-- SHOULD prefer integration or e2e tests when confidence depends on framework runtime wiring, the data layer, browser behavior, rendering, routing, or user-facing UI.
+- MUST colocate Vitest tests next to their subject as `<name>.spec.ts(x)` (kebab-case).
+- MUST import test APIs explicitly from `vitest` (`describe`, `it`, `expect`, `beforeEach`, …); do not rely on globals.
+- MUST use `it(...)` for scenarios (not `test(...)`), and structure names as a behavior report:
+  - `describe("<subject>")` groups by the exported contract under test.
+  - **Callable subjects** (functions, methods) get a trailing `()`: `describe("buildDraft()")`, `describe("nextActorId()")`.
+  - **React components** are written in angle brackets: `describe("<MoveComposer>")`, `describe("<MoveLog>")`.
+  - **Non-callable** subjects (schemas, type/object contracts) get no suffix.
+  - Nest shared conditions under `describe("when …")`; write `it(...)` names as behavior sentences ("returns…", "rejects…", "clears…"); do not repeat the subject in every `it`.
+- SHOULD prefer manual fakes of the smallest boundary a unit calls over module mocks; do not mock the module under test or neighbouring pure helpers. Keep any mock near the imports it affects.
+- MUST run unit tests through `npm run test` (Vitest) unless investigating a targeted failure.
+- MUST run `npm run format`, `npm run lint`, and `npm run typecheck` after adding or changing unit tests.
+- SHOULD prefer e2e tests when confidence depends on framework runtime wiring, the data layer, browser behavior, rendering, routing, or user-facing UI.

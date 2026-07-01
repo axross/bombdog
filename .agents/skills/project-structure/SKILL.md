@@ -21,9 +21,11 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 
 | Path | Owns |
 |---|---|
-| `src/app/` | App Router routes, layouts, pages, and colocated component/CSS/test files |
-| `src/` | Non-route application code (shared components, lib, utilities) as it grows |
-| `e2e/` | Playwright end-to-end specs (`*.spec.ts`) |
+| `src/app/` | App Router routes, `layout.tsx`, `page.tsx`, and the global CSS trio `layers.css` / `globals.css` / `variables.css` |
+| `src/components/<name>/` | UI components, one kebab-case folder each, colocating `<name>.tsx`, `<name>.module.css`, and `<name>.spec.tsx` |
+| `src/lib/` | Non-UI application code (kebab-case: `tracker-store.ts`, `idb-storage.ts`, `game.ts`, `types.ts`) + colocated `*.spec.ts` |
+| `e2e/tests/` | Playwright end-to-end specs (`*.test.ts`) |
+| `e2e/helpers/` | Reusable e2e helpers (page setup, chained-locator shortcuts) |
 | `public/` | Static assets served from the site root |
 | `.agents/skills/` | Agent-agnostic skill core routed from `AGENTS.md` |
 | `.claude/` | Claude Code harness binding (hooks + settings) |
@@ -31,9 +33,10 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 
 ## File Placement
 
+- MUST use **kebab-case** for all file and folder names (`move-composer/move-composer.tsx`).
 - MUST place routes under `src/app/` following App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route segment folders).
-- MUST colocate a unit test next to its subject as `<name>.test.ts(x)`; Vitest picks up `src/**/*.{test,spec}.{ts,tsx}`.
-- MUST place end-to-end specs under `e2e/` as `<name>.spec.ts`; Playwright's `testDir` is `e2e/`.
-- MUST colocate a component's styles as `<Component>.module.css` and import them as a module.
+- MUST place shared components under `src/components/<name>/` and non-UI modules under `src/lib/`.
+- MUST colocate a **unit** test next to its subject as `<name>.spec.ts(x)`; Vitest picks up `src/**/*.{test,spec}.{ts,tsx}`.
+- MUST place **end-to-end** specs under `e2e/tests/` as `<name>.test.ts` (Playwright `testDir` is `e2e/tests`) and shared e2e helpers under `e2e/helpers/`.
+- MUST colocate a component's styles as `<name>.module.css` and import them as `css`.
 - SHOULD use the `@/` alias for imports from `src/` rather than long relative paths.
-- SHOULD keep shared, non-route code out of `src/app/`; introduce a sibling folder under `src/` (e.g. `src/components`, `src/lib`) when the first reusable module appears, and record the convention here.
