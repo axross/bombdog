@@ -7,6 +7,7 @@ import type {
 	MoveDraft,
 	MoveType,
 	Outcome,
+	RevealedWire,
 	WireValue,
 } from "@/lib/types";
 
@@ -16,6 +17,8 @@ export interface DraftFields {
 	targetId: string;
 	value: WireValue | null;
 	outcome: Outcome | null;
+	/** The wire's true value, chosen when the outcome is a failure. */
+	revealed: RevealedWire | null;
 	equipment: string;
 	note: string;
 }
@@ -26,6 +29,7 @@ export function emptyDraftFields(actorId = ""): DraftFields {
 		targetId: "",
 		value: null,
 		outcome: null,
+		revealed: null,
 		equipment: "",
 		note: "",
 	};
@@ -41,6 +45,7 @@ export function fieldsFromMove(move: Move): DraftFields {
 				targetId: move.targetId,
 				value: move.value,
 				outcome: move.outcome,
+				revealed: move.revealed ?? null,
 			};
 		case "double-detector":
 			return {
@@ -48,6 +53,7 @@ export function fieldsFromMove(move: Move): DraftFields {
 				targetId: move.targetId,
 				value: move.value,
 				outcome: move.outcome,
+				revealed: move.revealed ?? null,
 			};
 		case "solo-cut":
 			return { ...base, value: move.value };
@@ -58,35 +64,44 @@ export function fieldsFromMove(move: Move): DraftFields {
 
 /**
  * Build a validated draft for the given action, or `null` when required fields
- * are missing. Also the single source of truth for "is Log move enabled?".
+ * are missing. Also the single source of truth for "is Log move enabled?". A
+ * failed cut additionally requires the revealed wire value.
  */
 export function buildDraft(type: MoveType, f: DraftFields): MoveDraft | null {
 	switch (type) {
-		case "dual-cut":
+		case "dual-cut": {
+			const { revealed } = f;
 			if (!f.actorId || !f.targetId || f.value === null || f.outcome === null)
 				return null;
+			if (f.outcome === "fail" && revealed === null) return null;
 			return {
 				type,
 				actorId: f.actorId,
 				targetId: f.targetId,
 				value: f.value,
 				outcome: f.outcome,
+				...(f.outcome === "fail" && revealed !== null ? { revealed } : {}),
 			};
+		}
 		case "solo-cut":
 			if (!f.actorId || f.value === null) return null;
 			return { type, actorId: f.actorId, value: f.value };
-		case "double-detector":
+		case "double-detector": {
+			const { revealed } = f;
 			// Detectors indicate blue values only.
 			if (!f.actorId || !f.targetId || f.value === null || f.value === "yellow")
 				return null;
 			if (f.outcome === null) return null;
+			if (f.outcome === "fail" && revealed === null) return null;
 			return {
 				type,
 				actorId: f.actorId,
 				targetId: f.targetId,
 				value: f.value,
 				outcome: f.outcome,
+				...(f.outcome === "fail" && revealed !== null ? { revealed } : {}),
 			};
+		}
 		case "equipment": {
 			const equipment = f.equipment.trim();
 			if (!f.actorId || !equipment) return null;

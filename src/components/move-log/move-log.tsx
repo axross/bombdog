@@ -3,9 +3,15 @@
 import { clsx } from "clsx";
 import { type JSX, useEffect, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
-import { getPlayerName } from "@/lib/game";
+import { formatRevealed, getPlayerName } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
-import type { Move, MoveType, Player, WireValue } from "@/lib/types";
+import type {
+	Move,
+	MoveType,
+	Player,
+	RevealedWire,
+	WireValue,
+} from "@/lib/types";
 import css from "./move-log.module.css";
 
 const KIND_LABEL: Record<MoveType, string> = {
@@ -30,9 +36,12 @@ function WireChip({ value }: { value: WireValue }): JSX.Element {
 
 function OutcomeBadge({
 	outcome,
+	revealed,
 }: {
 	outcome: "success" | "fail";
+	revealed?: RevealedWire;
 }): JSX.Element {
+	const showReveal = outcome === "fail" && revealed !== undefined;
 	return (
 		<span
 			className={clsx(
@@ -41,8 +50,10 @@ function OutcomeBadge({
 			)}
 			data-testid="badge"
 			data-outcome={outcome}
+			data-revealed={showReveal ? formatRevealed(revealed) : undefined}
 		>
 			{outcome === "success" ? "✔ success" : "✕ fail"}
+			{showReveal ? ` (${formatRevealed(revealed)})` : ""}
 		</span>
 	);
 }
@@ -53,14 +64,14 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 			return (
 				<>
 					<WireChip value={move.value} />
-					<OutcomeBadge outcome={move.outcome} />
+					<OutcomeBadge outcome={move.outcome} revealed={move.revealed} />
 				</>
 			);
 		case "double-detector":
 			return (
 				<>
 					<WireChip value={move.value} />
-					<OutcomeBadge outcome={move.outcome} />
+					<OutcomeBadge outcome={move.outcome} revealed={move.revealed} />
 				</>
 			);
 		case "solo-cut":

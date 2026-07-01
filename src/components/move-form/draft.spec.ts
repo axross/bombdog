@@ -25,6 +25,49 @@ describe("buildDraft()", () => {
 		});
 	});
 
+	describe("when a cut fails", () => {
+		const failing = {
+			...emptyDraftFields("a"),
+			targetId: "b",
+			value: 9 as const,
+			outcome: "fail" as const,
+		};
+
+		it("requires the revealed wire value", () => {
+			expect(buildDraft("dual-cut", failing)).toBeNull();
+			expect(buildDraft("dual-cut", { ...failing, revealed: 8 })).toEqual({
+				type: "dual-cut",
+				actorId: "a",
+				targetId: "b",
+				value: 9,
+				outcome: "fail",
+				revealed: 8,
+			});
+		});
+
+		it("accepts the unknown ('?') revealed value", () => {
+			expect(
+				buildDraft("dual-cut", { ...failing, revealed: "unknown" }),
+			).toMatchObject({ outcome: "fail", revealed: "unknown" });
+		});
+
+		it("omits the revealed value on a success", () => {
+			expect(
+				buildDraft("dual-cut", {
+					...failing,
+					outcome: "success",
+					revealed: 8,
+				}),
+			).toEqual({
+				type: "dual-cut",
+				actorId: "a",
+				targetId: "b",
+				value: 9,
+				outcome: "success",
+			});
+		});
+	});
+
 	it("requires only actor and wire for a solo cut, and allows yellow", () => {
 		expect(buildDraft("solo-cut", emptyDraftFields("a"))).toBeNull();
 		expect(
@@ -72,12 +115,14 @@ describe("fieldsFromMove()", () => {
 			targetId: "b",
 			value: 5,
 			outcome: "fail",
+			revealed: 8,
 		};
 		expect(fieldsFromMove(move)).toMatchObject({
 			actorId: "a",
 			targetId: "b",
 			value: 5,
 			outcome: "fail",
+			revealed: 8,
 		});
 	});
 

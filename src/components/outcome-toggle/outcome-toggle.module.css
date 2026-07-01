@@ -4,6 +4,10 @@
 			display: grid;
 			grid-template-columns: repeat(2, 1fr);
 			gap: var(--space-2);
+			min-inline-size: 0;
+			padding: 0;
+			margin: 0;
+			border: 0;
 		}
 
 		.item {
@@ -19,13 +23,13 @@
 			}
 		}
 
-		.success[data-state="on"] {
+		.success[aria-pressed="true"] {
 			background-color: var(--success);
 			color: var(--accent-contrast);
 			border-color: var(--success);
 		}
 
-		.fail[data-state="on"] {
+		.fail[aria-pressed="true"] {
 			background-color: var(--danger);
 			color: var(--accent-contrast);
 			border-color: var(--danger);

@@ -1,0 +1,122 @@
+@layer components {
+	/* Dialog overlay + content are portaled to <body>; each is its own scope. */
+	@scope (.overlay) {
+		:where(:scope) {
+			position: fixed;
+			inset: 0;
+			background-color: color-mix(in oklch, var(--slate-1) 55%, transparent);
+			backdrop-filter: blur(2px);
+			z-index: 40;
+		}
+	}
+
+	@scope (.content) {
+		:where(:scope) {
+			position: fixed;
+			inset-inline-start: 50%;
+			inset-block-end: 0;
+			translate: -50% 0;
+			inline-size: min(100vw, var(--app-max-width));
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+			padding: var(--space-5) var(--space-4)
+				max(var(--space-5), env(safe-area-inset-bottom));
+			background-color: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+			z-index: 50;
+
+			@container (width >= 30rem) {
+				inset-block-start: 50%;
+				inset-block-end: auto;
+				translate: -50% -50%;
+				border-radius: var(--radius-lg);
+			}
+		}
+
+		.title {
+			font-size: 1.1rem;
+			font-weight: 700;
+		}
+
+		.hint {
+			color: var(--text-muted);
+			font-size: 0.9rem;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: var(--space-2);
+
+			@container (width < 22rem) {
+				grid-template-columns: repeat(6, 1fr);
+			}
+		}
+
+		.cell {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-block-size: 44px;
+			font-family: var(--font-mono);
+			font-size: 1rem;
+			font-weight: 600;
+			color: var(--wire-blue);
+			background-color: var(--wire-blue-soft);
+			border: 1px solid var(--wire-blue-border);
+			border-radius: var(--radius-sm);
+
+			&:hover {
+				background-color: color-mix(
+					in oklch,
+					var(--wire-blue-soft) 70%,
+					var(--wire-blue) 30%
+				);
+			}
+
+			&.selected {
+				background-color: var(--wire-blue);
+				color: var(--accent-contrast);
+				border-color: var(--wire-blue);
+			}
+		}
+
+		.yellow {
+			color: var(--wire-yellow-text);
+			background-color: var(--wire-yellow-soft);
+			border-color: var(--wire-yellow-border);
+
+			&:hover {
+				background-color: color-mix(
+					in oklch,
+					var(--wire-yellow-soft) 65%,
+					var(--wire-yellow) 35%
+				);
+			}
+
+			&.selected {
+				background-color: var(--wire-yellow);
+				color: var(--wire-yellow-text);
+				border-color: var(--wire-yellow);
+			}
+		}
+
+		.unknown {
+			color: var(--text);
+			background-color: var(--surface-3);
+			border-color: var(--border);
+
+			&:hover {
+				background-color: var(--surface-hover);
+			}
+
+			&.selected {
+				background-color: var(--text-muted);
+				color: var(--surface);
+				border-color: var(--text-muted);
+			}
+		}
+	}
+}

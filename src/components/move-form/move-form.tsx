@@ -101,8 +101,9 @@ function MoveFields({
 
 			{needsOutcome && (
 				<OutcomeToggle
-					value={fields.outcome}
-					onValueChange={(outcome) => update({ outcome })}
+					outcome={fields.outcome}
+					revealed={fields.revealed}
+					onChange={(outcome, revealed) => update({ outcome, revealed })}
 					data-testid="outcome"
 				/>
 			)}

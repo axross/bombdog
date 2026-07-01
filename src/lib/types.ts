@@ -26,6 +26,12 @@ export type BlueWireValue = Exclude<WireValue, "yellow">;
 /** Whether a guess-based action succeeded or failed. */
 export type Outcome = "success" | "fail";
 
+/**
+ * The wire's true value, revealed when a cut fails: a real wire value or
+ * "unknown" ("?", used by some special rules where the value stays hidden).
+ */
+export type RevealedWire = WireValue | "unknown";
+
 export type MoveType =
 	| "dual-cut"
 	| "solo-cut"
@@ -56,6 +62,8 @@ export interface DualCutMove extends BaseMove {
 	targetId: string;
 	value: WireValue;
 	outcome: Outcome;
+	/** The wire's true value, recorded when the cut failed. */
+	revealed?: RevealedWire;
 }
 
 /** Solo cut: actor cuts the last copies of a value from their own hand; always safe. */
@@ -70,6 +78,8 @@ export interface DoubleDetectorMove extends BaseMove {
 	targetId: string;
 	value: BlueWireValue;
 	outcome: Outcome;
+	/** The wire's true value, recorded when the detector failed. */
+	revealed?: RevealedWire;
 }
 
 /** Equipment: actor uses a shared single-use tool. */
@@ -97,6 +107,7 @@ export type MoveDraft =
 			targetId: string;
 			value: WireValue;
 			outcome: Outcome;
+			revealed?: RevealedWire;
 	  }
 	| { type: "solo-cut"; actorId: string; value: WireValue }
 	| {
@@ -105,6 +116,7 @@ export type MoveDraft =
 			targetId: string;
 			value: BlueWireValue;
 			outcome: Outcome;
+			revealed?: RevealedWire;
 	  }
 	| { type: "equipment"; actorId: string; equipment: string; note?: string };
 

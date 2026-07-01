@@ -33,15 +33,16 @@ test("logs, edits, undoes/redoes, persists across reload, and resets", async ({
 		);
 	});
 
-	await test.step("Edit move #1: flip the outcome to fail", async () => {
+	await test.step("Edit move #1: flip to fail and record actual wire 8", async () => {
 		await moveRow(page, 1).getByTestId("edit").click();
 		const editor = page.getByTestId("move-editor");
 		await editor.getByTestId("outcome-fail").click();
+		// The fail opens a dialog to pick the wire's actual value.
+		await page.getByTestId("reveal-dialog").getByTestId("reveal-8").click();
 		await editor.getByTestId("save").click();
-		await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
-			"data-outcome",
-			"fail",
-		);
+		const badge = moveRow(page, 1).getByTestId("badge");
+		await expect(badge).toHaveAttribute("data-outcome", "fail");
+		await expect(badge).toHaveAttribute("data-revealed", "8");
 	});
 
 	await test.step("Log a second move (solo cut, wire 5)", async () => {
@@ -67,10 +68,9 @@ test("logs, edits, undoes/redoes, persists across reload, and resets", async ({
 	await test.step("Reload: state must persist from IndexedDB", async () => {
 		await page.reload();
 		await expect(moveRow(page, 1)).toBeVisible();
-		await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
-			"data-outcome",
-			"fail",
-		);
+		const badge = moveRow(page, 1).getByTestId("badge");
+		await expect(badge).toHaveAttribute("data-outcome", "fail");
+		await expect(badge).toHaveAttribute("data-revealed", "8");
 	});
 
 	await test.step("Reset clears everything and returns to setup", async () => {
@@ -108,5 +108,39 @@ test("re-enables Log move for the next dual cut without re-toggling target", asy
 		await expect(composer(page).getByTestId("log-move")).toBeEnabled();
 		await composer(page).getByTestId("log-move").click();
 		await expect(moveRow(page, 2)).toBeVisible();
+	});
+});
+
+// Failing a cut records the wire's actual value via a popup.
+test("records the revealed wire when a cut fails", async ({ page }) => {
+	await test.step("Start tracking", async () => {
+		await startTracking(page);
+	});
+
+	await test.step("Log a dual cut and mark it failed", async () => {
+		await pickTarget(page, "Player 2");
+		await composer(page).getByTestId("wire-9").click();
+		// Fail is disabled for logging until the actual wire is chosen.
+		await expect(composer(page).getByTestId("log-move")).toBeDisabled();
+		await composer(page).getByTestId("outcome-fail").click();
+	});
+
+	await test.step("Pick the actual wire (Yellow) in the popup", async () => {
+		await page
+			.getByTestId("reveal-dialog")
+			.getByTestId("reveal-yellow")
+			.click();
+		// The dialog closes and the choice shows on the Fail button.
+		await expect(page.getByTestId("reveal-dialog")).toBeHidden();
+		await expect(composer(page).getByTestId("outcome-fail")).toContainText(
+			"(Y)",
+		);
+	});
+
+	await test.step("Log the move and see the revealed value in the history", async () => {
+		await composer(page).getByTestId("log-move").click();
+		const badge = moveRow(page, 1).getByTestId("badge");
+		await expect(badge).toHaveAttribute("data-outcome", "fail");
+		await expect(badge).toHaveAttribute("data-revealed", "Y");
 	});
 });

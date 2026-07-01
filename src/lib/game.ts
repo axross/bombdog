@@ -1,7 +1,7 @@
 // Pure, UI-agnostic helpers for the tracker. Kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
-import type { Move, Player, WireValue } from "./types";
+import type { Move, Player, RevealedWire, WireValue } from "./types";
 
 /** Resolve a player's display name, tolerant of unknown ids. */
 export function getPlayerName(players: Player[], id: string): string {
@@ -11,6 +11,13 @@ export function getPlayerName(players: Player[], id: string): string {
 /** Human-readable label for a wire value ("9" or "Yellow"). */
 export function formatWire(value: WireValue): string {
 	return value === "yellow" ? "Yellow" : String(value);
+}
+
+/** Compact label for a revealed wire ("9", "Y", or "?"). */
+export function formatRevealed(value: RevealedWire): string {
+	if (value === "unknown") return "?";
+	if (value === "yellow") return "Y";
+	return String(value);
 }
 
 /**

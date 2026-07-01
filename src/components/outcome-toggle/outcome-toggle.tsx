@@ -1,50 +1,67 @@
 "use client";
 
 import { clsx } from "clsx";
-import { ToggleGroup } from "radix-ui";
-import type { JSX } from "react";
-import type { Outcome } from "@/lib/types";
+import { type JSX, useState } from "react";
+import { RevealDialog } from "@/components/reveal-dialog/reveal-dialog";
+import { formatRevealed } from "@/lib/game";
+import type { Outcome, RevealedWire } from "@/lib/types";
 import css from "./outcome-toggle.module.css";
 
 interface OutcomeToggleProps {
-	value: Outcome | null;
-	onValueChange: (value: Outcome) => void;
+	outcome: Outcome | null;
+	revealed: RevealedWire | null;
+	/** Sets both at once: success clears the revealed value; fail records it. */
+	onChange: (outcome: Outcome, revealed: RevealedWire | null) => void;
 	className?: string;
 	"data-testid"?: string;
 }
 
-/** Success / Fail single-select. */
+/**
+ * Success / Fail control. Choosing Fail opens a dialog to record the wire's
+ * actual value, which is then shown on the button, e.g. "✕ Fail (8)".
+ */
 export function OutcomeToggle({
-	value,
-	onValueChange,
+	outcome,
+	revealed,
+	onChange,
 	className,
 	"data-testid": dataTestId,
 }: OutcomeToggleProps): JSX.Element {
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const isFail = outcome === "fail";
+
 	return (
-		<ToggleGroup.Root
-			type="single"
-			value={value ?? ""}
-			onValueChange={(next) => {
-				if (next) onValueChange(next as Outcome);
-			}}
+		<fieldset
 			className={clsx(css.group, className)}
 			aria-label="Outcome"
 			data-testid={dataTestId}
 		>
-			<ToggleGroup.Item
-				value="success"
+			<button
+				type="button"
 				className={clsx(css.item, css.success)}
+				aria-pressed={outcome === "success"}
+				onClick={() => onChange("success", null)}
 				data-testid="outcome-success"
 			>
 				✔ Success
-			</ToggleGroup.Item>
-			<ToggleGroup.Item
-				value="fail"
+			</button>
+			<button
+				type="button"
 				className={clsx(css.item, css.fail)}
+				aria-pressed={isFail}
+				onClick={() => setDialogOpen(true)}
 				data-testid="outcome-fail"
 			>
 				✕ Fail
-			</ToggleGroup.Item>
-		</ToggleGroup.Root>
+				{isFail && revealed !== null ? ` (${formatRevealed(revealed)})` : ""}
+			</button>
+
+			<RevealDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				current={revealed}
+				onSelect={(value) => onChange("fail", value)}
+			/>
+		</fieldset>
 	);
 }
