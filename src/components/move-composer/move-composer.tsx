@@ -1,5 +1,6 @@
 "use client";
 
+import { clsx } from "clsx";
 import { ChevronDown, ChevronUp, Redo2, Undo2 } from "lucide-react";
 import { type JSX, useState } from "react";
 import {
@@ -63,15 +64,23 @@ export function MoveComposer(): JSX.Element {
 			aria-label="Log a move"
 			data-testid="composer"
 		>
-			{!collapsed && (
-				<MoveForm
-					players={players}
-					type={type}
-					onTypeChange={handleTypeChange}
-					fields={fields}
-					onFieldsChange={setFields}
-				/>
-			)}
+			{/* Kept mounted and animated (grid-rows 1fr↔0fr) so the composer height
+			    interpolates and the flex-sibling move log grows/shrinks in step.
+			    `inert` removes the collapsed form from tab order + a11y tree. */}
+			<div
+				className={clsx(css.collapsible, collapsed && css.collapsed)}
+				inert={collapsed}
+			>
+				<div className={css.collapsibleInner}>
+					<MoveForm
+						players={players}
+						type={type}
+						onTypeChange={handleTypeChange}
+						fields={fields}
+						onFieldsChange={setFields}
+					/>
+				</div>
+			</div>
 
 			<div className={css.actions}>
 				<div className={css.history}>

@@ -3,11 +3,48 @@
 		:where(:scope) {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-4);
 			padding: var(--space-4);
 			padding-block-end: max(var(--space-4), env(safe-area-inset-bottom));
 			background-color: var(--surface-2);
 			border-block-start: 1px solid var(--border);
+		}
+
+		/* Collapsible form region. Animating grid-template-rows between 1fr and
+		   0fr smoothly interpolates the composer's height; the move log (a
+		   flex-sibling with flex: 1) expands to fill the freed space in step. */
+		.collapsible {
+			display: grid;
+			grid-template-rows: 1fr;
+			transition: grid-template-rows var(--motion) var(--ease-emphasized);
+		}
+
+		.collapsed {
+			grid-template-rows: 0fr;
+		}
+
+		.collapsibleInner {
+			min-block-size: 0;
+			overflow: hidden;
+			/* Owns the gap to the actions row so the spacing collapses too. */
+			padding-block-end: var(--space-4);
+			/* Stays visible while the height animates, then hides so the clipped
+			   inputs leave the a11y tree and stop being focusable/measurable. */
+			transition: visibility 0s;
+		}
+
+		.collapsed .collapsibleInner {
+			visibility: hidden;
+			transition-delay: var(--motion);
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.collapsible {
+				transition: none;
+			}
+
+			.collapsed .collapsibleInner {
+				transition-delay: 0s;
+			}
 		}
 
 		.actions {

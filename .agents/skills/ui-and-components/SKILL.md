@@ -39,6 +39,16 @@ under `:where(:root.dark)`, so the semantic tokens flip automatically.
 - MUST draw color, spacing, radius, and font values from the tokens in `variables.css`; do not hard-code them. Prefer logical properties (`margin-block`, `padding-inline`, `min-block-size`, `inset-inline-*`) and `@container` queries over `@media` for width-driven layout (`body` is a container).
 - MUST NOT import another component's CSS Module.
 
+## Motion and Transitions
+
+Transitions exist to make state changes legible (a panel expanding, a sheet entering), not for decoration.
+
+- MUST draw timing from the motion tokens in `variables.css` (`--motion`, `--motion-fast`, `--ease-standard`, `--ease-emphasized`); do not hard-code durations or easings.
+- MUST honour `@media (prefers-reduced-motion: reduce)` by disabling or neutralising the transition/animation in the same module.
+- SHOULD animate a collapsing/expanding region by transitioning a wrapper's `grid-template-rows` between `1fr` and `0fr` (inner element `overflow: hidden; min-block-size: 0`) so flex siblings reflow in step; keep the region mounted and mark it `inert` while collapsed. Delay a `visibility: hidden` on the inner (via `transition-delay: var(--motion)`) so clipped controls leave the a11y tree and stop being focusable once collapsed.
+- SHOULD animate Radix-portaled surfaces (Dialog/AlertDialog `Content`/`Overlay`) with `@keyframes` keyed off `&[data-state="open"]` / `&[data-state="closed"]` — Radix keeps the node mounted for the exit animation. Bottom-sheet content slides via the `translate` property (matching the centring `translate`, e.g. `-50% 100%` → `-50% 0`); switch to a fade/zoom in the wide `@container` branch.
+- MUST define such `@keyframes` inside the module's `@layer components` block: CSS Modules scope keyframe names per file, so `animation: <name>` resolves to the local definition (verified under Turbopack).
+
 ## Assets and Fonts
 
 - SHOULD use `next/image` for raster images so sizing, lazy-loading, and optimization are handled; provide meaningful `alt` text.
