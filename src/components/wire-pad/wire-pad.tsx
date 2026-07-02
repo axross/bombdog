@@ -78,6 +78,14 @@ export function WirePad(props: WirePadProps): JSX.Element {
 		</>
 	);
 
+	// Shared across both selection modes; only `type`/`value`/`onValueChange`
+	// differ, so the mode-specific Root supplies just those three.
+	const rootProps = {
+		className: css.pad,
+		"aria-label": label ?? "Wire value",
+		"data-testid": dataTestId,
+	};
+
 	return (
 		<div className={clsx(css.wirePad, className)}>
 			{label && <span className={css.label}>{label}</span>}
@@ -90,9 +98,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 						// Cap the selection: picking a wire beyond `max` drops the oldest.
 						props.onValuesChange(props.max ? parsed.slice(-props.max) : parsed);
 					}}
-					className={css.pad}
-					aria-label={label ?? "Wire value"}
-					data-testid={dataTestId}
+					{...rootProps}
 				>
 					{buttons}
 				</ToggleGroup.Root>
@@ -103,9 +109,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					onValueChange={(next) => {
 						if (next) props.onValueChange(fromKey(next));
 					}}
-					className={css.pad}
-					aria-label={label ?? "Wire value"}
-					data-testid={dataTestId}
+					{...rootProps}
 				>
 					{buttons}
 				</ToggleGroup.Root>

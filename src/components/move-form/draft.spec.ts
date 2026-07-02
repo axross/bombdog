@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
+	BlueWireValue,
 	DetectorMove,
 	DualCutMove,
 	EquipmentMove,
 	SoloCutMove,
-	WireValue,
 } from "@/lib/types";
 import {
 	buildDraft,
@@ -127,14 +127,14 @@ describe("buildDraft()", () => {
 		).toBeNull();
 	});
 
-	it("rejects yellow for a detector (blue only)", () => {
+	it("builds a detector draft from a blue value", () => {
+		// `values` is typed BlueWireValue[], so yellow can't be constructed here —
+		// the blue-only rule is a compile-time guarantee, not a runtime check.
 		const f = {
 			...emptyDraftFields("a"),
 			targetId: "b",
 			outcome: "success" as const,
 		};
-		// Yellow is filtered out, leaving too few blue values.
-		expect(buildDraft("detector", { ...f, values: ["yellow"] })).toBeNull();
 		expect(buildDraft("detector", { ...f, values: [4] })).toMatchObject({
 			type: "detector",
 			detector: "double",
@@ -154,7 +154,7 @@ describe("buildDraft()", () => {
 		const failing = {
 			...emptyDraftFields("a"),
 			targetId: "b",
-			values: [4] as WireValue[],
+			values: [4] as BlueWireValue[],
 			outcome: "fail" as const,
 		};
 		expect(buildDraft("detector", failing)).toBeNull();

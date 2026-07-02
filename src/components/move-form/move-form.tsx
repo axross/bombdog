@@ -11,6 +11,7 @@ import {
 import { WirePad } from "@/components/wire-pad/wire-pad";
 import { targetPlayerOrder } from "@/lib/game";
 import {
+	type BlueWireValue,
 	DETECTOR_OPTIONS,
 	type DetectorKind,
 	detectorOption,
@@ -114,7 +115,7 @@ function MoveFields({
 				// Detector points at a player's whole stand, so the same picker fits.
 				<PlayerPicker
 					label={
-						isDetector && fields.detector === "super"
+						isDetector && detector.targetsWholeStand
 							? "Target (whole stand)"
 							: "Target"
 					}
@@ -140,7 +141,12 @@ function MoveFields({
 					multiple
 					max={detector.valueCount}
 					values={fields.values}
-					onValuesChange={(values) => update({ values })}
+					onValuesChange={(values) =>
+						// The pad is blue-only, so this narrows WireValue[] → BlueWireValue[].
+						update({
+							values: values.filter((v): v is BlueWireValue => v !== "yellow"),
+						})
+					}
 					blueOnly
 					data-testid="wire-pad"
 				/>

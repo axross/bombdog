@@ -199,6 +199,11 @@ export interface DetectorOption {
 	label: string;
 	/** How many distinct blue values the actor names. */
 	valueCount: DetectorValueCount;
+	/**
+	 * Whether the card targets a player's whole stand (the Super Detector) rather
+	 * than specific wires. Drives the composer's target label.
+	 */
+	targetsWholeStand: boolean;
 }
 
 /**
@@ -207,10 +212,30 @@ export interface DetectorOption {
  * the rest are equipment whose unlock number is shown in the label.
  */
 export const DETECTOR_OPTIONS: DetectorOption[] = [
-	{ kind: "double", label: "Double Detector", valueCount: 1 },
-	{ kind: "triple", label: "Triple Detector (3)", valueCount: 1 },
-	{ kind: "super", label: "Super Detector (5)", valueCount: 1 },
-	{ kind: "x-or-y-ray", label: "X or Y Ray (10)", valueCount: 2 },
+	{
+		kind: "double",
+		label: "Double Detector",
+		valueCount: 1,
+		targetsWholeStand: false,
+	},
+	{
+		kind: "triple",
+		label: "Triple Detector (3)",
+		valueCount: 1,
+		targetsWholeStand: false,
+	},
+	{
+		kind: "super",
+		label: "Super Detector (5)",
+		valueCount: 1,
+		targetsWholeStand: true,
+	},
+	{
+		kind: "x-or-y-ray",
+		label: "X or Y Ray (10)",
+		valueCount: 2,
+		targetsWholeStand: false,
+	},
 ];
 
 /**
