@@ -231,9 +231,10 @@ describe("buildDraft()", () => {
 });
 
 describe("detectorValues()", () => {
-	it("keeps a single value for one-value detectors", () => {
-		expect(detectorValues([4, 9], "triple")).toEqual([4]);
-		expect(detectorValues([4, 9], "super")).toEqual([4]);
+	it("keeps the most recent value for one-value detectors", () => {
+		// Downgrading to a one-value card drops the oldest pick, matching the pad.
+		expect(detectorValues([4, 9], "triple")).toEqual([9]);
+		expect(detectorValues([4, 9], "super")).toEqual([9]);
 	});
 
 	it("keeps up to two values for the X or Y Ray", () => {

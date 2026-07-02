@@ -47,13 +47,14 @@ export function emptyDraftFields(actorId = ""): DraftFields {
 /**
  * Trim a value selection to what the given detector card can name (one value,
  * or two for the X or Y Ray). Used when switching detector cards so a leftover
- * second value doesn't linger on a one-value card.
+ * second value doesn't linger on a one-value card. Keeps the most recent picks,
+ * matching the wire pad's own cap (which drops the oldest when it overflows).
  */
 export function detectorValues(
 	values: WireValue[],
 	kind: DetectorKind,
 ): WireValue[] {
-	return values.slice(0, detectorOption(kind).valueCount);
+	return values.slice(-detectorOption(kind).valueCount);
 }
 
 /** Seed the form from an existing move (for editing). */
