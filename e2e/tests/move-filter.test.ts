@@ -9,6 +9,7 @@ import {
 	openFilter,
 	startTracking,
 } from "../helpers/tracker";
+import { scn } from "../scenarios";
 
 // move-log filter: a header button opens a dialog that hides move types
 // (successful dual cuts and/or solo cuts) from the displayed history without
@@ -35,9 +36,9 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 4)).toBeVisible();
 	});
 
-	test("excludes successful dual cuts while keeping failed ones", async ({
-		page,
-	}) => {
+	test("excludes successful dual cuts while keeping failed ones", {
+		tag: scn("history.filter.exclude-dual-cut"),
+	}, async ({ page }) => {
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-exclude-dual-cut").click();
 		await filterDialog(page).getByTestId("filter-done").click();
@@ -49,7 +50,9 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 3)).toBeVisible();
 	});
 
-	test("excludes solo cuts", async ({ page }) => {
+	test("excludes solo cuts", {
+		tag: scn("history.filter.exclude-solo-cut"),
+	}, async ({ page }) => {
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-exclude-solo-cut").click();
 		await filterDialog(page).getByTestId("filter-done").click();
@@ -59,9 +62,9 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 2)).toBeVisible();
 	});
 
-	test("the shortcut excludes both, and reset restores everything", async ({
-		page,
-	}) => {
+	test("the shortcut excludes both, and reset restores everything", {
+		tag: [scn("history.filter.exclude-both"), scn("history.filter.reset")],
+	}, async ({ page }) => {
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-exclude-both").click();
 		await filterDialog(page).getByTestId("filter-done").click();

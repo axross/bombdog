@@ -9,14 +9,15 @@ import {
 	setOutcome,
 	startTracking,
 } from "../helpers/tracker";
+import { scn } from "../scenarios";
 
 // regression: logging a move must reset the whole composer — including the
 // target segmented control — so the next move can be entered and logged without
 // re-toggling any field. (a controlled-Select bug once left Log move disabled
 // until the target was re-tapped.)
-test("re-enables Log move for the next dual cut without re-toggling target", async ({
-	page,
-}) => {
+test("re-enables Log move for the next dual cut without re-toggling target", {
+	tag: scn("session.log-consecutive"),
+}, async ({ page }) => {
 	await startTracking(page);
 
 	await test.step("Log a first dual cut (Player 1 → Player 2)", async () => {

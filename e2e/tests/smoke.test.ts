@@ -8,27 +8,32 @@ import {
 	startTracking,
 	startTrackingWith,
 } from "../helpers/tracker";
+import { scn } from "../scenarios";
 
 // smoke tests: a handful of shallow checks that the app boots and its core
 // loop (set up → log → persist → reset) is wired end to end. they are the
 // first gate — if any fails, deeper happy-path tests aren't worth running.
 
 test.describe("smoke", () => {
-	test("boots to the setup screen", async ({ page }) => {
+	test("boots to the setup screen", { tag: scn("setup.boots") }, async ({
+		page,
+	}) => {
 		await gotoApp(page);
 		await expect(page.getByRole("heading", { name: "Bombdog" })).toBeVisible();
 		await expect(page.getByTestId("setup").getByTestId("start")).toBeVisible();
 	});
 
-	test("starting a game opens the tracker with an empty history", async ({
-		page,
-	}) => {
+	test("starting a game opens the tracker with an empty history", {
+		tag: scn("setup.default-start"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		await expect(composer(page)).toBeVisible();
 		await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 	});
 
-	test("logging a move adds it to the history", async ({ page }) => {
+	test("logging a move adds it to the history", {
+		tag: scn("history.shows-moves"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, {
 			target: "Player 2",
@@ -38,7 +43,9 @@ test.describe("smoke", () => {
 		await expect(moveRow(page, 1)).toBeVisible();
 	});
 
-	test("logged state survives a reload", async ({ page }) => {
+	test("logged state survives a reload", {
+		tag: scn("persist.reload"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, {
 			target: "Player 2",
@@ -52,9 +59,9 @@ test.describe("smoke", () => {
 		await expect(moveRow(page, 1)).toBeVisible();
 	});
 
-	test("reset returns to the setup screen with the roster carried over", async ({
-		page,
-	}) => {
+	test("reset returns to the setup screen with the roster carried over", {
+		tag: scn("lifecycle.reset"),
+	}, async ({ page }) => {
 		await startTrackingWith(page, {
 			names: ["Alice", "Bob", "Carol"],
 			captainIndex: 1,

@@ -12,6 +12,7 @@ import {
 	startTracking,
 	startTrackingWith,
 } from "../helpers/tracker";
+import { scn } from "../scenarios";
 
 // happy-path coverage of the main use cases a player runs through a session:
 // configuring a roster, logging each of the four action types, watching the
@@ -19,16 +20,22 @@ import {
 // composer.
 
 test.describe("setup", () => {
-	test("configures a two-player game (the minimum)", async ({ page }) => {
+	test("configures a two-player game (the minimum)", {
+		tag: scn("setup.min-players"),
+	}, async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
 		await expect(composer(page)).toBeVisible();
 		// the Captain (seat 1) takes the first turn, so the composer suggests Uno.
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
 
-	test("configures five players with names and a chosen Captain", async ({
-		page,
-	}) => {
+	test("configures five players with names and a chosen Captain", {
+		tag: [
+			scn("setup.max-players"),
+			scn("setup.custom-names"),
+			scn("setup.choose-captain"),
+		],
+	}, async ({ page }) => {
 		await startTrackingWith(page, {
 			names: ["Ada", "Bo", "Cy", "Di", "Ed"],
 			captainIndex: 2,
@@ -43,7 +50,9 @@ test.describe("setup", () => {
 });
 
 test.describe("logging each action type", () => {
-	test("dual cut — success", async ({ page }) => {
+	test("dual cut — success", { tag: scn("log.dual-cut.success") }, async ({
+		page,
+	}) => {
 		await startTracking(page);
 		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
 
@@ -57,7 +66,9 @@ test.describe("logging each action type", () => {
 		await expect(row.getByRole("img", { name: "Wire 9" })).toBeVisible();
 	});
 
-	test("dual cut — fail records the actual wire", async ({ page }) => {
+	test("dual cut — fail records the actual wire", {
+		tag: scn("log.dual-cut.fail-reveal"),
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Compose the cut and verify Log move is blocked until the reveal", async () => {
@@ -86,7 +97,9 @@ test.describe("logging each action type", () => {
 		});
 	});
 
-	test("solo cut — no target or outcome", async ({ page }) => {
+	test("solo cut — no target or outcome", { tag: scn("log.solo-cut") }, async ({
+		page,
+	}) => {
 		await startTracking(page);
 		await logSoloCut(page, { wire: 5 });
 
@@ -97,7 +110,9 @@ test.describe("logging each action type", () => {
 		await expect(row.getByTestId("badge")).toHaveCount(0);
 	});
 
-	test('cut — logs a "?" (unknown) wire value', async ({ page }) => {
+	test('cut — logs a "?" (unknown) wire value', {
+		tag: scn("log.unknown-wire"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		// the cut pads offer "?" for a wire whose value is unknown.
 		await logSoloCut(page, { wire: "unknown" });
@@ -109,7 +124,9 @@ test.describe("logging each action type", () => {
 		);
 	});
 
-	test("double detector — targeted, blue wires only", async ({ page }) => {
+	test("double detector — targeted, blue wires only", {
+		tag: scn("log.double-detector"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
 		// detectors read blue values only: no Yellow option is offered.
@@ -130,7 +147,9 @@ test.describe("logging each action type", () => {
 		);
 	});
 
-	test("X or Y Ray — names two values against one wire", async ({ page }) => {
+	test("X or Y Ray — names two values against one wire", {
+		tag: scn("log.detector.xy-ray"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDetector(page, {
 			card: "X or Y Ray (10)",
@@ -146,7 +165,9 @@ test.describe("logging each action type", () => {
 		await expect(row.getByRole("img", { name: "Wire 11" })).toBeVisible();
 	});
 
-	test("super detector — points at a whole stand", async ({ page }) => {
+	test("super detector — points at a whole stand", {
+		tag: scn("log.detector.super"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
 
@@ -164,7 +185,9 @@ test.describe("logging each action type", () => {
 		await expect(badge).toHaveAttribute("data-revealed", "2");
 	});
 
-	test("equipment — with a note", async ({ page }) => {
+	test("equipment — with a note", { tag: scn("log.equipment") }, async ({
+		page,
+	}) => {
 		await startTracking(page);
 		await logEquipment(page, {
 			equipment: "Rewinder (6)",
@@ -178,9 +201,9 @@ test.describe("logging each action type", () => {
 });
 
 test.describe("session flow", () => {
-	test("the composer's suggested actor advances to the next seat after a move", async ({
-		page,
-	}) => {
+	test("the composer's suggested actor advances to the next seat after a move", {
+		tag: scn("session.turn-advance"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) starts, so the composer suggests Player 1.
 		await expect(composer(page).getByTestId("acting")).toContainText(
@@ -194,9 +217,9 @@ test.describe("session flow", () => {
 		);
 	});
 
-	test("logging equipment keeps the turn on the same actor", async ({
-		page,
-	}) => {
+	test("logging equipment keeps the turn on the same actor", {
+		tag: scn("session.equipment-no-advance"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) starts a cut, passing the turn to Player 2.
 		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
@@ -217,9 +240,9 @@ test.describe("session flow", () => {
 		);
 	});
 
-	test("off-turn equipment returns the suggestion to the turn-holder", async ({
-		page,
-	}) => {
+	test("off-turn equipment returns the suggestion to the turn-holder", {
+		tag: scn("session.off-turn-equipment"),
+	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) cuts, so the turn belongs to Player 2.
 		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
@@ -236,9 +259,9 @@ test.describe("session flow", () => {
 		);
 	});
 
-	test("undo and redo walk the move stack; a new move clears redo", async ({
-		page,
-	}) => {
+	test("undo and redo walk the move stack; a new move clears redo", {
+		tag: scn("session.undo-redo"),
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Log two moves", async () => {
@@ -270,7 +293,9 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("edits a logged move in place", async ({ page }) => {
+	test("edits a logged move in place", {
+		tag: scn("session.edit-move"),
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Log a successful dual cut", async () => {
@@ -298,7 +323,9 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("collapses and expands the composer", async ({ page }) => {
+	test("collapses and expands the composer", {
+		tag: scn("session.collapse"),
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Collapse and verify the form and Log move hide while undo/redo stay", async () => {
@@ -316,7 +343,9 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("persists the full session across a reload", async ({ page }) => {
+	test("persists the full session across a reload", {
+		tag: [scn("persist.reload"), scn("log.dual-cut.fail-yellow")],
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Log a failed cut and a solo cut", async () => {
