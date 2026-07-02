@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, test } from "@playwright/test";
 import {
 	composer,
+	gotoApp,
 	logDetector,
 	logDualCut,
 	logEquipment,
@@ -12,6 +13,17 @@ import {
 	startTracking,
 	startTrackingWith,
 } from "../helpers/tracker";
+
+/**
+ * The substring currently selected inside a text input. Empty string when the
+ * selection is collapsed to a caret. Auto-waited via `expect.poll` at call
+ * sites so it settles after the focus/click that triggers the selection.
+ */
+function selectedText(input: Locator): Promise<string> {
+	return input.evaluate((el: HTMLInputElement) =>
+		el.value.slice(el.selectionStart ?? 0, el.selectionEnd ?? 0),
+	);
+}
 
 // happy-path coverage of the main use cases a player runs through a session:
 // configuring a roster, logging each of the four action types, watching the
@@ -26,6 +38,42 @@ test.describe("setup", () => {
 		await expect(composer(page)).toBeVisible();
 		// the Captain (seat 1) takes the first turn, so the composer suggests Uno.
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
+	});
+
+	test("selects a seat name when it gains keyboard focus", {
+		tag: [
+			"@scenario:setup.name-select-on-focus",
+			"@area:setup",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
+		await gotoApp(page);
+		const name = page
+			.getByTestId("setup")
+			.getByRole("textbox", { name: "Name of player 1" });
+
+		// focusing without a mouse (the tab path) selects the whole default so the
+		// next keystroke replaces it.
+		await name.focus();
+		await expect.poll(() => selectedText(name)).toBe("Player 1");
+	});
+
+	test("selects a seat name when it is clicked", {
+		tag: [
+			"@scenario:setup.name-select-on-focus",
+			"@area:setup",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
+		await gotoApp(page);
+		const name = page
+			.getByTestId("setup")
+			.getByRole("textbox", { name: "Name of player 2" });
+
+		// clicking into a seat focuses it, and the onFocus handler selects the
+		// whole value — so mouse users can retype from scratch as well.
+		await name.click();
+		await expect.poll(() => selectedText(name)).toBe("Player 2");
 	});
 
 	test("configures five players with names and a chosen Captain", {
