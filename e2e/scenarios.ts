@@ -272,33 +272,22 @@ export const SCENARIOS = [
 ] as const satisfies readonly Scenario[];
 
 /**
- * The set of catalog ids as a literal union, so a tag referencing a
- * non-existent scenario is a compile error rather than a silent miss.
+ * Tag prefixes, shared by the tests (as plain-string tags) and the reporter.
+ *
+ * Tests are tagged with plain string literals — there are no builder helpers.
+ * A typo is caught at run time by the reporter, which fails the run on any
+ * `@scenario:` id not in the catalog and on any `@area:`/`@priority:` facet tag
+ * that disagrees with the catalog for the scenario(s) a test covers:
+ *
+ * ```ts
+ * test("...", {
+ *   tag: ["@scenario:log.solo-cut", "@area:logging", "@priority:must"],
+ * }, fn);
+ * ```
+ *
+ * The fast pre-gate subset additionally carries the plain `@smoke` selection
+ * facet (not tied to a scenario), so `--grep @smoke` runs just those tests.
  */
-export type ScenarioId = (typeof SCENARIOS)[number]["id"];
-
-/** Tag prefixes, shared by the catalog helpers and the reporter. */
 export const SCENARIO_TAG_PREFIX = "@scenario:";
 export const AREA_TAG_PREFIX = "@area:";
 export const PRIORITY_TAG_PREFIX = "@priority:";
-/** Selection facet marking the fast pre-gate subset (not tied to a scenario). */
-export const SMOKE_TAG = "@smoke";
-
-/**
- * The `@scenario:<id>` join-key tag. `id` is constrained to {@link ScenarioId},
- * so a typo or stale id fails `npm run typecheck`; the reporter re-checks at
- * runtime as a backstop.
- *
- * @example
- * test("...", { tag: [scenario("log.solo-cut"), area("logging"), priority("must")] }, fn);
- */
-export const scenario = (id: ScenarioId): `@scenario:${ScenarioId}` =>
-	`${SCENARIO_TAG_PREFIX}${id}`;
-
-/** The `@area:<area>` facet tag. Validated against the catalog by the reporter. */
-export const area = (value: Area): `@area:${Area}` =>
-	`${AREA_TAG_PREFIX}${value}`;
-
-/** The `@priority:<priority>` facet tag. Validated against the catalog. */
-export const priority = (value: Priority): `@priority:${Priority}` =>
-	`${PRIORITY_TAG_PREFIX}${value}`;

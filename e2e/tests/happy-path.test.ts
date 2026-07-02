@@ -12,7 +12,6 @@ import {
 	startTracking,
 	startTrackingWith,
 } from "../helpers/tracker";
-import { area, priority, scenario } from "../scenarios";
 
 // happy-path coverage of the main use cases a player runs through a session:
 // configuring a roster, logging each of the four action types, watching the
@@ -21,7 +20,7 @@ import { area, priority, scenario } from "../scenarios";
 
 test.describe("setup", () => {
 	test("configures a two-player game (the minimum)", {
-		tag: [scenario("setup.min-players"), area("setup"), priority("should")],
+		tag: ["@scenario:setup.min-players", "@area:setup", "@priority:should"],
 	}, async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
 		await expect(composer(page)).toBeVisible();
@@ -31,11 +30,11 @@ test.describe("setup", () => {
 
 	test("configures five players with names and a chosen Captain", {
 		tag: [
-			scenario("setup.max-players"),
-			scenario("setup.custom-names"),
-			scenario("setup.choose-captain"),
-			area("setup"),
-			priority("should"),
+			"@scenario:setup.max-players",
+			"@scenario:setup.custom-names",
+			"@scenario:setup.choose-captain",
+			"@area:setup",
+			"@priority:should",
 		],
 	}, async ({ page }) => {
 		await startTrackingWith(page, {
@@ -53,7 +52,7 @@ test.describe("setup", () => {
 
 test.describe("logging each action type", () => {
 	test("dual cut — success", {
-		tag: [scenario("log.dual-cut.success"), area("logging"), priority("must")],
+		tag: ["@scenario:log.dual-cut.success", "@area:logging", "@priority:must"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
@@ -70,9 +69,9 @@ test.describe("logging each action type", () => {
 
 	test("dual cut — fail records the actual wire", {
 		tag: [
-			scenario("log.dual-cut.fail-reveal"),
-			area("logging"),
-			priority("must"),
+			"@scenario:log.dual-cut.fail-reveal",
+			"@area:logging",
+			"@priority:must",
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
@@ -104,7 +103,7 @@ test.describe("logging each action type", () => {
 	});
 
 	test("solo cut — no target or outcome", {
-		tag: [scenario("log.solo-cut"), area("logging"), priority("must")],
+		tag: ["@scenario:log.solo-cut", "@area:logging", "@priority:must"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logSoloCut(page, { wire: 5 });
@@ -117,7 +116,7 @@ test.describe("logging each action type", () => {
 	});
 
 	test('cut — logs a "?" (unknown) wire value', {
-		tag: [scenario("log.unknown-wire"), area("logging"), priority("should")],
+		tag: ["@scenario:log.unknown-wire", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		// the cut pads offer "?" for a wire whose value is unknown.
@@ -131,7 +130,7 @@ test.describe("logging each action type", () => {
 	});
 
 	test("double detector — targeted, blue wires only", {
-		tag: [scenario("log.double-detector"), area("logging"), priority("should")],
+		tag: ["@scenario:log.double-detector", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
@@ -154,7 +153,7 @@ test.describe("logging each action type", () => {
 	});
 
 	test("X or Y Ray — names two values against one wire", {
-		tag: [scenario("log.detector.xy-ray"), area("logging"), priority("should")],
+		tag: ["@scenario:log.detector.xy-ray", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logDetector(page, {
@@ -172,7 +171,7 @@ test.describe("logging each action type", () => {
 	});
 
 	test("super detector — points at a whole stand", {
-		tag: [scenario("log.detector.super"), area("logging"), priority("may")],
+		tag: ["@scenario:log.detector.super", "@area:logging", "@priority:may"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
@@ -192,7 +191,7 @@ test.describe("logging each action type", () => {
 	});
 
 	test("equipment — with a note", {
-		tag: [scenario("log.equipment"), area("logging"), priority("should")],
+		tag: ["@scenario:log.equipment", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logEquipment(page, {
@@ -208,7 +207,7 @@ test.describe("logging each action type", () => {
 
 test.describe("session flow", () => {
 	test("the composer's suggested actor advances to the next seat after a move", {
-		tag: [scenario("session.turn-advance"), area("session"), priority("must")],
+		tag: ["@scenario:session.turn-advance", "@area:session", "@priority:must"],
 	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) starts, so the composer suggests Player 1.
@@ -225,9 +224,9 @@ test.describe("session flow", () => {
 
 	test("logging equipment keeps the turn on the same actor", {
 		tag: [
-			scenario("session.equipment-no-advance"),
-			area("session"),
-			priority("should"),
+			"@scenario:session.equipment-no-advance",
+			"@area:session",
+			"@priority:should",
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
@@ -252,9 +251,9 @@ test.describe("session flow", () => {
 
 	test("off-turn equipment returns the suggestion to the turn-holder", {
 		tag: [
-			scenario("session.off-turn-equipment"),
-			area("session"),
-			priority("should"),
+			"@scenario:session.off-turn-equipment",
+			"@area:session",
+			"@priority:should",
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
@@ -274,7 +273,7 @@ test.describe("session flow", () => {
 	});
 
 	test("undo and redo walk the move stack; a new move clears redo", {
-		tag: [scenario("session.undo-redo"), area("session"), priority("should")],
+		tag: ["@scenario:session.undo-redo", "@area:session", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 
@@ -308,7 +307,7 @@ test.describe("session flow", () => {
 	});
 
 	test("edits a logged move in place", {
-		tag: [scenario("session.edit-move"), area("session"), priority("should")],
+		tag: ["@scenario:session.edit-move", "@area:session", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 
@@ -338,7 +337,7 @@ test.describe("session flow", () => {
 	});
 
 	test("collapses and expands the composer", {
-		tag: [scenario("session.collapse"), area("session"), priority("should")],
+		tag: ["@scenario:session.collapse", "@area:session", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
 
@@ -359,12 +358,12 @@ test.describe("session flow", () => {
 
 	test("persists the full session across a reload", {
 		tag: [
-			scenario("persist.reload"),
-			scenario("log.dual-cut.fail-yellow"),
-			area("persistence"),
-			area("logging"),
-			priority("must"),
-			priority("may"),
+			"@scenario:persist.reload",
+			"@scenario:log.dual-cut.fail-yellow",
+			"@area:persistence",
+			"@area:logging",
+			"@priority:must",
+			"@priority:may",
 		],
 	}, async ({ page }) => {
 		await startTracking(page);

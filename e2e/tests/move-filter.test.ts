@@ -9,7 +9,6 @@ import {
 	openFilter,
 	startTracking,
 } from "../helpers/tracker";
-import { area, priority, scenario } from "../scenarios";
 
 // move-log filter: a header button opens a dialog that hides move types
 // (successful dual cuts and/or solo cuts) from the displayed history without
@@ -38,9 +37,9 @@ test.describe("move-log filter", () => {
 
 	test("excludes successful dual cuts while keeping failed ones", {
 		tag: [
-			scenario("history.filter.exclude-dual-cut"),
-			area("history"),
-			priority("should"),
+			"@scenario:history.filter.exclude-dual-cut",
+			"@area:history",
+			"@priority:should",
 		],
 	}, async ({ page }) => {
 		await openFilter(page);
@@ -56,9 +55,9 @@ test.describe("move-log filter", () => {
 
 	test("excludes solo cuts", {
 		tag: [
-			scenario("history.filter.exclude-solo-cut"),
-			area("history"),
-			priority("should"),
+			"@scenario:history.filter.exclude-solo-cut",
+			"@area:history",
+			"@priority:should",
 		],
 	}, async ({ page }) => {
 		await openFilter(page);
@@ -72,10 +71,10 @@ test.describe("move-log filter", () => {
 
 	test("the shortcut excludes both, and reset restores everything", {
 		tag: [
-			scenario("history.filter.exclude-both"),
-			scenario("history.filter.reset"),
-			area("history"),
-			priority("should"),
+			"@scenario:history.filter.exclude-both",
+			"@scenario:history.filter.reset",
+			"@area:history",
+			"@priority:should",
 		],
 	}, async ({ page }) => {
 		await openFilter(page);

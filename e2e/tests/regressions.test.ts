@@ -9,7 +9,6 @@ import {
 	setOutcome,
 	startTracking,
 } from "../helpers/tracker";
-import { area, priority, scenario } from "../scenarios";
 
 // regression: logging a move must reset the whole composer — including the
 // target segmented control — so the next move can be entered and logged without
@@ -17,9 +16,9 @@ import { area, priority, scenario } from "../scenarios";
 // until the target was re-tapped.)
 test("re-enables Log move for the next dual cut without re-toggling target", {
 	tag: [
-		scenario("session.log-consecutive"),
-		area("session"),
-		priority("should"),
+		"@scenario:session.log-consecutive",
+		"@area:session",
+		"@priority:should",
 	],
 }, async ({ page }) => {
 	await startTracking(page);

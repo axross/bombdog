@@ -54,7 +54,7 @@ Scenario Coverage is this project's E2E coverage metric: *which real user journe
 - MUST report scenario-coverage evidence when a change adds or changes a user-facing journey: the overall + per-priority `covered/total` from `npm run coverage:scenarios`, and any newly-surfaced gaps.
 - MUST flag a Major when a change adds a new user-facing journey without a corresponding entry in `e2e/scenarios.ts` — an incomplete catalog inflates the percentage.
 - MUST treat a new `must` scenario as a blocker until a passing tagged test covers it (`npm run coverage:scenarios` hard-gates `must` at 100%); `should`/`may` gaps are reported, not blocking.
-- MUST flag a stale/typo `@scenario:` tag or a `@area:`/`@priority:` facet tag that disagrees with the catalog (both fail the reporter), and a tag placed on a test that passes *through* a journey without asserting its outcome — tag the asserting test.
+- MUST flag a stale/typo `@scenario:` tag or a `@area:`/`@priority:` facet tag that disagrees with the catalog (both are plain strings, validated at run time by the reporter, which fails the run), and a tag placed on a test that passes *through* a journey without asserting its outcome — tag the asserting test.
 - SHOULD note surfaced `should`/`may` gaps as follow-up work rather than silently expanding scope to close them.
 
 ## Test Helpers
