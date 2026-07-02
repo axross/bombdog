@@ -13,7 +13,7 @@ import {
 	type MoveType,
 	type Player,
 	type RevealedWire,
-	type WireValue,
+	type WireValueOrUnknown,
 } from "@/lib/types";
 import css from "./move-log.module.css";
 
@@ -31,7 +31,18 @@ function kindLabel(move: Move): string {
 		: KIND_LABEL[move.type];
 }
 
-function WireChip({ value }: { value: WireValue }): JSX.Element {
+function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
+	if (value === "unknown") {
+		return (
+			<span
+				role="img"
+				className={clsx(css.chip, css.chipUnknown)}
+				aria-label="Unknown wire"
+			>
+				?
+			</span>
+		);
+	}
 	const isYellow = value === "yellow";
 	return (
 		<span

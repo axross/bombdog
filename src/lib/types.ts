@@ -27,10 +27,24 @@ export type BlueWireValue = Exclude<WireValue, "yellow">;
 export type Outcome = "success" | "fail";
 
 /**
+ * A wire value that may be "?" ("unknown"). Some special-rule wires are cut,
+ * named, or revealed without their exact value ever being known, so both the
+ * value a player *names* for a cut and the value *revealed* on a failure can be
+ * recorded as "?".
+ */
+export type WireValueOrUnknown = WireValue | "unknown";
+
+/**
+ * A blue-only wire value that may be "?" ("unknown"). Detectors indicate blue
+ * values only (per the FAQ) but a detector-named value may still be unknown.
+ */
+export type BlueWireValueOrUnknown = BlueWireValue | "unknown";
+
+/**
  * The wire's true value, revealed when a cut fails: a real wire value or
  * "unknown" ("?", used by some special rules where the value stays hidden).
  */
-export type RevealedWire = WireValue | "unknown";
+export type RevealedWire = WireValueOrUnknown;
 
 export type MoveType = "dual-cut" | "solo-cut" | "detector" | "equipment";
 
@@ -71,7 +85,8 @@ interface BaseMove {
 export interface DualCutMove extends BaseMove {
 	type: "dual-cut";
 	targetId: string;
-	value: WireValue;
+	/** The named wire value, or "?" when the cut wire's value is unknown. */
+	value: WireValueOrUnknown;
 	outcome: Outcome;
 	/** The wire's true value, recorded when the cut failed. */
 	revealed?: RevealedWire;
@@ -80,7 +95,8 @@ export interface DualCutMove extends BaseMove {
 /** Solo cut: actor cuts the last copies of a value from their own hand; always safe. */
 export interface SoloCutMove extends BaseMove {
 	type: "solo-cut";
-	value: WireValue;
+	/** The cut wire value, or "?" when the value is unknown. */
+	value: WireValueOrUnknown;
 }
 
 /**
@@ -92,8 +108,11 @@ export interface DetectorMove extends BaseMove {
 	type: "detector";
 	detector: DetectorKind;
 	targetId: string;
-	/** Named blue values: one for double/triple/super, two for the X or Y Ray. */
-	values: BlueWireValue[];
+	/**
+	 * Named blue values: one for double/triple/super, two for the X or Y Ray.
+	 * A value may be "?" when the named wire's value is unknown.
+	 */
+	values: BlueWireValueOrUnknown[];
 	outcome: Outcome;
 	/** The wire's true value, recorded when the detector failed. */
 	revealed?: RevealedWire;
@@ -118,17 +137,17 @@ export type MoveDraft =
 			type: "dual-cut";
 			actorId: string;
 			targetId: string;
-			value: WireValue;
+			value: WireValueOrUnknown;
 			outcome: Outcome;
 			revealed?: RevealedWire;
 	  }
-	| { type: "solo-cut"; actorId: string; value: WireValue }
+	| { type: "solo-cut"; actorId: string; value: WireValueOrUnknown }
 	| {
 			type: "detector";
 			detector: DetectorKind;
 			actorId: string;
 			targetId: string;
-			values: BlueWireValue[];
+			values: BlueWireValueOrUnknown[];
 			outcome: Outcome;
 			revealed?: RevealedWire;
 	  }

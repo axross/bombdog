@@ -99,6 +99,17 @@ describe("buildDraft()", () => {
 		});
 	});
 
+	it('accepts the unknown ("?") wire value for a dual cut', () => {
+		expect(
+			buildDraft("dual-cut", {
+				...emptyDraftFields("a"),
+				targetId: "b",
+				value: "unknown",
+				outcome: "success",
+			}),
+		).toMatchObject({ type: "dual-cut", value: "unknown", outcome: "success" });
+	});
+
 	it("returns null for a dual cut without an actor", () => {
 		expect(
 			buildDraft("dual-cut", {
@@ -121,6 +132,15 @@ describe("buildDraft()", () => {
 		});
 	});
 
+	it('accepts the unknown ("?") wire value for a solo cut', () => {
+		expect(
+			buildDraft("solo-cut", {
+				...emptyDraftFields("a"),
+				value: "unknown",
+			}),
+		).toEqual({ type: "solo-cut", actorId: "a", value: "unknown" });
+	});
+
 	it("returns null for a solo cut without an actor", () => {
 		expect(
 			buildDraft("solo-cut", { ...emptyDraftFields(""), value: 7 }),
@@ -139,6 +159,21 @@ describe("buildDraft()", () => {
 			type: "detector",
 			detector: "double",
 			values: [4],
+		});
+	});
+
+	it('accepts an unknown ("?") named value for a detector', () => {
+		expect(
+			buildDraft("detector", {
+				...emptyDraftFields("a"),
+				targetId: "b",
+				values: ["unknown"],
+				outcome: "success",
+			}),
+		).toMatchObject({
+			type: "detector",
+			detector: "double",
+			values: ["unknown"],
 		});
 	});
 

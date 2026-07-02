@@ -3,7 +3,7 @@
 // the JSX makes validity rules easy to unit-test.
 
 import {
-	type BlueWireValue,
+	type BlueWireValueOrUnknown,
 	type DetectorKind,
 	detectorOption,
 	type Move,
@@ -11,21 +11,23 @@ import {
 	type MoveType,
 	type Outcome,
 	type RevealedWire,
-	type WireValue,
+	type WireValueOrUnknown,
 } from "@/lib/types";
 
 /** The superset of fields any action can need; unused ones are ignored. */
 export interface DraftFields {
 	actorId: string;
 	targetId: string;
-	value: WireValue | null;
+	/** The named/cut wire value, or "?" when unknown. */
+	value: WireValueOrUnknown | null;
 	/** Which detector card the "detector" action uses. */
 	detector: DetectorKind;
 	/**
 	 * Named blue values for the detector action (one or two). Blue-only by type:
-	 * the detector wire pad is rendered `blueOnly`, so yellow can never enter.
+	 * the detector wire pad is rendered `blueOnly`, so yellow can never enter,
+	 * but a value may be "?" (unknown).
 	 */
-	values: BlueWireValue[];
+	values: BlueWireValueOrUnknown[];
 	outcome: Outcome | null;
 	/** The wire's true value, chosen when the outcome is a failure. */
 	revealed: RevealedWire | null;
@@ -54,9 +56,9 @@ export function emptyDraftFields(actorId = ""): DraftFields {
  * matching the wire pad's own cap (which drops the oldest when it overflows).
  */
 export function detectorValues(
-	values: BlueWireValue[],
+	values: BlueWireValueOrUnknown[],
 	kind: DetectorKind,
-): BlueWireValue[] {
+): BlueWireValueOrUnknown[] {
 	return values.slice(-detectorOption(kind).valueCount);
 }
 

@@ -3,7 +3,11 @@
 import { clsx } from "clsx";
 import { ToggleGroup } from "radix-ui";
 import type { JSX } from "react";
-import { BLUE_WIRE_VALUES, type WireValue } from "@/lib/types";
+import {
+	BLUE_WIRE_VALUES,
+	type WireValue,
+	type WireValueOrUnknown,
+} from "@/lib/types";
 import css from "./wire-pad.module.css";
 
 interface BaseProps {
@@ -11,6 +15,8 @@ interface BaseProps {
 	label?: string;
 	/** Hide the Yellow option — detectors indicate blue values only. */
 	blueOnly?: boolean;
+	/** Offer the "?" (unknown) option for wires cut/named without a known value. */
+	allowUnknown?: boolean;
 	className?: string;
 	"data-testid"?: string;
 }
@@ -18,27 +24,29 @@ interface BaseProps {
 /** Single-select pad: exactly one wire (or none). */
 interface SingleProps extends BaseProps {
 	multiple?: false;
-	value: WireValue | null;
-	onValueChange: (value: WireValue) => void;
+	value: WireValueOrUnknown | null;
+	onValueChange: (value: WireValueOrUnknown) => void;
 }
 
 /** Multi-select pad: an ordered set of wires, optionally capped at `max`. */
 interface MultiProps extends BaseProps {
 	multiple: true;
-	values: WireValue[];
-	onValuesChange: (values: WireValue[]) => void;
+	values: WireValueOrUnknown[];
+	onValuesChange: (values: WireValueOrUnknown[]) => void;
 	/** Cap on simultaneous selections; extra picks push out the oldest. */
 	max?: number;
 }
 
 type WirePadProps = SingleProps | MultiProps;
 
-function toKey(value: WireValue): string {
+function toKey(value: WireValueOrUnknown): string {
 	return String(value);
 }
 
-function fromKey(key: string): WireValue {
-	return key === "yellow" ? "yellow" : (Number(key) as WireValue);
+function fromKey(key: string): WireValueOrUnknown {
+	if (key === "yellow") return "yellow";
+	if (key === "unknown") return "unknown";
+	return Number(key) as WireValue;
 }
 
 /**
@@ -47,7 +55,7 @@ function fromKey(key: string): WireValue {
  * (used by the X or Y Ray, which names two values against one wire).
  */
 export function WirePad(props: WirePadProps): JSX.Element {
-	const { label, blueOnly = false, className } = props;
+	const { label, blueOnly = false, allowUnknown = false, className } = props;
 	const dataTestId = props["data-testid"];
 
 	// The buttons are identical across modes; only the enclosing Root's
@@ -73,6 +81,16 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					data-testid="wire-yellow"
 				>
 					Y
+				</ToggleGroup.Item>
+			)}
+			{allowUnknown && (
+				<ToggleGroup.Item
+					value="unknown"
+					className={clsx(css.wire, css.unknown)}
+					aria-label="Unknown wire"
+					data-testid="wire-unknown"
+				>
+					?
 				</ToggleGroup.Item>
 			)}
 		</>

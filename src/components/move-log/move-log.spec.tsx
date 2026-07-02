@@ -149,6 +149,22 @@ describe("<MoveLog>", () => {
 		expect(screen.getByText(/seat 3 is empty/)).toBeInTheDocument();
 	});
 
+	it('renders a "?" chip for a wire cut with an unknown value', () => {
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "solo-cut",
+				actorId: "a",
+				value: "unknown",
+			},
+		]);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
+
+		expect(screen.getByLabelText("Unknown wire")).toHaveTextContent("?");
+	});
+
 	it("opens the move editor when an edit control is used", async () => {
 		const user = userEvent.setup();
 		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);

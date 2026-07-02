@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** A wire the pad can select: a blue number or the yellow wire. */
-export type Wire = number | "yellow";
+/** A wire the pad can select: a blue number, the yellow wire, or "?" (unknown). */
+export type Wire = number | "yellow" | "unknown";
 /** A revealed actual value recorded when a cut fails. */
 export type Revealed = number | "yellow" | "unknown";
 
@@ -127,7 +127,11 @@ export async function pickTarget(
 }
 
 const wireTestId = (wire: Wire) =>
-	wire === "yellow" ? "wire-yellow" : `wire-${wire}`;
+	wire === "yellow"
+		? "wire-yellow"
+		: wire === "unknown"
+			? "wire-unknown"
+			: `wire-${wire}`;
 const revealTestId = (value: Revealed) =>
 	value === "yellow"
 		? "reveal-yellow"
