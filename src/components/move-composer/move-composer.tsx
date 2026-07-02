@@ -54,8 +54,11 @@ export function MoveComposer(): JSX.Element {
 		/* v8 ignore next */
 		if (!draft) return;
 		addMove(draft);
-		// Prepare for the next turn: advance the suggested actor, clear inputs.
-		setFields(emptyDraftFields(seatAfter(fields.actorId)));
+		// Prepare the next entry: advance the suggested actor and clear inputs.
+		// Equipment doesn't pass the turn, so keep the actor on it after logging.
+		const nextActor =
+			type === "equipment" ? fields.actorId : seatAfter(fields.actorId);
+		setFields(emptyDraftFields(nextActor));
 	};
 
 	return (
