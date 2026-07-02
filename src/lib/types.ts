@@ -213,7 +213,17 @@ export const DETECTOR_OPTIONS: DetectorOption[] = [
 	{ kind: "x-or-y-ray", label: "X or Y Ray (10)", valueCount: 2 },
 ];
 
-/** Look up a detector option by kind, falling back to the Double Detector. */
+/**
+ * Look up a detector option by kind. Every `DetectorKind` maps to exactly one
+ * option, so a miss means the kind is invalid — a kind added to the union
+ * without a matching option here, or corrupt persisted data. Fail loud rather
+ * than silently substituting the wrong card (which would mislabel the move and
+ * apply the wrong value count).
+ */
 export function detectorOption(kind: DetectorKind): DetectorOption {
-	return DETECTOR_OPTIONS.find((d) => d.kind === kind) ?? DETECTOR_OPTIONS[0];
+	const option = DETECTOR_OPTIONS.find((d) => d.kind === kind);
+	if (!option) {
+		throw new Error(`Unknown detector kind: ${kind}`);
+	}
+	return option;
 }
