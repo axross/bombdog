@@ -28,12 +28,16 @@ Measure **scenario coverage** at the E2E layer instead of line coverage:
 - An authored, typed catalog of user journeys lives at `e2e/scenarios.ts`
   (`{ id, title, area, priority }`). The catalog deliberately includes
   currently-untested journeys so gaps are visible.
-- Each Playwright test declares the scenario(s) it covers with type-safe
-  `@scn:<id>` tags built from the catalog (a typo/stale id fails `typecheck` and
-  the reporter).
+- Each Playwright test declares coverage with ordinary, greppable tags: a
+  `@scenario:<id>` join tag (typo/stale id fails `typecheck` and the reporter),
+  plus `@area:<area>` / `@priority:<priority>` facet tags for run filtering
+  (`--grep @priority:must`) and report grouping, plus an optional `@smoke`
+  selection facet. The reporter validates the facet tags against the catalog so
+  they cannot drift.
 - A dependency-free custom reporter (`e2e/reporters/scenario-coverage.ts`) tallies
-  the tags of **passing** tests, prints overall + per-priority `covered/total` and
-  the uncovered list, and writes `e2e/.scenario-coverage/summary.json`.
+  the `@scenario:` tags of **passing** tests, prints overall + per-priority +
+  per-area `covered/total` and the uncovered list, and writes
+  `e2e/.scenario-coverage/summary.json`.
 - A check script (`scripts/check-scenario-coverage.mjs`) enforces a **phased gate**:
   unknown tags always fail; `must` scenarios are hard-gated at 100%
   (`npm run coverage:scenarios`), while `should`/`may` stay report-only.

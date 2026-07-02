@@ -6,8 +6,9 @@
  * (`e2e/.scenario-coverage/summary.json`, produced by any `playwright test`
  * run) and enforces the gate:
  *
- *   - Unknown `@scn:` tags (ids not in the catalog) always fail — a stale or
- *     typo'd tag silently loses coverage.
+ *   - Structural tag errors always fail: an `@scenario:` tag not in the catalog
+ *     (a stale/typo tag), or a `@area:`/`@priority:` facet tag that disagrees
+ *     with the catalog. Both silently corrupt the metric.
  *   - Phase 2 only (`SCENARIO_GATE=must`, the default): every `must` scenario
  *     must be covered. `should`/`may` stay report-only.
  *
@@ -44,10 +45,18 @@ try {
 
 const problems = [];
 
-// unknown tags are always a failure, in every phase.
-if (Array.isArray(summary.unknownTags) && summary.unknownTags.length > 0) {
+// structural tag errors are always a failure, in every phase.
+if (
+	Array.isArray(summary.unknownScenarioTags) &&
+	summary.unknownScenarioTags.length > 0
+) {
 	problems.push(
-		`unknown @scn: tags (not in e2e/scenarios.ts): ${summary.unknownTags.join(", ")}`,
+		`unknown @scenario: tags (not in e2e/scenarios.ts): ${summary.unknownScenarioTags.join(", ")}`,
+	);
+}
+if (Array.isArray(summary.facetErrors) && summary.facetErrors.length > 0) {
+	problems.push(
+		`facet-tag mismatches:\n${summary.facetErrors.map((e) => `    · ${e}`).join("\n")}`,
 	);
 }
 

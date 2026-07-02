@@ -14,8 +14,8 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	workers: process.env.CI ? 1 : undefined,
 	// keep the default reporters (list on the terminal, html on disk) and append
-	// the scenario-coverage reporter — it only tallies @scn: tags, so it adds no
-	// measurable cost to the default run.
+	// the scenario-coverage reporter — it only tallies @scenario: tags, so it adds
+	// no measurable cost to the default run.
 	reporter: [
 		["list"],
 		["html", { open: "never" }],

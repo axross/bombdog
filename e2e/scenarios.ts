@@ -3,10 +3,19 @@
  *
  * This is the denominator for the project's E2E coverage metric. Coverage here
  * is *which real user journeys the Playwright suite exercises* — **not** lines
- * of application code executed. Each entry is a journey a player can take; each
- * e2e test declares the scenario(s) it covers with a `@scn:<id>` tag built from
- * {@link scn}. A scenario counts as covered when at least one **passing** test
- * carries its tag.
+ * of application code executed. Each entry is a journey a player can take.
+ *
+ * Tests declare coverage with ordinary, greppable Playwright **tags**:
+ *
+ * - `@scenario:<id>` — the join key: which catalog journey this test covers
+ *   (a test MAY carry several).
+ * - `@area:<area>` and `@priority:<priority>` — facet tags for filtering runs
+ *   (`--grep @priority:must`, `--grep @area:persistence`) and grouping the
+ *   report. The reporter validates them against the catalog so they can't drift.
+ * - `@smoke` — an optional selection facet marking the fast pre-gate subset.
+ *
+ * A scenario counts as covered when at least one **passing** test carries its
+ * `@scenario:<id>` tag.
  *
  * The catalog is authored by hand on purpose: it must include journeys that
  * currently have **no** test so the coverage report surfaces real gaps rather
@@ -20,27 +29,30 @@
  * Gate weight of a scenario. `must` is hard-gated at 100% by
  * `scripts/check-scenario-coverage.mjs`; `should`/`may` are report-only.
  */
-export type Priority = "must" | "should" | "may";
+export const PRIORITIES = ["must", "should", "may"] as const;
+export type Priority = (typeof PRIORITIES)[number];
 
 /**
- * The area a scenario belongs to; groups the coverage report.
+ * The area a scenario belongs to; groups the coverage report and is a facet tag.
  */
-export type Area =
-	| "setup"
-	| "logging"
-	| "session"
-	| "history"
-	| "persistence"
-	| "lifecycle";
+export const AREAS = [
+	"setup",
+	"logging",
+	"session",
+	"history",
+	"persistence",
+	"lifecycle",
+] as const;
+export type Area = (typeof AREAS)[number];
 
 /**
  * A single authored user journey.
  */
 export interface Scenario {
 	/**
-	 * Stable, unique, dotted id — the tag payload and the join key between this
-	 * catalog and the tests. It is a contract: renaming it means updating every
-	 * tag that references it in the same commit.
+	 * Stable, unique, dotted id — the payload of the `@scenario:<id>` tag and the
+	 * join key between this catalog and the tests. It is a contract: renaming it
+	 * means updating every tag that references it in the same commit.
 	 */
 	id: string;
 	/**
@@ -265,18 +277,28 @@ export const SCENARIOS = [
  */
 export type ScenarioId = (typeof SCENARIOS)[number]["id"];
 
-/**
- * Build the Playwright tag for a scenario id. Tags MUST start with `@`.
- *
- * The `id` is constrained to {@link ScenarioId}, so a typo or stale id fails
- * `npm run typecheck`. The reporter re-checks at runtime as a backstop.
- *
- * @example
- * test("...", { tag: scn("log.solo-cut") }, async ({ page }) => { ... });
- */
-export const scn = (id: ScenarioId): `@scn:${ScenarioId}` => `@scn:${id}`;
+/** Tag prefixes, shared by the catalog helpers and the reporter. */
+export const SCENARIO_TAG_PREFIX = "@scenario:";
+export const AREA_TAG_PREFIX = "@area:";
+export const PRIORITY_TAG_PREFIX = "@priority:";
+/** Selection facet marking the fast pre-gate subset (not tied to a scenario). */
+export const SMOKE_TAG = "@smoke";
 
 /**
- * The `@scn:` tag prefix, shared by the catalog and the reporter.
+ * The `@scenario:<id>` join-key tag. `id` is constrained to {@link ScenarioId},
+ * so a typo or stale id fails `npm run typecheck`; the reporter re-checks at
+ * runtime as a backstop.
+ *
+ * @example
+ * test("...", { tag: [scenario("log.solo-cut"), area("logging"), priority("must")] }, fn);
  */
-export const SCN_TAG_PREFIX = "@scn:";
+export const scenario = (id: ScenarioId): `@scenario:${ScenarioId}` =>
+	`${SCENARIO_TAG_PREFIX}${id}`;
+
+/** The `@area:<area>` facet tag. Validated against the catalog by the reporter. */
+export const area = (value: Area): `@area:${Area}` =>
+	`${AREA_TAG_PREFIX}${value}`;
+
+/** The `@priority:<priority>` facet tag. Validated against the catalog. */
+export const priority = (value: Priority): `@priority:${Priority}` =>
+	`${PRIORITY_TAG_PREFIX}${value}`;
