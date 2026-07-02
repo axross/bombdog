@@ -16,6 +16,12 @@ interface TrackerStore extends TrackerState {
 	redoStack: Move[];
 	/** True once IndexedDB rehydration has completed (client-only). */
 	hasHydrated: boolean;
+	/**
+	 * The roster from the game most recently cleared by `reset`, kept so the
+	 * setup screen can pre-fill the next game's player count, names, and Captain.
+	 */
+	previousPlayers: Player[];
+	previousCaptainIndex: number;
 
 	configurePlayers: (players: Player[], captainIndex: number) => void;
 	setCaptain: (captainIndex: number) => void;
@@ -62,6 +68,8 @@ export const useTrackerStore = create<TrackerStore>()(
 			...EMPTY_STATE,
 			redoStack: [],
 			hasHydrated: false,
+			previousPlayers: [],
+			previousCaptainIndex: 0,
 
 			configurePlayers: (players, captainIndex) => {
 				set({ players, captainIndex });
@@ -110,18 +118,29 @@ export const useTrackerStore = create<TrackerStore>()(
 			},
 
 			reset: () => {
-				set({ ...EMPTY_STATE, redoStack: [] });
+				// Carry the roster over to the setup screen so the next game keeps
+				// the same player count, names, and Captain without re-entry.
+				const { players, captainIndex } = get();
+				set({
+					...EMPTY_STATE,
+					redoStack: [],
+					previousPlayers: players,
+					previousCaptainIndex: captainIndex,
+				});
 			},
 		}),
 		{
 			name: STORAGE_KEY,
 			storage: createJSONStorage(() => idbStorage),
 			version: 1,
-			// Persist only the durable game state; keep redo history ephemeral.
+			// Persist the durable game state plus the carried-over roster (so a
+			// reset survives a reload); keep redo history ephemeral.
 			partialize: (state) => ({
 				players: state.players,
 				captainIndex: state.captainIndex,
 				moves: state.moves,
+				previousPlayers: state.previousPlayers,
+				previousCaptainIndex: state.previousCaptainIndex,
 			}),
 			// Hydration is triggered manually on the client (see TrackerApp) to
 			// avoid a server/client render mismatch.

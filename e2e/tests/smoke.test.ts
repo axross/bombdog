@@ -6,6 +6,7 @@ import {
 	moveLog,
 	moveRow,
 	startTracking,
+	startTrackingWith,
 } from "../helpers/tracker";
 
 // Smoke tests: a handful of shallow checks that the app boots and its core
@@ -51,10 +52,29 @@ test.describe("smoke", () => {
 		await expect(moveRow(page, 1)).toBeVisible();
 	});
 
-	test("reset returns to the setup screen", async ({ page }) => {
-		await startTracking(page);
+	test("reset returns to the setup screen with the roster carried over", async ({
+		page,
+	}) => {
+		await startTrackingWith(page, {
+			names: ["Alice", "Bob", "Carol"],
+			captainIndex: 1,
+		});
+
 		await page.getByTestId("reset").click();
 		await page.getByTestId("reset-dialog").getByTestId("reset-confirm").click();
-		await expect(page.getByTestId("setup").getByTestId("start")).toBeVisible();
+
+		const setup = page.getByTestId("setup");
+		await expect(setup.getByTestId("start")).toBeVisible();
+		// The previous player count, names, and Captain are pre-filled.
+		await expect(setup.getByText("3")).toBeVisible();
+		await expect(
+			setup.getByRole("textbox", { name: "Name of player 1" }),
+		).toHaveValue("Alice");
+		await expect(
+			setup.getByRole("textbox", { name: "Name of player 3" }),
+		).toHaveValue("Carol");
+		await expect(
+			setup.getByRole("radio", { name: "Make player 2 the Captain" }),
+		).toBeChecked();
 	});
 });

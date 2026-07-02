@@ -32,6 +32,8 @@ beforeEach(() => {
 		captainIndex: 0,
 		moves: [],
 		redoStack: [],
+		previousPlayers: [],
+		previousCaptainIndex: 0,
 	});
 });
 
@@ -182,6 +184,15 @@ describe("reset()", () => {
 		expect(state().players).toHaveLength(0);
 		expect(state().moves).toHaveLength(0);
 		expect(state().redoStack).toHaveLength(0);
+	});
+
+	it("carries the roster and captain over for the next game", () => {
+		state().configurePlayers(players, 2);
+		state().addMove(dual);
+
+		state().reset();
+		expect(state().previousPlayers).toEqual(players);
+		expect(state().previousCaptainIndex).toBe(2);
 	});
 });
 
