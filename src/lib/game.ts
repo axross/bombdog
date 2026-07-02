@@ -4,20 +4,16 @@
 import type { Move, MoveFilter, Player, WireValueOrUnknown } from "./types";
 
 /**
- *
  * Resolve a player's display name, tolerant of unknown ids.
- *
  */
 export function getPlayerName(players: Player[], id: string): string {
 	return players.find((p) => p.id === id)?.name ?? "Unknown";
 }
 
 /**
- *
  * Compact glyph for a wire value on a chip/badge: "9", "Y", or "?". The single
  * source of truth for how a wire reads on screen — used by the wire pad, the
  * reveal dialog, the move-log chip, and the failed-cut badge alike.
- *
  */
 export function formatWire(value: WireValueOrUnknown): string {
 	if (value === "unknown") return "?";
@@ -26,10 +22,8 @@ export function formatWire(value: WireValueOrUnknown): string {
 }
 
 /**
- *
  * Accessible name for a wire value: "Wire 9", "Yellow wire", or "Unknown wire".
  * Companion to {@link formatWire}, keeping the aria labels in one place.
- *
  */
 export function wireLabel(value: WireValueOrUnknown): string {
 	if (value === "unknown") return "Unknown wire";
@@ -38,11 +32,9 @@ export function wireLabel(value: WireValueOrUnknown): string {
 }
 
 /**
- *
  * Order players for the Target dropdown: everyone except the acting player
  * first, then the actor last. Self-targeting is legal (some mission rules allow
  * a self-dual-cut) but rare, so it is de-prioritised rather than removed.
- *
  */
 export function targetPlayerOrder(
 	players: Player[],
@@ -55,9 +47,7 @@ export function targetPlayerOrder(
 }
 
 /**
- *
  * Whether a move survives the log filter (`true` = shown, `false` = hidden).
- *
  */
 export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
 	if (
@@ -74,9 +64,7 @@ export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
 }
 
 /**
- *
  * Apply the log filter, preserving the original move order.
- *
  */
 export function filterMoves(moves: Move[], filter: MoveFilter): Move[] {
 	// common case: nothing excluded — return the input untouched, no allocation.
@@ -85,16 +73,13 @@ export function filterMoves(moves: Move[], filter: MoveFilter): Move[] {
 }
 
 /**
- *
  * True when the filter excludes at least one move type.
- *
  */
 export function isFilterActive(filter: MoveFilter): boolean {
 	return filter.excludeSuccessfulDualCut || filter.excludeSoloCut;
 }
 
 /**
- *
  * The seat that should act next: the Captain seeds the rotation, and after each
  * turn-advancing move play passes to the seat clockwise (next index) of the last
  * actor. Returns the player id, or `undefined` when there are no players.
@@ -105,7 +90,6 @@ export function isFilterActive(filter: MoveFilter): boolean {
  *
  * This is only a *suggestion* — the composer lets the user override it, because
  * equipment can fire off-turn and empty-handed players get skipped.
- *
  */
 export function nextActorId(
 	players: Player[],

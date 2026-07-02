@@ -10,9 +10,7 @@ const bothExcluded: Filter = {
 };
 
 /**
- *
  * Render with a spy onChange and open the dialog.
- *
  */
 async function open(filter: Filter = EMPTY_MOVE_FILTER) {
 	const onChange = vi.fn();

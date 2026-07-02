@@ -7,9 +7,7 @@ import type { JSX } from "react";
 import css from "./select-field.module.css";
 
 /**
- *
  * A single option in a {@link SelectField} dropdown: its stored value and visible label.
- *
  */
 export interface SelectOption {
 	value: string;
@@ -17,9 +15,7 @@ export interface SelectOption {
 }
 
 /**
- *
  * Props for {@link SelectField}.
- *
  */
 interface SelectFieldProps {
 	label: string;
@@ -28,9 +24,7 @@ interface SelectFieldProps {
 	options: SelectOption[];
 	placeholder?: string;
 	/**
-	 *
 	 * Render the label visually (default) or keep it screen-reader only.
-	 *
 	 */
 	hideLabel?: boolean;
 	className?: string;
@@ -38,9 +32,7 @@ interface SelectFieldProps {
 }
 
 /**
- *
  * A labelled dropdown built on Radix Select.
- *
  */
 export function SelectField({
 	label,

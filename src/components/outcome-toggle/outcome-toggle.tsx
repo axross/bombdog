@@ -9,23 +9,17 @@ import type { Outcome, RevealedWire } from "@/lib/types";
 import css from "./outcome-toggle.module.css";
 
 /**
- *
  * Props for {@link OutcomeToggle}.
- *
  */
 interface OutcomeToggleProps {
 	outcome: Outcome | null;
 	revealed: RevealedWire | null;
 	/**
-	 *
 	 * Sets both at once: success clears the revealed value; fail records it.
-	 *
 	 */
 	onChange: (outcome: Outcome, revealed: RevealedWire | null) => void;
 	/**
-	 *
 	 * Optional heading shown above the buttons.
-	 *
 	 */
 	label?: string;
 	className?: string;
@@ -33,10 +27,8 @@ interface OutcomeToggleProps {
 }
 
 /**
- *
  * Success / Fail control. Choosing Fail opens a dialog to record the wire's
  * actual value, which is then shown on the button, e.g. "✕ Fail (8)".
- *
  */
 export function OutcomeToggle({
 	outcome,

@@ -12,10 +12,8 @@ import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./tracker-app.module.css";
 
 /**
- *
  * Top-level client shell. Drives IndexedDB rehydration, then routes between the
  * loading, setup, and tracker states.
- *
  */
 export function TrackerApp(): JSX.Element {
 	const hasHydrated = useTrackerStore((s) => s.hasHydrated);

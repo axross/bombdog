@@ -9,16 +9,12 @@ import { del, get, set } from "idb-keyval";
 import type { StateStorage } from "zustand/middleware";
 
 /**
- *
  * IndexedDB key under which the whole persisted state blob is stored.
- *
  */
 export const STORAGE_KEY = "bombdog:tracker";
 
 /**
- *
  * In-memory `StateStorage`, used for tests and as a graceful fallback.
- *
  */
 export function createMemoryStorage(): StateStorage {
 	const map = new Map<string, string>();
@@ -44,13 +40,11 @@ const idbBackedStorage: StateStorage = {
 };
 
 /**
- *
  * Whether the runtime exposes a usable `indexedDB` global.
  *
  * @remarks
  * Wrapped in try/catch because reading `indexedDB` can throw in sandboxed
  * contexts; server-side rendering simply lacks the global.
- *
  */
 function isIndexedDbAvailable(): boolean {
 	try {
@@ -61,9 +55,7 @@ function isIndexedDbAvailable(): boolean {
 }
 
 /**
- *
  * The storage used by the tracker store: IndexedDB when available, else memory.
- *
  */
 export const idbStorage: StateStorage = isIndexedDbAvailable()
 	? idbBackedStorage

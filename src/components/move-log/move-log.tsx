@@ -25,9 +25,7 @@ const KIND_LABEL: Record<MoveType, string> = {
 };
 
 /**
- *
  * The action label shown on a row; detectors name the specific card used.
- *
  */
 function kindLabel(move: Move): string {
 	return move.type === "detector"
@@ -42,9 +40,7 @@ const CHIP_VARIANT: Record<"blue" | "yellow" | "unknown", string> = {
 };
 
 /**
- *
  * A wire value shown as a colour-coded chip: blue, yellow, or "?" (unknown).
- *
  */
 function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
 	const variant =
@@ -61,10 +57,8 @@ function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
 }
 
 /**
- *
  * Success/fail badge for a guess-based move. On a failure with a known
  * `revealed` value, the badge also shows that value (e.g. "fail (8)").
- *
  */
 function OutcomeBadge({
 	outcome,
@@ -98,10 +92,8 @@ function OutcomeBadge({
 }
 
 /**
- *
  * The move-type-specific detail: wire chip(s) plus, for guess-based moves, an
  * outcome badge; equipment shows its name and optional note instead.
- *
  */
 function MoveDetail({ move }: { move: Move }): JSX.Element {
 	switch (move.type) {
@@ -134,10 +126,8 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 }
 
 /**
- *
  * A single row in the history: sequence number, actor (and target, for moves
  * that have one), the action label, its detail, and an edit control.
- *
  */
 function MoveRow({
 	move,
@@ -186,10 +176,8 @@ function MoveRow({
 }
 
 /**
- *
  * Top-half chronological history (oldest → newest), auto-scrolled to the end.
  * The `filter` is owned by the shell so its trigger can live in the header.
- *
  */
 export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
