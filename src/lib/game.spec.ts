@@ -1,12 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
+	filterMoves,
 	formatRevealed,
 	formatWire,
 	getPlayerName,
+	isFilterActive,
+	isMoveVisible,
 	nextActorId,
 	targetPlayerOrder,
 } from "./game";
-import type { DualCutMove, Player } from "./types";
+import {
+	type DualCutMove,
+	EMPTY_MOVE_FILTER,
+	type Move,
+	type Player,
+} from "./types";
 
 const players: Player[] = [
 	{ id: "a", name: "Alice" },
@@ -93,6 +101,88 @@ describe("nextActorId()", () => {
 
 	it("falls back to the Captain when the last actor is unknown", () => {
 		expect(nextActorId(players, 2, [dualCut("gone", 1)])).toBe("c");
+	});
+});
+
+// Shared move fixtures for the filter contracts below.
+const failedDual: DualCutMove = {
+	id: "d-fail",
+	seq: 1,
+	at: 1,
+	type: "dual-cut",
+	actorId: "a",
+	targetId: "b",
+	value: 4,
+	outcome: "fail",
+	revealed: 8,
+};
+const successDual = dualCut("a", 2);
+const solo: Move = {
+	id: "s",
+	seq: 3,
+	at: 3,
+	type: "solo-cut",
+	actorId: "a",
+	value: 5,
+};
+const equipment: Move = {
+	id: "e",
+	seq: 4,
+	at: 4,
+	type: "equipment",
+	actorId: "b",
+	equipment: "Radar",
+};
+const filterMovesFixture: Move[] = [failedDual, successDual, solo, equipment];
+
+describe("isMoveVisible()", () => {
+	it("shows everything under the empty filter", () => {
+		for (const move of filterMovesFixture) {
+			expect(isMoveVisible(move, EMPTY_MOVE_FILTER)).toBe(true);
+		}
+	});
+
+	it("hides only successful dual cuts, keeping failed ones", () => {
+		const filter = { ...EMPTY_MOVE_FILTER, excludeSuccessfulDualCut: true };
+		expect(isMoveVisible(successDual, filter)).toBe(false);
+		expect(isMoveVisible(failedDual, filter)).toBe(true);
+	});
+
+	it("hides solo cuts", () => {
+		const filter = { ...EMPTY_MOVE_FILTER, excludeSoloCut: true };
+		expect(isMoveVisible(solo, filter)).toBe(false);
+		expect(isMoveVisible(successDual, filter)).toBe(true);
+	});
+});
+
+describe("filterMoves()", () => {
+	it("returns the input list unchanged when nothing is excluded", () => {
+		expect(filterMoves(filterMovesFixture, EMPTY_MOVE_FILTER)).toBe(
+			filterMovesFixture,
+		);
+	});
+
+	it("drops both excluded types while preserving order", () => {
+		const filter = {
+			excludeSuccessfulDualCut: true,
+			excludeSoloCut: true,
+		};
+		expect(filterMoves(filterMovesFixture, filter)).toEqual([
+			failedDual,
+			equipment,
+		]);
+	});
+});
+
+describe("isFilterActive()", () => {
+	it("is false for the empty filter", () => {
+		expect(isFilterActive(EMPTY_MOVE_FILTER)).toBe(false);
+	});
+
+	it("is true when any exclusion is set", () => {
+		expect(isFilterActive({ ...EMPTY_MOVE_FILTER, excludeSoloCut: true })).toBe(
+			true,
+		);
 	});
 });
 

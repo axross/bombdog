@@ -120,6 +120,23 @@ export type MoveDraft =
 	  }
 	| { type: "equipment"; actorId: string; equipment: string; note?: string };
 
+/**
+ * View-only filter for the move log. Each flag hides its matching moves from
+ * the displayed history; it never touches the persisted moves themselves.
+ */
+export interface MoveFilter {
+	/** Hide dual cuts whose outcome was a success. */
+	excludeSuccessfulDualCut: boolean;
+	/** Hide solo cuts. */
+	excludeSoloCut: boolean;
+}
+
+/** A filter that excludes nothing — the initial and reset state. */
+export const EMPTY_MOVE_FILTER: MoveFilter = {
+	excludeSuccessfulDualCut: false,
+	excludeSoloCut: false,
+};
+
 /** The persisted slice of tracker state. */
 export interface TrackerState {
 	players: Player[];
