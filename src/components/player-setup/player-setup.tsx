@@ -24,7 +24,7 @@ function makeId(): string {
 /** First-run / post-reset screen: pick player count, names, and the Captain. */
 export function PlayerSetup(): JSX.Element {
 	const configurePlayers = useTrackerStore((s) => s.configurePlayers);
-	const [count, setCount] = useState(3);
+	const [count, setCount] = useState(4);
 	const [names, setNames] = useState<string[]>(defaultNames);
 	const [captainIndex, setCaptainIndex] = useState(0);
 

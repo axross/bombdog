@@ -43,10 +43,10 @@ export async function startTrackingWith(
 
 	await gotoApp(page);
 	const setup = page.getByTestId("setup");
-	for (let n = 3; n < target; n++) {
+	for (let n = 4; n < target; n++) {
 		await setup.getByRole("button", { name: "Add a player" }).click();
 	}
-	for (let n = 3; n > target; n--) {
+	for (let n = 4; n > target; n--) {
 		await setup.getByRole("button", { name: "Remove a player" }).click();
 	}
 
