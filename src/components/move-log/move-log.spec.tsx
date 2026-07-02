@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
-import type { Move, Player } from "@/lib/types";
+import { EMPTY_MOVE_FILTER, type Move, type Player } from "@/lib/types";
 import { MoveLog } from "./move-log";
 
 const players: Player[] = [
@@ -53,7 +53,7 @@ describe("<MoveLog>", () => {
 	beforeEach(() => seed(moves));
 
 	it("renders each logged move with actors and an accessible outcome", () => {
-		render(<MoveLog />);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 		expect(screen.getByText("Alice")).toBeInTheDocument();
 		expect(screen.getByText("Radar")).toBeInTheDocument();
 		expect(screen.getByText(/success/)).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe("<MoveLog>", () => {
 	});
 
 	it("exposes an edit control per move", () => {
-		render(<MoveLog />);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 		expect(
 			screen.getByRole("button", { name: "Edit move #1" }),
 		).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("<MoveLog>", () => {
 
 	it("shows an empty state when there are no moves", () => {
 		seed([]);
-		render(<MoveLog />);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 		expect(screen.getByText(/No moves yet/)).toBeInTheDocument();
 	});
 
@@ -118,7 +118,7 @@ describe("<MoveLog>", () => {
 				note: "seat 3 is empty",
 			},
 		]);
-		render(<MoveLog />);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 
 		expect(screen.getByText("Solo cut")).toBeInTheDocument();
 		// The Yellow wire renders its dedicated chip.
@@ -134,15 +134,14 @@ describe("<MoveLog>", () => {
 
 	it("opens the move editor when an edit control is used", async () => {
 		const user = userEvent.setup();
-		render(<MoveLog />);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 
 		await user.click(screen.getByRole("button", { name: "Edit move #1" }));
 		expect(screen.getByTestId("move-editor")).toBeInTheDocument();
 		expect(screen.getByText("Edit move #1")).toBeInTheDocument();
 	});
 
-	it("hides moves excluded by the filter", async () => {
-		const user = userEvent.setup();
+	it("hides moves excluded by the filter prop", () => {
 		seed([
 			{
 				id: "1",
@@ -156,12 +155,11 @@ describe("<MoveLog>", () => {
 			},
 			{ id: "2", seq: 2, at: 2, type: "solo-cut", actorId: "b", value: 5 },
 		]);
-		render(<MoveLog />);
-		expect(screen.getAllByTestId("move")).toHaveLength(2);
-
-		await user.click(screen.getByTestId("filter"));
-		await user.click(screen.getByTestId("filter-exclude-both"));
-		await user.click(screen.getByTestId("filter-done"));
+		render(
+			<MoveLog
+				filter={{ excludeSuccessfulDualCut: true, excludeSoloCut: true }}
+			/>,
+		);
 
 		// Both moves are excluded, so the filtered-empty state shows instead.
 		expect(screen.queryByTestId("move")).not.toBeInTheDocument();

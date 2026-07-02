@@ -1,13 +1,14 @@
 "use client";
 
 import { Bomb } from "lucide-react";
-import { type JSX, useEffect } from "react";
+import { type JSX, useEffect, useState } from "react";
 import { MoveComposer } from "@/components/move-composer/move-composer";
+import { MoveFilter } from "@/components/move-filter/move-filter";
 import { MoveLog } from "@/components/move-log/move-log";
 import { PlayerSetup } from "@/components/player-setup/player-setup";
 import { ResetButton } from "@/components/reset-button/reset-button";
-import { getPlayerName, nextActorId } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
+import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./tracker-app.module.css";
 
 /**
@@ -17,8 +18,9 @@ import css from "./tracker-app.module.css";
 export function TrackerApp(): JSX.Element {
 	const hasHydrated = useTrackerStore((s) => s.hasHydrated);
 	const players = useTrackerStore((s) => s.players);
-	const captainIndex = useTrackerStore((s) => s.captainIndex);
-	const moves = useTrackerStore((s) => s.moves);
+	// The move-log filter lives here so its trigger can sit in the header while
+	// the log below consumes the resulting filter.
+	const [filter, setFilter] = useState<Filter>(EMPTY_MOVE_FILTER);
 
 	// Hydration is deferred (skipHydration) so server and first client render
 	// match; kick it off once mounted.
@@ -39,8 +41,6 @@ export function TrackerApp(): JSX.Element {
 		return <PlayerSetup />;
 	}
 
-	const currentActorId = nextActorId(players, captainIndex, moves);
-
 	return (
 		<div className={css.app} data-testid="app">
 			<header className={css.header} data-testid="header">
@@ -48,17 +48,10 @@ export function TrackerApp(): JSX.Element {
 					<Bomb className={css.brandIcon} size={22} aria-hidden />
 					Bombdog
 				</h1>
-				{currentActorId && (
-					<span className={css.turn}>
-						<span className={css.turnLabel}>Turn</span>
-						<span className={css.turnName}>
-							{getPlayerName(players, currentActorId)}
-						</span>
-					</span>
-				)}
+				<MoveFilter filter={filter} onChange={setFilter} />
 				<ResetButton />
 			</header>
-			<MoveLog />
+			<MoveLog filter={filter} />
 			<MoveComposer />
 		</div>
 	);

@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
 import {
 	filterDialog,
+	header,
 	logDoubleDetector,
 	logDualCut,
 	logSoloCut,
-	moveLog,
 	moveRow,
 	openFilter,
 	startTracking,
 } from "../helpers/tracker";
 
-// Move-log filter: a fixed toolbar button opens a dialog that hides move types
+// Move-log filter: a header button opens a dialog that hides move types
 // (successful dual cuts and/or solo cuts) from the displayed history without
 // touching the underlying log.
 
@@ -73,8 +73,8 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 3)).toHaveCount(0);
 		await expect(moveRow(page, 2)).toBeVisible();
 		await expect(moveRow(page, 4)).toBeVisible();
-		// The active filter is flagged on the toolbar trigger.
-		await expect(moveLog(page).getByTestId("filter-active")).toBeVisible();
+		// The active filter is flagged on the header trigger.
+		await expect(header(page).getByTestId("filter-active")).toBeVisible();
 
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-reset").click();
@@ -83,6 +83,6 @@ test.describe("move-log filter", () => {
 		// Everything returns and the active flag clears.
 		await expect(moveRow(page, 1)).toBeVisible();
 		await expect(moveRow(page, 3)).toBeVisible();
-		await expect(moveLog(page).getByTestId("filter-active")).toHaveCount(0);
+		await expect(header(page).getByTestId("filter-active")).toHaveCount(0);
 	});
 });

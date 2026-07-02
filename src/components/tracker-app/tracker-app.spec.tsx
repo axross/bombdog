@@ -79,7 +79,7 @@ describe("<TrackerApp>", () => {
 		expect(screen.queryByTestId("app")).not.toBeInTheDocument();
 	});
 
-	it("renders the tracker shell with the current actor once players exist", () => {
+	it("renders the tracker shell with the header controls once players exist", () => {
 		seed({
 			hasHydrated: true,
 			players,
@@ -90,11 +90,11 @@ describe("<TrackerApp>", () => {
 
 		const header = screen.getByTestId("header");
 		expect(within(header).getByText("Bombdog")).toBeInTheDocument();
-		expect(within(header).getByText("Turn")).toBeInTheDocument();
-		// Last move was Alice (seat 0); rotation passes to Bob (seat 1).
-		expect(within(header).getByText("Bob")).toBeInTheDocument();
-
-		expect(screen.getByRole("button", { name: "Reset" })).toBeInTheDocument();
+		// The filter trigger and reset now share the header.
+		expect(within(header).getByTestId("filter")).toBeInTheDocument();
+		expect(
+			within(header).getByRole("button", { name: "Reset" }),
+		).toBeInTheDocument();
 		// Move history + composer are mounted.
 		expect(screen.getByTestId("move-log")).toBeInTheDocument();
 		expect(
@@ -108,10 +108,4 @@ describe("<TrackerApp>", () => {
 
 		expect(useTrackerStore.persist.rehydrate).toHaveBeenCalledTimes(1);
 	});
-
-	// The `currentActorId` falsy branch (the header omitting the Turn indicator)
-	// is unreachable: nextActorId only returns undefined when players is empty,
-	// but that case is handled by the earlier `players.length === 0` return, so
-	// TrackerApp only evaluates it with a non-empty roster. Documented, not
-	// covered.
 });

@@ -15,8 +15,8 @@ interface MoveFilterProps {
 
 /**
  * The move-log filter: a trigger button that opens a dialog for hiding move
- * types. The trigger is meant to sit in the log's fixed toolbar, so it stays in
- * view while the history scrolls behind it.
+ * types. The trigger is meant to sit in the app header, so it stays in view
+ * while the history scrolls below it.
  */
 export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 	const active = isFilterActive(filter);
