@@ -94,7 +94,7 @@ describe("<WirePad>", () => {
 		).toBeInTheDocument();
 	});
 
-	describe("in multiple mode", () => {
+	describe("when in multiple mode", () => {
 		it("reports the selected values as an array", async () => {
 			const user = userEvent.setup();
 			const onValuesChange = vi.fn();
@@ -107,18 +107,26 @@ describe("<WirePad>", () => {
 				/>,
 			);
 
-			await user.click(screen.getByTestId("wire-3"));
+			await user.click(screen.getByRole("button", { name: "Wire 3" }));
 
 			expect(onValuesChange).toHaveBeenCalledWith([3]);
 		});
 
-		it("reflects the selected values as active", () => {
+		it("reflects the selected values as pressed", () => {
 			render(
 				<WirePad multiple values={[3, 11]} onValuesChange={vi.fn()} blueOnly />,
 			);
 
-			expect(screen.getByTestId("wire-3")).toHaveAttribute("data-state", "on");
-			expect(screen.getByTestId("wire-1")).toHaveAttribute("data-state", "off");
+			// Multi-select renders toggle buttons whose selection is the ARIA
+			// pressed state (single-select uses radios + checked instead).
+			expect(screen.getByRole("button", { name: "Wire 3" })).toHaveAttribute(
+				"aria-pressed",
+				"true",
+			);
+			expect(screen.getByRole("button", { name: "Wire 1" })).toHaveAttribute(
+				"aria-pressed",
+				"false",
+			);
 		});
 
 		it("adds to the selection when no max is set", async () => {
@@ -133,7 +141,7 @@ describe("<WirePad>", () => {
 				/>,
 			);
 
-			await user.click(screen.getByTestId("wire-7"));
+			await user.click(screen.getByRole("button", { name: "Wire 7" }));
 
 			expect(onValuesChange).toHaveBeenCalledWith([3, 7]);
 		});
@@ -151,7 +159,7 @@ describe("<WirePad>", () => {
 				/>,
 			);
 
-			await user.click(screen.getByTestId("wire-5"));
+			await user.click(screen.getByRole("button", { name: "Wire 5" }));
 
 			// The third pick pushes out the earliest (3), keeping the last two.
 			expect(onValuesChange).toHaveBeenCalledWith([11, 5]);
@@ -169,7 +177,7 @@ describe("<WirePad>", () => {
 				/>,
 			);
 
-			await user.click(screen.getByTestId("wire-3"));
+			await user.click(screen.getByRole("button", { name: "Wire 3" }));
 
 			expect(onValuesChange).toHaveBeenCalledWith([]);
 		});
