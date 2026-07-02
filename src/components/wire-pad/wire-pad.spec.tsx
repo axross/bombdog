@@ -93,4 +93,85 @@ describe("<WirePad>", () => {
 			screen.getByRole("radiogroup", { name: "Wire value" }),
 		).toBeInTheDocument();
 	});
+
+	describe("in multiple mode", () => {
+		it("reports the selected values as an array", async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<WirePad
+					multiple
+					values={[]}
+					onValuesChange={onValuesChange}
+					blueOnly
+				/>,
+			);
+
+			await user.click(screen.getByTestId("wire-3"));
+
+			expect(onValuesChange).toHaveBeenCalledWith([3]);
+		});
+
+		it("reflects the selected values as active", () => {
+			render(
+				<WirePad multiple values={[3, 11]} onValuesChange={vi.fn()} blueOnly />,
+			);
+
+			expect(screen.getByTestId("wire-3")).toHaveAttribute("data-state", "on");
+			expect(screen.getByTestId("wire-1")).toHaveAttribute("data-state", "off");
+		});
+
+		it("adds to the selection when no max is set", async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<WirePad
+					multiple
+					values={[3]}
+					onValuesChange={onValuesChange}
+					blueOnly
+				/>,
+			);
+
+			await user.click(screen.getByTestId("wire-7"));
+
+			expect(onValuesChange).toHaveBeenCalledWith([3, 7]);
+		});
+
+		it("caps the selection at max, dropping the oldest pick", async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<WirePad
+					multiple
+					values={[3, 11]}
+					onValuesChange={onValuesChange}
+					max={2}
+					blueOnly
+				/>,
+			);
+
+			await user.click(screen.getByTestId("wire-5"));
+
+			// The third pick pushes out the earliest (3), keeping the last two.
+			expect(onValuesChange).toHaveBeenCalledWith([11, 5]);
+		});
+
+		it("allows deselecting a chosen value (unlike single mode)", async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<WirePad
+					multiple
+					values={[3]}
+					onValuesChange={onValuesChange}
+					blueOnly
+				/>,
+			);
+
+			await user.click(screen.getByTestId("wire-3"));
+
+			expect(onValuesChange).toHaveBeenCalledWith([]);
+		});
+	});
 });

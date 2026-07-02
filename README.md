@@ -2,7 +2,7 @@
 
 A **Bomb Busters move tracker** — a phone-first companion for the board game
 [Bomb Busters](https://boardgamegeek.com/boardgame/413246/bomb-busters). Log every
-player's turn (dual cut, solo cut, double detector, equipment) with a running
+player's turn (dual cut, solo cut, detectors, equipment) with a running
 history that persists in the browser until you reset. Built with
 [Next.js](https://nextjs.org) (App Router) and TypeScript.
 

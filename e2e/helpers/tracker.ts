@@ -182,15 +182,26 @@ export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
 	await logMove(page);
 }
 
-/** Compose and log a double detector (blue wires only, no yellow). */
-export async function logDoubleDetector(
+interface DetectorOptions {
+	actor?: string;
+	/** The detector card label (e.g. "Triple Detector (3)"); omit for the Double Detector default. */
+	card?: string;
+	target: string;
+	/** Named blue values: one for double/triple/super, two for the X or Y Ray. */
+	values: Wire[];
+	outcome: "success" | { reveal: Revealed };
+}
+
+/** Compose and log a detector action (blue wires only, no yellow). */
+export async function logDetector(
 	page: Page,
-	opts: CutOptions,
+	opts: DetectorOptions,
 ): Promise<void> {
-	await composer(page).getByTestId("tab-double-detector").click();
+	await composer(page).getByTestId("tab-detector").click();
 	if (opts.actor) await setActor(page, opts.actor);
+	if (opts.card) await chooseInComposer(page, "detector", opts.card);
 	await pickTarget(page, opts.target);
-	await selectWire(page, opts.wire);
+	for (const value of opts.values) await selectWire(page, value);
 	await setOutcome(page, opts.outcome);
 	await logMove(page);
 }

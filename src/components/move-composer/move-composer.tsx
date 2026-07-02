@@ -46,10 +46,6 @@ export function MoveComposer(): JSX.Element {
 
 	const handleTypeChange = (next: MoveType) => {
 		setType(next);
-		// Detectors are blue-only: drop an incompatible yellow selection.
-		if (next === "double-detector" && fields.value === "yellow") {
-			setFields({ ...fields, value: null });
-		}
 	};
 
 	const handleSubmit = (event: React.FormEvent) => {

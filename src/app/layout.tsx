@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "Bombdog",
 	description:
-		"Log every player's turn in the board game Bomb Busters — dual cuts, solo cuts, double detectors, and equipment — with persistent history.",
+		"Log every player's turn in the board game Bomb Busters — dual cuts, solo cuts, detectors, and equipment — with persistent history.",
 };
 
 export const viewport: Viewport = {

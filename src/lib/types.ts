@@ -32,11 +32,22 @@ export type Outcome = "success" | "fail";
  */
 export type RevealedWire = WireValue | "unknown";
 
-export type MoveType =
-	| "dual-cut"
-	| "solo-cut"
-	| "double-detector"
-	| "equipment";
+export type MoveType = "dual-cut" | "solo-cut" | "detector" | "equipment";
+
+/**
+ * The detector cards, which all resolve like an extended Dual cut. They differ
+ * only in how many wires are targeted and how many values are named:
+ *
+ * - `double` — say one value, point at two different wires.
+ * - `triple` — say one value, point at three different wires.
+ * - `super` — say one value, point at a player; every wire they hold is a target.
+ * - `x-or-y-ray` — say two values, point at a single wire (it may be either).
+ *
+ * Because this app is a pure logger it never tracks wire positions, so a
+ * detector move records the target player, the named value(s), and the outcome;
+ * the kind conveys how many wires were pointed at.
+ */
+export type DetectorKind = "double" | "triple" | "super" | "x-or-y-ray";
 
 /** A player occupies a seat; seat order is the array index in `players`. */
 export interface Player {
@@ -72,11 +83,17 @@ export interface SoloCutMove extends BaseMove {
 	value: WireValue;
 }
 
-/** Double detector: announce one blue value, point at two of a target's wires. */
-export interface DoubleDetectorMove extends BaseMove {
-	type: "double-detector";
+/**
+ * Detector: use a detector card against a target. The actor announces one blue
+ * value (two for the X or Y Ray) and points at the target's wire(s). Detectors
+ * indicate blue values only (per the FAQ), so `values` never holds "yellow".
+ */
+export interface DetectorMove extends BaseMove {
+	type: "detector";
+	detector: DetectorKind;
 	targetId: string;
-	value: BlueWireValue;
+	/** Named blue values: one for double/triple/super, two for the X or Y Ray. */
+	values: BlueWireValue[];
 	outcome: Outcome;
 	/** The wire's true value, recorded when the detector failed. */
 	revealed?: RevealedWire;
@@ -89,11 +106,7 @@ export interface EquipmentMove extends BaseMove {
 	note?: string;
 }
 
-export type Move =
-	| DualCutMove
-	| SoloCutMove
-	| DoubleDetectorMove
-	| EquipmentMove;
+export type Move = DualCutMove | SoloCutMove | DetectorMove | EquipmentMove;
 
 /**
  * The editable payload of a move — everything except the generated `id`/`seq`/
@@ -111,10 +124,11 @@ export type MoveDraft =
 	  }
 	| { type: "solo-cut"; actorId: string; value: WireValue }
 	| {
-			type: "double-detector";
+			type: "detector";
+			detector: DetectorKind;
 			actorId: string;
 			targetId: string;
-			value: BlueWireValue;
+			values: BlueWireValue[];
 			outcome: Outcome;
 			revealed?: RevealedWire;
 	  }
@@ -158,18 +172,48 @@ export const MAX_PLAYERS = 5;
  * The equipment cards, in unlock-number order. The number in each label is the
  * wire value whose pair unlocks that equipment. The composer also offers a
  * free-text note for anything mission-specific.
+ *
+ * The detector cards (Triple Detector, Super Detector, X or Y Ray) are omitted
+ * here: they have structured effects and are logged through the dedicated
+ * "Detectors" action instead of as a free-text equipment note.
  */
 export const EQUIPMENT_OPTIONS = [
 	"Label ≠ (1)",
 	"Walkie-Talkies (2)",
-	"Triple Detector (3)",
 	"Post-it (4)",
-	"Super Detector (5)",
 	"Rewinder (6)",
 	"Emergency Batteries (7)",
 	"General Rader (8)",
 	"Stabilizer (9)",
-	"X or Y Ray (10)",
 	"Coffee Mag (11)",
 	"Label ＝ (12)",
 ] as const;
+
+/** How many blue values a detector names: two for the X or Y Ray, one otherwise. */
+export type DetectorValueCount = 1 | 2;
+
+/** A selectable detector card: its kind, its composer/log label, and value count. */
+export interface DetectorOption {
+	kind: DetectorKind;
+	/** Label shown in the composer dropdown and the move log. */
+	label: string;
+	/** How many distinct blue values the actor names. */
+	valueCount: DetectorValueCount;
+}
+
+/**
+ * The detector cards offered by the "Detectors" action, in unlock order. The
+ * Double Detector is every player's Character-card ability (no unlock number);
+ * the rest are equipment whose unlock number is shown in the label.
+ */
+export const DETECTOR_OPTIONS: DetectorOption[] = [
+	{ kind: "double", label: "Double Detector", valueCount: 1 },
+	{ kind: "triple", label: "Triple Detector (3)", valueCount: 1 },
+	{ kind: "super", label: "Super Detector (5)", valueCount: 1 },
+	{ kind: "x-or-y-ray", label: "X or Y Ray (10)", valueCount: 2 },
+];
+
+/** Look up a detector option by kind, falling back to the Double Detector. */
+export function detectorOption(kind: DetectorKind): DetectorOption {
+	return DETECTOR_OPTIONS.find((d) => d.kind === kind) ?? DETECTOR_OPTIONS[0];
+}

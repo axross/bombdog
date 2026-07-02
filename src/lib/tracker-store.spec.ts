@@ -196,6 +196,108 @@ describe("reset()", () => {
 	});
 });
 
+describe("persist migration (v1 → v2)", () => {
+	const { migrate } = useTrackerStore.persist.getOptions();
+
+	it("rewrites legacy double-detector moves into the unified detector shape", () => {
+		const persisted = {
+			players,
+			captainIndex: 0,
+			moves: [
+				{
+					id: "1",
+					seq: 1,
+					at: 0,
+					type: "double-detector",
+					actorId: "a",
+					targetId: "b",
+					value: 6,
+					outcome: "fail",
+					revealed: "unknown",
+				},
+				{
+					id: "2",
+					seq: 2,
+					at: 0,
+					type: "dual-cut",
+					actorId: "a",
+					targetId: "b",
+					value: 9,
+					outcome: "success",
+				},
+			],
+		};
+
+		const result = migrate?.(persisted, 1) as {
+			moves: Record<string, unknown>[];
+		};
+
+		expect(result.moves[0]).toEqual({
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "detector",
+			detector: "double",
+			actorId: "a",
+			targetId: "b",
+			values: [6],
+			outcome: "fail",
+			revealed: "unknown",
+		});
+		// Non-detector moves pass through untouched.
+		expect(result.moves[1]).toMatchObject({ type: "dual-cut", value: 9 });
+	});
+
+	it("defaults values to an empty array when the legacy move had no value", () => {
+		const persisted = {
+			moves: [
+				{
+					type: "double-detector",
+					actorId: "a",
+					targetId: "b",
+					outcome: "success",
+				},
+			],
+		};
+
+		const result = migrate?.(persisted, 1) as {
+			moves: Record<string, unknown>[];
+		};
+
+		expect(result.moves[0]).toMatchObject({
+			type: "detector",
+			detector: "double",
+			values: [],
+		});
+	});
+
+	it("leaves already-current state untouched", () => {
+		const persisted = {
+			moves: [{ type: "detector", detector: "triple", values: [3] }],
+		};
+
+		const result = migrate?.(persisted, 2) as {
+			moves: Record<string, unknown>[];
+		};
+
+		expect(result.moves[0]).toMatchObject({
+			type: "detector",
+			detector: "triple",
+		});
+	});
+
+	it("tolerates non-object state, a missing moves array, and odd entries", () => {
+		expect(migrate?.(null, 1)).toBeNull();
+		expect(migrate?.({ players }, 1)).toEqual({ players });
+		expect(migrate?.({ moves: "nope" }, 1)).toEqual({ moves: "nope" });
+
+		const withOddEntries = {
+			moves: [null, "x", { type: "solo-cut", value: 5 }],
+		};
+		expect(migrate?.(withOddEntries, 1)).toEqual(withOddEntries);
+	});
+});
+
 describe("persist.rehydrate()", () => {
 	it("flips hasHydrated once rehydration completes", async () => {
 		useTrackerStore.setState({ hasHydrated: false });

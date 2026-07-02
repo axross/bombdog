@@ -132,7 +132,36 @@ export const useTrackerStore = create<TrackerStore>()(
 		{
 			name: STORAGE_KEY,
 			storage: createJSONStorage(() => idbStorage),
-			version: 1,
+			version: 2,
+			// v1 → v2: the standalone "double-detector" move became the unified
+			// "detector" move (a `detector` kind plus a `values` array). Rewrite any
+			// persisted double-detector moves so old logs keep rendering.
+			migrate: (persisted, version) => {
+				if (version < 2 && persisted && typeof persisted === "object") {
+					const state = persisted as { moves?: unknown };
+					if (Array.isArray(state.moves)) {
+						state.moves = state.moves.map((move) => {
+							if (
+								!move ||
+								typeof move !== "object" ||
+								(move as { type?: unknown }).type !== "double-detector"
+							) {
+								return move;
+							}
+							const { value, ...rest } = move as {
+								value?: unknown;
+							} & Record<string, unknown>;
+							return {
+								...rest,
+								type: "detector",
+								detector: "double",
+								values: value === undefined ? [] : [value],
+							};
+						});
+					}
+				}
+				return persisted as TrackerStore;
+			},
 			// Persist the durable game state plus the carried-over roster (so a
 			// reset survives a reload); keep redo history ephemeral.
 			partialize: (state) => ({
