@@ -353,10 +353,15 @@ test.describe("session flow", () => {
 			await expect(moveRow(page, 2)).toBeVisible();
 		});
 
-		await test.step("Delete the first move from its edit panel", async () => {
+		await test.step("Delete the first move, confirming the prompt", async () => {
 			await moveRow(page, 1).getByTestId("edit").click();
 			const editor = page.getByTestId("move-editor");
 			await editor.getByTestId("delete").click();
+
+			// deletion is gated behind a confirmation dialog.
+			const confirm = page.getByTestId("delete-dialog");
+			await expect(confirm).toBeVisible();
+			await confirm.getByTestId("delete-confirm").click();
 
 			// the editor closes and the deleted row is gone; the other move remains.
 			await expect(editor).toBeHidden();

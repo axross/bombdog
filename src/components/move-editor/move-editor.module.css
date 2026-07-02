@@ -133,6 +133,80 @@
 		}
 	}
 
+	/* Delete-confirmation AlertDialog: portaled to <body> like the editor, so it
+	   gets its own scopes and sits above the editor's overlay/content (z 40/50). */
+	@scope (.confirmOverlay) {
+		:where(:scope) {
+			position: fixed;
+			inset: 0;
+			background-color: color-mix(in oklch, var(--slate-1) 55%, transparent);
+			backdrop-filter: blur(2px);
+			z-index: 60;
+		}
+	}
+
+	@scope (.confirmContent) {
+		:where(:scope) {
+			position: fixed;
+			inset-inline-start: 50%;
+			inset-block-start: 50%;
+			translate: -50% -50%;
+			inline-size: min(92vw, 26rem);
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+			padding: var(--space-5);
+			background-color: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			z-index: 70;
+		}
+
+		.confirmTitle {
+			font-size: 1.15rem;
+			font-weight: 700;
+		}
+
+		.confirmDescription {
+			color: var(--text-muted);
+		}
+
+		.confirmActions {
+			display: flex;
+			justify-content: flex-end;
+			gap: var(--space-2);
+			margin-block-start: var(--space-2);
+		}
+
+		.confirmCancel,
+		.confirmDelete {
+			min-block-size: 44px;
+			padding-inline: var(--space-5);
+			border-radius: var(--radius-sm);
+			font-weight: 600;
+			border: 1px solid var(--border);
+		}
+
+		.confirmCancel {
+			background-color: var(--surface-3);
+			color: var(--text);
+
+			&:hover {
+				background-color: var(--surface-hover);
+			}
+		}
+
+		.confirmDelete {
+			background-color: var(--danger);
+			color: var(--accent-contrast);
+			border-color: var(--danger);
+
+			&:hover {
+				background-color: var(--danger-hover);
+			}
+		}
+	}
+
 	/* Keyframes are scoped to this module by CSS Modules, so the names above
 	   resolve to these definitions. */
 	@keyframes overlay-in {

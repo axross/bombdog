@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { Dialog } from "radix-ui";
+import { AlertDialog, Dialog } from "radix-ui";
 import { type JSX, useState } from "react";
 import { buildDraft, fieldsFromMove } from "@/components/move-form/draft";
 import { MoveForm } from "@/components/move-form/move-form";
@@ -84,15 +84,49 @@ export function MoveEditor({
 					/>
 
 					<div className={css.footer}>
-						<button
-							type="button"
-							className={css.danger}
-							onClick={handleDelete}
-							data-testid="delete"
-						>
-							<Trash2 size={15} aria-hidden />
-							Delete
-						</button>
+						<AlertDialog.Root>
+							<AlertDialog.Trigger asChild>
+								<button
+									type="button"
+									className={css.danger}
+									data-testid="delete"
+								>
+									<Trash2 size={15} aria-hidden />
+									Delete
+								</button>
+							</AlertDialog.Trigger>
+							<AlertDialog.Portal>
+								<AlertDialog.Overlay className={css.confirmOverlay} />
+								<AlertDialog.Content
+									className={css.confirmContent}
+									data-testid="delete-dialog"
+								>
+									<AlertDialog.Title className={css.confirmTitle}>
+										Delete move #{move.seq}?
+									</AlertDialog.Title>
+									<AlertDialog.Description className={css.confirmDescription}>
+										This removes the move from the history. It can't be undone.
+									</AlertDialog.Description>
+									<div className={css.confirmActions}>
+										<AlertDialog.Cancel asChild>
+											<button type="button" className={css.confirmCancel}>
+												Cancel
+											</button>
+										</AlertDialog.Cancel>
+										<AlertDialog.Action asChild>
+											<button
+												type="button"
+												className={css.confirmDelete}
+												onClick={handleDelete}
+												data-testid="delete-confirm"
+											>
+												Delete
+											</button>
+										</AlertDialog.Action>
+									</div>
+								</AlertDialog.Content>
+							</AlertDialog.Portal>
+						</AlertDialog.Root>
 						<div className={css.actions}>
 							<Dialog.Close asChild>
 								<button type="button" className={css.secondary}>
