@@ -205,6 +205,25 @@ test.describe("session flow", () => {
 		);
 	});
 
+	test("off-turn equipment returns the suggestion to the turn-holder", async ({
+		page,
+	}) => {
+		await startTracking(page);
+		// Captain (Player 1) cuts, so the turn belongs to Player 2.
+		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
+
+		// Player 4 fires equipment off-turn (overriding the Acting dropdown). It
+		// doesn't take the turn, so the suggestion snaps back to Player 2 — not to
+		// Player 4 and not clockwise from it.
+		await logEquipment(page, { actor: "Player 4", equipment: "Post-it (4)" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
+	});
+
 	test("undo and redo walk the move stack; a new move clears redo", async ({
 		page,
 	}) => {

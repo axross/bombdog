@@ -35,15 +35,6 @@ export function MoveComposer(): JSX.Element {
 
 	const draft = buildDraft(type, fields);
 
-	const seatAfter = (actorId: string): string => {
-		const seat = players.findIndex((p) => p.id === actorId);
-		// The actor is always a seated player in normal flow; the -1 branch and
-		// the `?? actorId` fallback are defensive guards the UI can't reach.
-		/* v8 ignore next 2 */
-		const nextSeat = seat === -1 ? 0 : (seat + 1) % players.length;
-		return players[nextSeat]?.id ?? actorId;
-	};
-
 	const handleTypeChange = (next: MoveType) => {
 		setType(next);
 	};
@@ -54,11 +45,17 @@ export function MoveComposer(): JSX.Element {
 		/* v8 ignore next */
 		if (!draft) return;
 		addMove(draft);
-		// Prepare the next entry: advance the suggested actor and clear inputs.
-		// Equipment doesn't pass the turn, so keep the actor on it after logging.
-		const nextActor =
-			type === "equipment" ? fields.actorId : seatAfter(fields.actorId);
-		setFields(emptyDraftFields(nextActor));
+		// Suggest the next actor with the same rule the log rehydrates through:
+		// append the just-logged move and ask nextActorId. It ignores equipment
+		// (so the turn stays put) and advances clockwise for every other move —
+		// one source of truth, so the live suggestion matches a reload. The id/
+		// seq/at are placeholders: nextActorId only reads `type` and `actorId`.
+		const suggested =
+			nextActorId(players, captainIndex, [
+				...moves,
+				{ ...draft, id: "", seq: 0, at: 0 },
+			]) ?? fields.actorId;
+		setFields(emptyDraftFields(suggested));
 	};
 
 	return (
