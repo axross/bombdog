@@ -83,6 +83,20 @@ describe("<PlayerSetup>", () => {
 		expect(input).toHaveValue("Zoe");
 	});
 
+	it("selects the whole name when a seat input gains focus", async () => {
+		const user = userEvent.setup();
+		render(<PlayerSetup />);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Name of player 1",
+		});
+		await user.click(input);
+
+		// the entire default value is selected, so the next keystroke replaces it.
+		expect(input.selectionStart).toBe(0);
+		expect(input.selectionEnd).toBe("Player 1".length);
+	});
+
 	it("selects a Captain and re-clamps it when the count drops below the seat", async () => {
 		const user = userEvent.setup();
 		render(<PlayerSetup />);

@@ -141,6 +141,9 @@ export function PlayerSetup(): JSX.Element {
 							type="text"
 							value={names[i]}
 							onChange={(e) => setName(i, e.target.value)}
+							// select the whole name on focus so typing replaces it
+							// outright — players rarely tweak the default, they retype it.
+							onFocus={(e) => e.target.select()}
 							aria-label={`Name of player ${i + 1}`}
 							maxLength={24}
 						/>
