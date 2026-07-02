@@ -1,29 +1,32 @@
 // Pure, UI-agnostic helpers for the tracker. Kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
-import type {
-	Move,
-	MoveFilter,
-	Player,
-	RevealedWire,
-	WireValue,
-} from "./types";
+import type { Move, MoveFilter, Player, WireValueOrUnknown } from "./types";
 
 /** Resolve a player's display name, tolerant of unknown ids. */
 export function getPlayerName(players: Player[], id: string): string {
 	return players.find((p) => p.id === id)?.name ?? "Unknown";
 }
 
-/** Human-readable label for a wire value ("9" or "Yellow"). */
-export function formatWire(value: WireValue): string {
-	return value === "yellow" ? "Yellow" : String(value);
-}
-
-/** Compact label for a revealed wire ("9", "Y", or "?"). */
-export function formatRevealed(value: RevealedWire): string {
+/**
+ * Compact glyph for a wire value on a chip/badge: "9", "Y", or "?". The single
+ * source of truth for how a wire reads on screen — used by the wire pad, the
+ * reveal dialog, the move-log chip, and the failed-cut badge alike.
+ */
+export function formatWire(value: WireValueOrUnknown): string {
 	if (value === "unknown") return "?";
 	if (value === "yellow") return "Y";
 	return String(value);
+}
+
+/**
+ * Accessible name for a wire value: "Wire 9", "Yellow wire", or "Unknown wire".
+ * Companion to {@link formatWire}, keeping the aria labels in one place.
+ */
+export function wireLabel(value: WireValueOrUnknown): string {
+	if (value === "unknown") return "Unknown wire";
+	if (value === "yellow") return "Yellow wire";
+	return `Wire ${value}`;
 }
 
 /**

@@ -99,6 +99,17 @@ describe("buildDraft()", () => {
 		});
 	});
 
+	it('accepts the unknown ("?") wire value for a dual cut', () => {
+		expect(
+			buildDraft("dual-cut", {
+				...emptyDraftFields("a"),
+				targetId: "b",
+				value: "unknown",
+				outcome: "success",
+			}),
+		).toMatchObject({ type: "dual-cut", value: "unknown", outcome: "success" });
+	});
+
 	it("returns null for a dual cut without an actor", () => {
 		expect(
 			buildDraft("dual-cut", {
@@ -121,6 +132,15 @@ describe("buildDraft()", () => {
 		});
 	});
 
+	it('accepts the unknown ("?") wire value for a solo cut', () => {
+		expect(
+			buildDraft("solo-cut", {
+				...emptyDraftFields("a"),
+				value: "unknown",
+			}),
+		).toEqual({ type: "solo-cut", actorId: "a", value: "unknown" });
+	});
+
 	it("returns null for a solo cut without an actor", () => {
 		expect(
 			buildDraft("solo-cut", { ...emptyDraftFields(""), value: 7 }),
@@ -139,6 +159,21 @@ describe("buildDraft()", () => {
 			type: "detector",
 			detector: "double",
 			values: [4],
+		});
+	});
+
+	it('accepts an unknown ("?") named value for a detector', () => {
+		expect(
+			buildDraft("detector", {
+				...emptyDraftFields("a"),
+				targetId: "b",
+				values: ["unknown"],
+				outcome: "success",
+			}),
+		).toMatchObject({
+			type: "detector",
+			detector: "double",
+			values: ["unknown"],
 		});
 	});
 
@@ -330,6 +365,33 @@ describe("fieldsFromMove()", () => {
 			actorId: "b",
 			value: "yellow",
 		});
+	});
+
+	it('seeds an unknown ("?") cut value so the editor reflects it', () => {
+		const move: SoloCutMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "solo-cut",
+			actorId: "b",
+			value: "unknown",
+		};
+		expect(fieldsFromMove(move).value).toBe("unknown");
+	});
+
+	it('seeds unknown ("?") detector values so the editor reflects them', () => {
+		const move: DetectorMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "detector",
+			detector: "double",
+			actorId: "a",
+			targetId: "c",
+			values: ["unknown"],
+			outcome: "success",
+		};
+		expect(fieldsFromMove(move).values).toEqual(["unknown"]);
 	});
 
 	it("seeds equipment fields including the note", () => {

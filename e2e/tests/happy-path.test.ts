@@ -97,6 +97,18 @@ test.describe("logging each action type", () => {
 		await expect(row.getByTestId("badge")).toHaveCount(0);
 	});
 
+	test('cut — logs a "?" (unknown) wire value', async ({ page }) => {
+		await startTracking(page);
+		// The cut pads offer "?" for a wire whose value is unknown.
+		await logSoloCut(page, { wire: "unknown" });
+
+		const row = moveRow(page, 1);
+		await expect(row).toContainText("Solo cut");
+		await expect(row.getByRole("img", { name: "Unknown wire" })).toHaveText(
+			"?",
+		);
+	});
+
 	test("double detector — targeted, blue wires only", async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();

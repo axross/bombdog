@@ -88,6 +88,10 @@ describe("<MoveForm>", () => {
 		expect(
 			screen.getByRole("radio", { name: "Yellow wire" }),
 		).toBeInTheDocument();
+		// The "?" (unknown) option is offered for the cut wire.
+		expect(
+			screen.getByRole("radio", { name: "Unknown wire" }),
+		).toBeInTheDocument();
 	});
 
 	it("switching to Solo cut calls onTypeChange and shows only the wire", async () => {
@@ -129,6 +133,10 @@ describe("<MoveForm>", () => {
 		expect(
 			screen.queryByRole("radio", { name: "Yellow wire" }),
 		).not.toBeInTheDocument();
+		// The "?" (unknown) option is still offered for a detector value.
+		expect(
+			screen.getByRole("button", { name: "Unknown wire" }),
+		).toBeInTheDocument();
 	});
 
 	it("offers a two-value pad for the X or Y Ray and reports picked values", async () => {

@@ -11,7 +11,7 @@ import {
 import { WirePad } from "@/components/wire-pad/wire-pad";
 import { targetPlayerOrder } from "@/lib/game";
 import {
-	type BlueWireValue,
+	type BlueWireValueOrUnknown,
 	DETECTOR_OPTIONS,
 	type DetectorKind,
 	detectorOption,
@@ -131,6 +131,7 @@ function MoveFields({
 					label="Wire"
 					value={fields.value}
 					onValueChange={(value) => update({ value })}
+					allowUnknown
 					data-testid="wire-pad"
 				/>
 			)}
@@ -142,12 +143,16 @@ function MoveFields({
 					max={detector.valueCount}
 					values={fields.values}
 					onValuesChange={(values) =>
-						// The pad is blue-only, so this narrows WireValue[] → BlueWireValue[].
+						// The pad is blue-only, so this narrows to blue values (still
+						// possibly "?"); yellow can never be picked here.
 						update({
-							values: values.filter((v): v is BlueWireValue => v !== "yellow"),
+							values: values.filter(
+								(v): v is BlueWireValueOrUnknown => v !== "yellow",
+							),
 						})
 					}
 					blueOnly
+					allowUnknown
 					data-testid="wire-pad"
 				/>
 			)}

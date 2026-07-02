@@ -75,6 +75,38 @@ describe("<WirePad>", () => {
 		).not.toBeInTheDocument();
 	});
 
+	it('omits the "?" option unless allowUnknown is set', () => {
+		render(<WirePad value={null} onValueChange={vi.fn()} />);
+
+		expect(
+			screen.queryByRole("radio", { name: "Unknown wire" }),
+		).not.toBeInTheDocument();
+	});
+
+	it('renders the "?" option when allowUnknown is set', () => {
+		render(<WirePad value={null} onValueChange={vi.fn()} allowUnknown />);
+
+		expect(
+			screen.getByRole("radio", { name: "Unknown wire" }),
+		).toBeInTheDocument();
+	});
+
+	it('selecting "?" reports the "unknown" value', async () => {
+		const user = userEvent.setup();
+		const onValueChange = vi.fn();
+		render(<WirePad value={null} onValueChange={onValueChange} allowUnknown />);
+
+		await user.click(screen.getByRole("radio", { name: "Unknown wire" }));
+
+		expect(onValueChange).toHaveBeenCalledWith("unknown");
+	});
+
+	it('reflects the selected "?" value as checked', () => {
+		render(<WirePad value="unknown" onValueChange={vi.fn()} allowUnknown />);
+
+		expect(screen.getByRole("radio", { name: "Unknown wire" })).toBeChecked();
+	});
+
 	it("renders an optional label and uses it as the group's accessible name", () => {
 		render(
 			<WirePad value={null} onValueChange={vi.fn()} label="Announced value" />,
@@ -180,6 +212,24 @@ describe("<WirePad>", () => {
 			await user.click(screen.getByRole("button", { name: "Wire 3" }));
 
 			expect(onValuesChange).toHaveBeenCalledWith([]);
+		});
+
+		it('reports "unknown" when the "?" option is picked', async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<WirePad
+					multiple
+					values={[]}
+					onValuesChange={onValuesChange}
+					blueOnly
+					allowUnknown
+				/>,
+			);
+
+			await user.click(screen.getByRole("button", { name: "Unknown wire" }));
+
+			expect(onValuesChange).toHaveBeenCalledWith(["unknown"]);
 		});
 	});
 });

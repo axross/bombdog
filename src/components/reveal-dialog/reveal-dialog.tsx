@@ -3,6 +3,7 @@
 import { clsx } from "clsx";
 import { Dialog } from "radix-ui";
 import type { JSX } from "react";
+import { formatWire, wireLabel } from "@/lib/game";
 import { BLUE_WIRE_VALUES, type RevealedWire } from "@/lib/types";
 import css from "./reveal-dialog.module.css";
 
@@ -48,10 +49,10 @@ export function RevealDialog({
 								type="button"
 								className={clsx(css.cell, current === n && css.selected)}
 								onClick={() => choose(n)}
-								aria-label={`Wire ${n}`}
+								aria-label={wireLabel(n)}
 								data-testid={`reveal-${n}`}
 							>
-								{n}
+								{formatWire(n)}
 							</button>
 						))}
 						<button
@@ -62,10 +63,10 @@ export function RevealDialog({
 								current === "yellow" && css.selected,
 							)}
 							onClick={() => choose("yellow")}
-							aria-label="Yellow wire"
+							aria-label={wireLabel("yellow")}
 							data-testid="reveal-yellow"
 						>
-							Y
+							{formatWire("yellow")}
 						</button>
 						<button
 							type="button"
@@ -75,10 +76,10 @@ export function RevealDialog({
 								current === "unknown" && css.selected,
 							)}
 							onClick={() => choose("unknown")}
-							aria-label="Unknown wire"
+							aria-label={wireLabel("unknown")}
 							data-testid="reveal-unknown"
 						>
-							?
+							{formatWire("unknown")}
 						</button>
 					</div>
 				</Dialog.Content>
