@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { DualCutMove, Move, Player } from "@/lib/types";
@@ -99,6 +99,38 @@ describe("<MoveEditor>", () => {
 		expect(after.value).toBe(9);
 		// cancelling starts the close (content torn down, no store write).
 		expect(screen.queryByTestId("move-editor")).not.toBeInTheDocument();
+	});
+
+	it("deletes the move from the store once the deletion is confirmed", () => {
+		render(<MoveEditor move={dualCut} players={players} onClose={vi.fn()} />);
+
+		// Delete opens a confirmation rather than removing the move outright.
+		fireEvent.click(screen.getByTestId("delete"));
+		expect(useTrackerStore.getState().moves).toHaveLength(1);
+
+		fireEvent.click(screen.getByTestId("delete-confirm"));
+
+		// the move is gone from the store.
+		expect(useTrackerStore.getState().moves).toHaveLength(0);
+		// confirming starts the close: the dialog content is torn down (Radix defers
+		// the parent's onClose to the exit animation, which jsdom never fires).
+		expect(screen.queryByTestId("move-editor")).not.toBeInTheDocument();
+	});
+
+	it("keeps the move when the delete confirmation is cancelled", () => {
+		render(<MoveEditor move={dualCut} players={players} onClose={vi.fn()} />);
+
+		fireEvent.click(screen.getByTestId("delete"));
+		// the confirmation's own Cancel (scoped to avoid the editor's footer Cancel).
+		fireEvent.click(
+			within(screen.getByTestId("delete-dialog")).getByRole("button", {
+				name: "Cancel",
+			}),
+		);
+
+		// dismissing the confirmation leaves the move and the editor in place.
+		expect(useTrackerStore.getState().moves).toHaveLength(1);
+		expect(screen.getByTestId("move-editor")).toBeInTheDocument();
 	});
 
 	it("enables Save when the prefilled draft is valid", () => {

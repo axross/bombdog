@@ -49,6 +49,12 @@ interface TrackerStore extends TrackerState {
 	 */
 	updateMove: (id: string, draft: MoveDraft) => void;
 	/**
+	 * Delete a logged move by id. Unlike `undoLastMove`, this removes an
+	 * arbitrary move outright rather than pushing it onto the redo stack, so the
+	 * redo history is cleared to keep it consistent with the new move list.
+	 */
+	removeMove: (id: string) => void;
+	/**
 	 * Remove the most recent move, pushing it onto the redo stack.
 	 */
 	undoLastMove: () => void;
@@ -186,6 +192,14 @@ export const useTrackerStore = create<TrackerStore>()(
 					if (move.type !== draft.type) return move;
 					return draftToMove(draft, move.id, move.seq, Date.now());
 				});
+				set({ moves: next, redoStack: [] });
+			},
+
+			removeMove: (id) => {
+				const { moves } = get();
+				const next = moves.filter((move) => move.id !== id);
+				// no-op on an unknown id: skip the needless redo-stack wipe.
+				if (next.length === moves.length) return;
 				set({ moves: next, redoStack: [] });
 			},
 

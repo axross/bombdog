@@ -389,6 +389,35 @@ test.describe("session flow", () => {
 		});
 	});
 
+	test("deletes a logged move from its edit panel", {
+		tag: ["@scenario:session.delete-move", "@area:session", "@priority:should"],
+	}, async ({ page }) => {
+		await startTracking(page);
+
+		await test.step("Log two solo cuts", async () => {
+			await logSoloCut(page, { wire: 5 });
+			await logSoloCut(page, { wire: 7 });
+			await expect(moveRow(page, 1)).toBeVisible();
+			await expect(moveRow(page, 2)).toBeVisible();
+		});
+
+		await test.step("Delete the first move, confirming the prompt", async () => {
+			await moveRow(page, 1).getByTestId("edit").click();
+			const editor = page.getByTestId("move-editor");
+			await editor.getByTestId("delete").click();
+
+			// deletion is gated behind a confirmation dialog.
+			const confirm = page.getByTestId("delete-dialog");
+			await expect(confirm).toBeVisible();
+			await confirm.getByTestId("delete-confirm").click();
+
+			// the editor closes and the deleted row is gone; the other move remains.
+			await expect(editor).toBeHidden();
+			await expect(moveRow(page, 1)).toHaveCount(0);
+			await expect(moveRow(page, 2)).toBeVisible();
+		});
+	});
+
 	test("collapses and expands the composer", {
 		tag: ["@scenario:session.collapse", "@area:session", "@priority:should"],
 	}, async ({ page }) => {
