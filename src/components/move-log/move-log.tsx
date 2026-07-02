@@ -4,17 +4,15 @@ import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useMemo, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
-import { MoveFilter } from "@/components/move-filter/move-filter";
 import { filterMoves, formatRevealed, getPlayerName } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
-import {
-	EMPTY_MOVE_FILTER,
-	type MoveFilter as Filter,
-	type Move,
-	type MoveType,
-	type Player,
-	type RevealedWire,
-	type WireValue,
+import type {
+	MoveFilter as Filter,
+	Move,
+	MoveType,
+	Player,
+	RevealedWire,
+	WireValue,
 } from "@/lib/types";
 import css from "./move-log.module.css";
 
@@ -143,12 +141,14 @@ function MoveRow({
 	);
 }
 
-/** Top-half chronological history (oldest → newest), auto-scrolled to the end. */
-export function MoveLog(): JSX.Element {
+/**
+ * Top-half chronological history (oldest → newest), auto-scrolled to the end.
+ * The `filter` is owned by the shell so its trigger can live in the header.
+ */
+export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
 	const moves = useTrackerStore((s) => s.moves);
 	const [editingId, setEditingId] = useState<string | null>(null);
-	const [filter, setFilter] = useState<Filter>(EMPTY_MOVE_FILTER);
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const prevCount = useRef(0);
 
@@ -177,9 +177,6 @@ export function MoveLog(): JSX.Element {
 			aria-label="Move history"
 			data-testid="move-log"
 		>
-			<div className={css.toolbar}>
-				<MoveFilter filter={filter} onChange={setFilter} />
-			</div>
 			<div className={css.scroll} ref={scrollRef}>
 				{moves.length === 0 ? (
 					<p className={css.empty}>No moves yet. Log the first turn below.</p>

@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
 	composer,
-	header,
 	logDoubleDetector,
 	logDualCut,
 	logEquipment,
@@ -16,14 +15,15 @@ import {
 
 // Happy-path coverage of the main use cases a player runs through a session:
 // configuring a roster, logging each of the four action types, watching the
-// turn advance, undo/redo, editing a logged move, and collapsing the composer.
+// suggested actor advance, undo/redo, editing a logged move, and collapsing the
+// composer.
 
 test.describe("setup", () => {
 	test("configures a two-player game (the minimum)", async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
 		await expect(composer(page)).toBeVisible();
-		// The Captain (seat 1) takes the first turn.
-		await expect(header(page)).toContainText("Uno");
+		// The Captain (seat 1) takes the first turn, so the composer suggests Uno.
+		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
 
 	test("configures five players with names and a chosen Captain", async ({
@@ -33,8 +33,8 @@ test.describe("setup", () => {
 			names: ["Ada", "Bo", "Cy", "Di", "Ed"],
 			captainIndex: 2,
 		});
-		// The chosen Captain (Cy, seat 3) acts first.
-		await expect(header(page)).toContainText("Cy");
+		// The chosen Captain (Cy, seat 3) acts first, so the composer suggests Cy.
+		await expect(composer(page).getByTestId("acting")).toContainText("Cy");
 		// The custom names reached the composer's target control.
 		await expect(
 			composer(page).getByTestId("target").getByRole("radio", { name: "Ada" }),
@@ -130,16 +130,20 @@ test.describe("logging each action type", () => {
 });
 
 test.describe("session flow", () => {
-	test("the turn indicator advances to the next seat after a move", async ({
+	test("the composer's suggested actor advances to the next seat after a move", async ({
 		page,
 	}) => {
 		await startTracking(page);
-		// Captain (Player 1) starts.
-		await expect(header(page)).toContainText("Player 1");
+		// Captain (Player 1) starts, so the composer suggests Player 1.
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 1",
+		);
 
 		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
-		// Play passes clockwise to Player 2.
-		await expect(header(page)).toContainText("Player 2");
+		// Play passes clockwise, so the composer now suggests Player 2.
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
 	});
 
 	test("undo and redo walk the move stack; a new move clears redo", async ({
