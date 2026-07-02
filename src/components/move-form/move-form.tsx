@@ -10,8 +10,16 @@ import {
 } from "@/components/select-field/select-field";
 import { WirePad } from "@/components/wire-pad/wire-pad";
 import { targetPlayerOrder } from "@/lib/game";
-import { EQUIPMENT_OPTIONS, type MoveType, type Player } from "@/lib/types";
-import type { DraftFields } from "./draft";
+import {
+	type BlueWireValue,
+	DETECTOR_OPTIONS,
+	type DetectorKind,
+	detectorOption,
+	EQUIPMENT_OPTIONS,
+	type MoveType,
+	type Player,
+} from "@/lib/types";
+import { type DraftFields, detectorValues } from "./draft";
 import css from "./move-form.module.css";
 
 interface MoveFormProps {
@@ -26,14 +34,14 @@ interface MoveFormProps {
 const ACTIONS: { type: MoveType; label: string }[] = [
 	{ type: "dual-cut", label: "Dual cut" },
 	{ type: "solo-cut", label: "Solo cut" },
-	{ type: "double-detector", label: "Double detector" },
+	{ type: "detector", label: "Detectors" },
 	{ type: "equipment", label: "Equipment" },
 ];
 
 const ACTION_LABEL: Record<MoveType, string> = {
 	"dual-cut": "Dual cut",
 	"solo-cut": "Solo cut",
-	"double-detector": "Double detector",
+	detector: "Detectors",
 	equipment: "Equipment",
 };
 
@@ -43,6 +51,11 @@ const EQUIPMENT_SELECT_OPTIONS: SelectOption[] = EQUIPMENT_OPTIONS.map(
 		label: name,
 	}),
 );
+
+const DETECTOR_SELECT_OPTIONS: SelectOption[] = DETECTOR_OPTIONS.map((d) => ({
+	value: d.kind,
+	label: d.label,
+}));
 
 /**
  * The action-dependent controls that live inside the tab panel. Kept separate
@@ -71,18 +84,41 @@ function MoveFields({
 	const update = (patch: Partial<DraftFields>) =>
 		onFieldsChange({ ...fields, ...patch });
 
-	const needsTarget = type === "dual-cut" || type === "double-detector";
-	const needsOutcome = type === "dual-cut" || type === "double-detector";
-	const needsWire =
-		type === "dual-cut" || type === "solo-cut" || type === "double-detector";
+	const isDetector = type === "detector";
+	const detector = detectorOption(fields.detector);
+	const needsTarget = type === "dual-cut" || isDetector;
+	const needsOutcome = type === "dual-cut" || isDetector;
+	const needsSingleWire = type === "dual-cut" || type === "solo-cut";
 
 	return (
 		<div className={css.fields}>
+			{isDetector && (
+				<SelectField
+					label="Equipment"
+					value={fields.detector}
+					onValueChange={(kind) =>
+						// Trim the selection to the new card's value count (e.g. dropping
+						// down from the two-value X or Y Ray to a one-value detector).
+						update({
+							detector: kind as DetectorKind,
+							values: detectorValues(fields.values, kind as DetectorKind),
+						})
+					}
+					options={DETECTOR_SELECT_OPTIONS}
+					data-testid="detector"
+				/>
+			)}
+
 			{needsTarget && (
 				// A segmented control (one tap). The acting player is intentionally
-				// included last: some mission rules allow a self-dual-cut.
+				// included last: some mission rules allow a self-dual-cut. The Super
+				// Detector points at a player's whole stand, so the same picker fits.
 				<PlayerPicker
-					label="Target"
+					label={
+						isDetector && detector.targetsWholeStand
+							? "Target (whole stand)"
+							: "Target"
+					}
 					value={fields.targetId}
 					onValueChange={(targetId) => update({ targetId })}
 					options={targetOptions}
@@ -90,12 +126,28 @@ function MoveFields({
 				/>
 			)}
 
-			{needsWire && (
+			{needsSingleWire && (
 				<WirePad
 					label="Wire"
 					value={fields.value}
 					onValueChange={(value) => update({ value })}
-					blueOnly={type === "double-detector"}
+					data-testid="wire-pad"
+				/>
+			)}
+
+			{isDetector && (
+				<WirePad
+					label={detector.valueCount === 2 ? "Values (pick two)" : "Value"}
+					multiple
+					max={detector.valueCount}
+					values={fields.values}
+					onValuesChange={(values) =>
+						// The pad is blue-only, so this narrows WireValue[] → BlueWireValue[].
+						update({
+							values: values.filter((v): v is BlueWireValue => v !== "yellow"),
+						})
+					}
+					blueOnly
 					data-testid="wire-pad"
 				/>
 			)}

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
 	composer,
-	logDoubleDetector,
+	logDetector,
 	logDualCut,
 	logEquipment,
 	logSoloCut,
@@ -99,32 +99,68 @@ test.describe("logging each action type", () => {
 
 	test("double detector — targeted, blue wires only", async ({ page }) => {
 		await startTracking(page);
-		await composer(page).getByTestId("tab-double-detector").click();
+		await composer(page).getByTestId("tab-detector").click();
 		// Detectors read blue values only: no Yellow option is offered.
 		await expect(composer(page).getByTestId("wire-yellow")).toHaveCount(0);
 
-		await logDoubleDetector(page, {
+		await logDetector(page, {
 			target: "Player 2",
-			wire: 6,
+			values: [6],
 			outcome: "success",
 		});
 		const row = moveRow(page, 1);
-		await expect(row).toContainText("Double detector");
+		// The default detector card names itself in the log.
+		await expect(row).toContainText("Double Detector");
+		await expect(row.getByRole("img", { name: "Wire 6" })).toBeVisible();
 		await expect(row.getByTestId("badge")).toHaveAttribute(
 			"data-outcome",
 			"success",
 		);
 	});
 
+	test("X or Y Ray — names two values against one wire", async ({ page }) => {
+		await startTracking(page);
+		await logDetector(page, {
+			card: "X or Y Ray (10)",
+			target: "Player 2",
+			values: [3, 11],
+			outcome: "success",
+		});
+
+		const row = moveRow(page, 1);
+		await expect(row).toContainText("X or Y Ray (10)");
+		// Both named values render as chips.
+		await expect(row.getByRole("img", { name: "Wire 3" })).toBeVisible();
+		await expect(row.getByRole("img", { name: "Wire 11" })).toBeVisible();
+	});
+
+	test("super detector — points at a whole stand", async ({ page }) => {
+		await startTracking(page);
+		await composer(page).getByTestId("tab-detector").click();
+
+		await logDetector(page, {
+			card: "Super Detector (5)",
+			target: "Player 2",
+			values: [8],
+			outcome: { reveal: 2 },
+		});
+
+		const row = moveRow(page, 1);
+		await expect(row).toContainText("Super Detector (5)");
+		const badge = row.getByTestId("badge");
+		await expect(badge).toHaveAttribute("data-outcome", "fail");
+		await expect(badge).toHaveAttribute("data-revealed", "2");
+	});
+
 	test("equipment — with a note", async ({ page }) => {
 		await startTracking(page);
 		await logEquipment(page, {
-			equipment: "Triple Detector (3)",
+			equipment: "Rewinder (6)",
 			note: "checked seat 4",
 		});
 
 		const row = moveRow(page, 1);
-		await expect(row).toContainText("Triple Detector (3)");
+		await expect(row).toContainText("Rewinder (6)");
 		await expect(row).toContainText("checked seat 4");
 	});
 });

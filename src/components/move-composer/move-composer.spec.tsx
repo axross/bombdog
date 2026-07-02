@@ -73,21 +73,30 @@ describe("<MoveComposer>", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("drops an incompatible Yellow wire when switching to Double detector", async () => {
+	it("logs a detector move with its card, target, value, and outcome", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
-		// Pick Yellow on a dual cut, then switch to the blue-only detector.
-		await user.click(screen.getByRole("radio", { name: "Yellow wire" }));
-		expect(screen.getByRole("radio", { name: "Yellow wire" })).toBeChecked();
+		await user.click(screen.getByRole("tab", { name: "Detectors" }));
+		// The default card is the Double Detector; the actor defaults to the Captain.
+		await user.click(screen.getByRole("radio", { name: "Bob" }));
+		await user.click(screen.getByRole("button", { name: "Wire 7" }));
+		await user.click(screen.getByRole("button", { name: "Success" }));
 
-		await user.click(screen.getByRole("tab", { name: "Double detector" }));
-		// The detector offers no Yellow, and the incompatible selection is cleared
-		// (so no blue wire is pre-checked either).
-		expect(
-			screen.queryByRole("radio", { name: "Yellow wire" }),
-		).not.toBeInTheDocument();
-		expect(screen.getByRole("radio", { name: "Wire 5" })).not.toBeChecked();
+		const logButton = screen.getByRole("button", { name: "Log move" });
+		expect(logButton).toBeEnabled();
+		await user.click(logButton);
+
+		const moves = useTrackerStore.getState().moves;
+		expect(moves).toHaveLength(1);
+		expect(moves[0]).toMatchObject({
+			type: "detector",
+			detector: "double",
+			actorId: "a",
+			targetId: "b",
+			values: [7],
+			outcome: "success",
+		});
 	});
 
 	it("collapses and expands the composer via the toggle", async () => {

@@ -62,6 +62,52 @@ function draftToMove(
 	return { ...draft, id, seq, at } as Move;
 }
 
+/**
+ * Detector cards that were logged as free-text equipment before they became
+ * first-class detector actions (they were removed from `EQUIPMENT_OPTIONS`).
+ * Legacy equipment moves carrying these labels are dropped on migration: they
+ * lack the target, value, and outcome a detector move needs, so they can't be
+ * converted — only discarded.
+ */
+const REMOVED_DETECTOR_EQUIPMENT = new Set([
+	"Triple Detector (3)",
+	"Super Detector (5)",
+	"X or Y Ray (10)",
+]);
+
+/** Whether a persisted move is a pre-v2 equipment log of a now-detector card. */
+function isRemovedDetectorEquipment(move: unknown): boolean {
+	return (
+		!!move &&
+		typeof move === "object" &&
+		(move as { type?: unknown }).type === "equipment" &&
+		REMOVED_DETECTOR_EQUIPMENT.has(
+			(move as { equipment?: unknown }).equipment as string,
+		)
+	);
+}
+
+/** Rewrite a pre-v2 "double-detector" move into the unified "detector" shape. */
+function rewriteLegacyDoubleDetector(move: unknown): unknown {
+	if (
+		!move ||
+		typeof move !== "object" ||
+		(move as { type?: unknown }).type !== "double-detector"
+	) {
+		return move;
+	}
+	const { value, ...rest } = move as { value?: unknown } & Record<
+		string,
+		unknown
+	>;
+	return {
+		...rest,
+		type: "detector",
+		detector: "double",
+		values: value === undefined ? [] : [value],
+	};
+}
+
 export const useTrackerStore = create<TrackerStore>()(
 	persist(
 		(set, get) => ({
@@ -132,7 +178,24 @@ export const useTrackerStore = create<TrackerStore>()(
 		{
 			name: STORAGE_KEY,
 			storage: createJSONStorage(() => idbStorage),
-			version: 1,
+			version: 2,
+			// v1 → v2, detectors became first-class. Two fixups on persisted moves:
+			//   1. Rewrite the standalone "double-detector" move into the unified
+			//      "detector" shape (a `detector` kind plus a `values` array).
+			//   2. Drop equipment moves that logged a detector card as free text
+			//      (Triple/Super/X or Y Ray) — those cards are now the Detectors
+			//      action and can't be reconstructed from an equipment note.
+			migrate: (persisted, version) => {
+				if (version < 2 && persisted && typeof persisted === "object") {
+					const state = persisted as { moves?: unknown };
+					if (Array.isArray(state.moves)) {
+						state.moves = state.moves
+							.filter((move) => !isRemovedDetectorEquipment(move))
+							.map(rewriteLegacyDoubleDetector);
+					}
+				}
+				return persisted as TrackerStore;
+			},
 			// Persist the durable game state plus the carried-over roster (so a
 			// reset survives a reload); keep redo history ephemeral.
 			partialize: (state) => ({

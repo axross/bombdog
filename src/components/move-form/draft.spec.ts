@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type {
-	DoubleDetectorMove,
+	BlueWireValue,
+	DetectorMove,
 	DualCutMove,
 	EquipmentMove,
 	SoloCutMove,
 } from "@/lib/types";
-import { buildDraft, emptyDraftFields, fieldsFromMove } from "./draft";
+import {
+	buildDraft,
+	detectorValues,
+	emptyDraftFields,
+	fieldsFromMove,
+} from "./draft";
 
 describe("emptyDraftFields()", () => {
 	it("returns an all-empty shape with the given actor", () => {
@@ -13,6 +19,8 @@ describe("emptyDraftFields()", () => {
 			actorId: "a",
 			targetId: "",
 			value: null,
+			detector: "double",
+			values: [],
 			outcome: null,
 			revealed: null,
 			equipment: "",
@@ -119,43 +127,74 @@ describe("buildDraft()", () => {
 		).toBeNull();
 	});
 
-	it("rejects yellow for a double detector (blue only)", () => {
+	it("builds a detector draft from a blue value", () => {
+		// `values` is typed BlueWireValue[], so yellow can't be constructed here —
+		// the blue-only rule is a compile-time guarantee, not a runtime check.
 		const f = {
 			...emptyDraftFields("a"),
 			targetId: "b",
 			outcome: "success" as const,
 		};
-		expect(buildDraft("double-detector", { ...f, value: "yellow" })).toBeNull();
-		expect(buildDraft("double-detector", { ...f, value: 4 })).toMatchObject({
-			type: "double-detector",
-			value: 4,
+		expect(buildDraft("detector", { ...f, values: [4] })).toMatchObject({
+			type: "detector",
+			detector: "double",
+			values: [4],
 		});
 	});
 
-	it("requires target, value, and outcome for a double detector", () => {
+	it("requires target, values, and outcome for a detector", () => {
 		const base = emptyDraftFields("a");
-		expect(buildDraft("double-detector", base)).toBeNull();
+		expect(buildDraft("detector", base)).toBeNull();
 		expect(
-			buildDraft("double-detector", { ...base, targetId: "b", value: 4 }),
+			buildDraft("detector", { ...base, targetId: "b", values: [4] }),
 		).toBeNull();
 	});
 
-	it("requires the revealed wire for a failed double detector", () => {
+	it("requires the revealed wire for a failed detector", () => {
 		const failing = {
 			...emptyDraftFields("a"),
 			targetId: "b",
-			value: 4 as const,
+			values: [4] as BlueWireValue[],
 			outcome: "fail" as const,
 		};
-		expect(buildDraft("double-detector", failing)).toBeNull();
-		expect(buildDraft("double-detector", { ...failing, revealed: 8 })).toEqual({
-			type: "double-detector",
+		expect(buildDraft("detector", failing)).toBeNull();
+		expect(buildDraft("detector", { ...failing, revealed: 8 })).toEqual({
+			type: "detector",
+			detector: "double",
 			actorId: "a",
 			targetId: "b",
-			value: 4,
+			values: [4],
 			outcome: "fail",
 			revealed: 8,
 		});
+	});
+
+	it("requires exactly two distinct values for the X or Y Ray", () => {
+		const base = {
+			...emptyDraftFields("a"),
+			detector: "x-or-y-ray" as const,
+			targetId: "b",
+			outcome: "success" as const,
+		};
+		// One value is not enough for a two-value ray.
+		expect(buildDraft("detector", { ...base, values: [4] })).toBeNull();
+		// A repeated value is not two distinct wires.
+		expect(buildDraft("detector", { ...base, values: [4, 4] })).toBeNull();
+		expect(buildDraft("detector", { ...base, values: [4, 9] })).toMatchObject({
+			type: "detector",
+			detector: "x-or-y-ray",
+			values: [4, 9],
+		});
+	});
+
+	it("rejects a second value for a single-value detector", () => {
+		const base = {
+			...emptyDraftFields("a"),
+			detector: "triple" as const,
+			targetId: "b",
+			outcome: "success" as const,
+		};
+		expect(buildDraft("detector", { ...base, values: [4, 9] })).toBeNull();
 	});
 
 	it("requires equipment text and trims the optional note", () => {
@@ -188,6 +227,19 @@ describe("buildDraft()", () => {
 		expect(
 			buildDraft("equipment", { ...emptyDraftFields(""), equipment: "Radar" }),
 		).toBeNull();
+	});
+});
+
+describe("detectorValues()", () => {
+	it("keeps the most recent value for one-value detectors", () => {
+		// Downgrading to a one-value card drops the oldest pick, matching the pad.
+		expect(detectorValues([4, 9], "triple")).toEqual([9]);
+		expect(detectorValues([4, 9], "super")).toEqual([9]);
+	});
+
+	it("keeps up to two values for the X or Y Ray", () => {
+		expect(detectorValues([4, 9], "x-or-y-ray")).toEqual([4, 9]);
+		expect(detectorValues([4], "x-or-y-ray")).toEqual([4]);
 	});
 });
 
@@ -227,36 +279,39 @@ describe("fieldsFromMove()", () => {
 		expect(fieldsFromMove(move).revealed).toBeNull();
 	});
 
-	it("seeds fields from a double detector", () => {
-		const move: DoubleDetectorMove = {
+	it("seeds fields from a detector", () => {
+		const move: DetectorMove = {
 			id: "1",
 			seq: 1,
 			at: 0,
-			type: "double-detector",
+			type: "detector",
+			detector: "x-or-y-ray",
 			actorId: "a",
 			targetId: "c",
-			value: 4,
+			values: [4, 9],
 			outcome: "fail",
 			revealed: "unknown",
 		};
 		expect(fieldsFromMove(move)).toMatchObject({
 			actorId: "a",
+			detector: "x-or-y-ray",
 			targetId: "c",
-			value: 4,
+			values: [4, 9],
 			outcome: "fail",
 			revealed: "unknown",
 		});
 	});
 
-	it("defaults revealed to null when a double detector has none", () => {
-		const move: DoubleDetectorMove = {
+	it("defaults revealed to null when a detector has none", () => {
+		const move: DetectorMove = {
 			id: "1",
 			seq: 1,
 			at: 0,
-			type: "double-detector",
+			type: "detector",
+			detector: "triple",
 			actorId: "a",
 			targetId: "c",
-			value: 4,
+			values: [4],
 			outcome: "success",
 		};
 		expect(fieldsFromMove(move).revealed).toBeNull();

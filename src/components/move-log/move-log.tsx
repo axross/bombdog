@@ -6,22 +6,30 @@ import { type JSX, useEffect, useMemo, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
 import { filterMoves, formatRevealed, getPlayerName } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
-import type {
-	MoveFilter as Filter,
-	Move,
-	MoveType,
-	Player,
-	RevealedWire,
-	WireValue,
+import {
+	detectorOption,
+	type MoveFilter as Filter,
+	type Move,
+	type MoveType,
+	type Player,
+	type RevealedWire,
+	type WireValue,
 } from "@/lib/types";
 import css from "./move-log.module.css";
 
 const KIND_LABEL: Record<MoveType, string> = {
 	"dual-cut": "Dual cut",
 	"solo-cut": "Solo cut",
-	"double-detector": "Double detector",
+	detector: "Detectors",
 	equipment: "Equipment",
 };
+
+/** The action label shown on a row; detectors name the specific card used. */
+function kindLabel(move: Move): string {
+	return move.type === "detector"
+		? detectorOption(move.detector).label
+		: KIND_LABEL[move.type];
+}
 
 function WireChip({ value }: { value: WireValue }): JSX.Element {
 	const isYellow = value === "yellow";
@@ -76,10 +84,12 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 					<OutcomeBadge outcome={move.outcome} revealed={move.revealed} />
 				</>
 			);
-		case "double-detector":
+		case "detector":
 			return (
 				<>
-					<WireChip value={move.value} />
+					{move.values.map((value) => (
+						<WireChip key={value} value={value} />
+					))}
 					<OutcomeBadge outcome={move.outcome} revealed={move.revealed} />
 				</>
 			);
@@ -104,7 +114,7 @@ function MoveRow({
 	players: Player[];
 	onEdit: () => void;
 }): JSX.Element {
-	const hasTarget = move.type === "dual-cut" || move.type === "double-detector";
+	const hasTarget = move.type === "dual-cut" || move.type === "detector";
 	return (
 		<div className={css.row} data-testid="move" data-seq={move.seq}>
 			<span className={css.seq}>#{move.seq}</span>
@@ -121,7 +131,7 @@ function MoveRow({
 							</span>
 						</>
 					)}
-					<span className={css.kind}>{KIND_LABEL[move.type]}</span>
+					<span className={css.kind}>{kindLabel(move)}</span>
 				</div>
 				<div className={css.detail}>
 					<MoveDetail move={move} />

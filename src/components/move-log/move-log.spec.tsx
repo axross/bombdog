@@ -90,10 +90,11 @@ describe("<MoveLog>", () => {
 				id: "2",
 				seq: 2,
 				at: 2,
-				type: "double-detector",
+				type: "detector",
+				detector: "double",
 				actorId: "b",
 				targetId: "a",
-				value: 6,
+				values: [6],
 				outcome: "fail",
 				revealed: "unknown",
 			},
@@ -117,17 +118,33 @@ describe("<MoveLog>", () => {
 				equipment: "Radar",
 				note: "seat 3 is empty",
 			},
+			{
+				id: "5",
+				seq: 5,
+				at: 5,
+				type: "detector",
+				detector: "x-or-y-ray",
+				actorId: "a",
+				targetId: "b",
+				values: [3, 11],
+				outcome: "success",
+			},
 		]);
 		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 
 		expect(screen.getByText("Solo cut")).toBeInTheDocument();
 		// The Yellow wire renders its dedicated chip.
 		expect(screen.getByLabelText("Yellow wire")).toBeInTheDocument();
-		expect(screen.getByText("Double detector")).toBeInTheDocument();
+		// Each detector names the specific card used.
+		expect(screen.getByText("Double Detector")).toBeInTheDocument();
+		expect(screen.getByText("X or Y Ray (10)")).toBeInTheDocument();
 		// A failed detector shows the revealed "?" (unknown) on its badge…
 		expect(screen.getByText(/fail \(\?\)/)).toBeInTheDocument();
 		// …and a failed dual cut shows the numeric revealed value.
 		expect(screen.getByText(/fail \(8\)/)).toBeInTheDocument();
+		// The X or Y Ray names two values, so both chips render.
+		expect(screen.getByLabelText("Wire 3")).toBeInTheDocument();
+		expect(screen.getByLabelText("Wire 11")).toBeInTheDocument();
 		// Equipment notes are appended after an em dash.
 		expect(screen.getByText(/seat 3 is empty/)).toBeInTheDocument();
 	});

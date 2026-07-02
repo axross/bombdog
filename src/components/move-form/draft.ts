@@ -2,13 +2,16 @@
 // logic that turns it into a validated `MoveDraft`. Keeping this separate from
 // the JSX makes validity rules easy to unit-test.
 
-import type {
-	Move,
-	MoveDraft,
-	MoveType,
-	Outcome,
-	RevealedWire,
-	WireValue,
+import {
+	type BlueWireValue,
+	type DetectorKind,
+	detectorOption,
+	type Move,
+	type MoveDraft,
+	type MoveType,
+	type Outcome,
+	type RevealedWire,
+	type WireValue,
 } from "@/lib/types";
 
 /** The superset of fields any action can need; unused ones are ignored. */
@@ -16,6 +19,13 @@ export interface DraftFields {
 	actorId: string;
 	targetId: string;
 	value: WireValue | null;
+	/** Which detector card the "detector" action uses. */
+	detector: DetectorKind;
+	/**
+	 * Named blue values for the detector action (one or two). Blue-only by type:
+	 * the detector wire pad is rendered `blueOnly`, so yellow can never enter.
+	 */
+	values: BlueWireValue[];
 	outcome: Outcome | null;
 	/** The wire's true value, chosen when the outcome is a failure. */
 	revealed: RevealedWire | null;
@@ -28,11 +38,26 @@ export function emptyDraftFields(actorId = ""): DraftFields {
 		actorId,
 		targetId: "",
 		value: null,
+		detector: "double",
+		values: [],
 		outcome: null,
 		revealed: null,
 		equipment: "",
 		note: "",
 	};
+}
+
+/**
+ * Trim a value selection to what the given detector card can name (one value,
+ * or two for the X or Y Ray). Used when switching detector cards so a leftover
+ * second value doesn't linger on a one-value card. Keeps the most recent picks,
+ * matching the wire pad's own cap (which drops the oldest when it overflows).
+ */
+export function detectorValues(
+	values: BlueWireValue[],
+	kind: DetectorKind,
+): BlueWireValue[] {
+	return values.slice(-detectorOption(kind).valueCount);
 }
 
 /** Seed the form from an existing move (for editing). */
@@ -47,11 +72,12 @@ export function fieldsFromMove(move: Move): DraftFields {
 				outcome: move.outcome,
 				revealed: move.revealed ?? null,
 			};
-		case "double-detector":
+		case "detector":
 			return {
 				...base,
+				detector: move.detector,
 				targetId: move.targetId,
-				value: move.value,
+				values: move.values,
 				outcome: move.outcome,
 				revealed: move.revealed ?? null,
 			};
@@ -86,18 +112,22 @@ export function buildDraft(type: MoveType, f: DraftFields): MoveDraft | null {
 		case "solo-cut":
 			if (!f.actorId || f.value === null) return null;
 			return { type, actorId: f.actorId, value: f.value };
-		case "double-detector": {
-			const { revealed } = f;
-			// Detectors indicate blue values only.
-			if (!f.actorId || !f.targetId || f.value === null || f.value === "yellow")
-				return null;
+		case "detector": {
+			const { detector, values, revealed } = f;
+			if (!f.actorId || !f.targetId) return null;
+			// `values` is blue-only by type (the pad is `blueOnly`); require exactly
+			// the right number of distinct wires (one, or two for the X or Y Ray).
+			const { valueCount } = detectorOption(detector);
+			if (values.length !== valueCount) return null;
+			if (new Set(values).size !== values.length) return null;
 			if (f.outcome === null) return null;
 			if (f.outcome === "fail" && revealed === null) return null;
 			return {
 				type,
+				detector,
 				actorId: f.actorId,
 				targetId: f.targetId,
-				value: f.value,
+				values,
 				outcome: f.outcome,
 				...(f.outcome === "fail" && revealed !== null ? { revealed } : {}),
 			};

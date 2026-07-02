@@ -14,9 +14,8 @@ const players: Player[] = [
 
 /**
  * MoveForm is fully controlled, so drive it from a harness that owns `type` and
- * `fields`. `onTypeChange` mirrors the composer's clearing rule (drop an
- * incompatible yellow when switching to a blue-only detector) so the same
- * behaviour is exercised through the form's public props.
+ * `fields`, mirroring the composer's plumbing so the form is exercised through
+ * its public props.
  */
 function Harness({
 	initialType = "dual-cut",
@@ -39,9 +38,6 @@ function Harness({
 	const handleTypeChange = (next: MoveType) => {
 		onTypeChangeSpy?.(next);
 		setType(next);
-		if (next === "double-detector" && fields.value === "yellow") {
-			setFields({ ...fields, value: null });
-		}
 	};
 
 	const handleFieldsChange = (next: DraftFields) => {
@@ -67,12 +63,7 @@ afterEach(() => {
 describe("<MoveForm>", () => {
 	it("renders the four action tabs in add mode", () => {
 		render(<Harness />);
-		for (const label of [
-			"Dual cut",
-			"Solo cut",
-			"Double detector",
-			"Equipment",
-		]) {
+		for (const label of ["Dual cut", "Solo cut", "Detectors", "Equipment"]) {
 			expect(screen.getByRole("tab", { name: label })).toBeInTheDocument();
 		}
 	});
@@ -118,23 +109,61 @@ describe("<MoveForm>", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("switching to Double detector shows target, wire, and result and hides Yellow", async () => {
+	it("switching to Detectors shows the card picker, target, value, and result and hides Yellow", async () => {
 		const user = userEvent.setup();
 		render(<Harness />);
 
-		await user.click(screen.getByRole("tab", { name: "Double detector" }));
+		await user.click(screen.getByRole("tab", { name: "Detectors" }));
 
+		// The detector-card dropdown (labelled "Equipment") picks which detector.
+		expect(
+			screen.getByRole("combobox", { name: "Equipment" }),
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole("radiogroup", { name: "Target" }),
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole("radiogroup", { name: "Wire" }),
-		).toBeInTheDocument();
+		// The value pad is a multi-select toolbar of blue wires.
+		expect(screen.getByRole("toolbar", { name: "Value" })).toBeInTheDocument();
 		expect(screen.getByRole("group", { name: "Result" })).toBeInTheDocument();
 		// Blue-only: the Yellow option is not rendered.
 		expect(
 			screen.queryByRole("radio", { name: "Yellow wire" }),
 		).not.toBeInTheDocument();
+	});
+
+	it("offers a two-value pad for the X or Y Ray and reports picked values", async () => {
+		const user = userEvent.setup();
+		const onFieldsChange = vi.fn();
+		render(
+			<Harness
+				initialType="detector"
+				initialFields={{ ...emptyDraftFields("a"), detector: "x-or-y-ray" }}
+				onFieldsChangeSpy={onFieldsChange}
+			/>,
+		);
+
+		// The X or Y Ray names two values, so the pad is a two-slot multi-select.
+		expect(
+			screen.getByRole("toolbar", { name: "Values (pick two)" }),
+		).toBeInTheDocument();
+
+		await user.click(screen.getByTestId("wire-4"));
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ values: [4] }),
+		);
+	});
+
+	it("labels the target as a whole stand for the Super Detector", () => {
+		render(
+			<Harness
+				initialType="detector"
+				initialFields={{ ...emptyDraftFields("a"), detector: "super" }}
+			/>,
+		);
+
+		expect(
+			screen.getByRole("radiogroup", { name: "Target (whole stand)" }),
+		).toBeInTheDocument();
 	});
 
 	it("switching to Equipment shows the equipment picker and note field", async () => {
@@ -203,35 +232,11 @@ describe("<MoveForm>", () => {
 		);
 	});
 
-	it("clears an incompatible yellow selection when switching to Double detector", async () => {
-		const user = userEvent.setup();
-		render(
-			<Harness initialFields={{ ...emptyDraftFields("a"), value: "yellow" }} />,
-		);
-
-		// Yellow is selected while on the (default) dual-cut tab.
-		const dualWire = screen.getByRole("radiogroup", { name: "Wire" });
-		expect(
-			within(dualWire).getByRole("radio", { name: "Yellow wire" }),
-		).toHaveAttribute("aria-checked", "true");
-
-		await user.click(screen.getByRole("tab", { name: "Double detector" }));
-
-		// Yellow is gone and no wire is checked after the clear.
-		expect(
-			screen.queryByRole("radio", { name: "Yellow wire" }),
-		).not.toBeInTheDocument();
-		const detectorWire = screen.getByRole("radiogroup", { name: "Wire" });
-		for (const radio of within(detectorWire).getAllByRole("radio")) {
-			expect(radio).toHaveAttribute("aria-checked", "false");
-		}
-	});
-
 	describe("when in edit mode (no onTypeChange)", () => {
 		it("renders a static action header instead of interactive tabs", () => {
-			render(<Harness initialType="double-detector" withTabs={false} />);
+			render(<Harness initialType="detector" withTabs={false} />);
 
-			expect(screen.getByText("Double detector")).toBeInTheDocument();
+			expect(screen.getByText("Detectors")).toBeInTheDocument();
 			expect(screen.queryByRole("tab")).not.toBeInTheDocument();
 		});
 

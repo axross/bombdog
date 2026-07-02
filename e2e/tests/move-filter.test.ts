@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
 	filterDialog,
 	header,
-	logDoubleDetector,
+	logDetector,
 	logDualCut,
 	logSoloCut,
 	moveRow,
@@ -17,7 +17,7 @@ import {
 test.describe("move-log filter", () => {
 	// Seed a history with one of each move the filter can touch plus an
 	// unaffected one:
-	// #1 successful dual cut, #2 failed dual cut, #3 solo cut, #4 double detector.
+	// #1 successful dual cut, #2 failed dual cut, #3 solo cut, #4 detector.
 	test.beforeEach(async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
@@ -27,9 +27,9 @@ test.describe("move-log filter", () => {
 			outcome: { reveal: 8 },
 		});
 		await logSoloCut(page, { wire: 5 });
-		await logDoubleDetector(page, {
+		await logDetector(page, {
 			target: "Player 2",
-			wire: 6,
+			values: [6],
 			outcome: "success",
 		});
 		await expect(moveRow(page, 4)).toBeVisible();
@@ -67,7 +67,7 @@ test.describe("move-log filter", () => {
 		await filterDialog(page).getByTestId("filter-done").click();
 
 		// Both a successful dual cut (#1) and the solo cut (#3) drop out; the
-		// failed dual cut (#2) and the successful double detector (#4) — which the
+		// failed dual cut (#2) and the successful detector (#4) — which the
 		// filter never touches — stay visible.
 		await expect(moveRow(page, 1)).toHaveCount(0);
 		await expect(moveRow(page, 3)).toHaveCount(0);
