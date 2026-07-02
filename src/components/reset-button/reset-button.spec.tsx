@@ -10,6 +10,8 @@ afterEach(() => {
 		captainIndex: 0,
 		moves: [],
 		redoStack: [],
+		previousPlayers: [],
+		previousCaptainIndex: 0,
 	});
 });
 
@@ -33,5 +35,9 @@ describe("<ResetButton>", () => {
 
 		await user.click(within(dialog).getByRole("button", { name: "Reset" }));
 		expect(useTrackerStore.getState().players).toHaveLength(0);
+		// The cleared roster is retained so the next game can reuse it.
+		expect(useTrackerStore.getState().previousPlayers).toEqual([
+			{ id: "a", name: "Alice" },
+		]);
 	});
 });

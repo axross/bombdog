@@ -11,6 +11,8 @@ beforeEach(() => {
 		captainIndex: 0,
 		moves: [],
 		redoStack: [],
+		previousPlayers: [],
+		previousCaptainIndex: 0,
 	});
 });
 
@@ -23,6 +25,8 @@ afterEach(() => {
 		captainIndex: 0,
 		moves: [],
 		redoStack: [],
+		previousPlayers: [],
+		previousCaptainIndex: 0,
 	});
 });
 
@@ -132,6 +136,31 @@ describe("<PlayerSetup>", () => {
 
 		const state = useTrackerStore.getState();
 		expect(state.players[1].name).toBe("Player 2");
+	});
+
+	it("pre-fills the count, names, and Captain carried over from a reset", () => {
+		useTrackerStore.setState({
+			previousPlayers: [
+				{ id: "a", name: "Alice" },
+				{ id: "b", name: "Bob" },
+				{ id: "c", name: "Carol" },
+			],
+			previousCaptainIndex: 2,
+		});
+
+		render(<PlayerSetup />);
+
+		expect(screen.getByText("3")).toBeInTheDocument();
+		expect(seatRows()).toHaveLength(3);
+		expect(
+			screen.getByRole("textbox", { name: "Name of player 1" }),
+		).toHaveValue("Alice");
+		expect(
+			screen.getByRole("textbox", { name: "Name of player 3" }),
+		).toHaveValue("Carol");
+		expect(
+			screen.getByRole("radio", { name: "Make player 3 the Captain" }),
+		).toBeChecked();
 	});
 
 	it("still generates seat ids when crypto.randomUUID is unavailable", async () => {

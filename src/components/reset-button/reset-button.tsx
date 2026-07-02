@@ -5,7 +5,7 @@ import type { JSX } from "react";
 import { useTrackerStore } from "@/lib/tracker-store";
 import css from "./reset-button.module.css";
 
-/** Clears all players and moves (and IndexedDB) behind a confirmation. */
+/** Clears the logged moves behind a confirmation, keeping the roster for reuse. */
 export function ResetButton(): JSX.Element {
 	const reset = useTrackerStore((s) => s.reset);
 
@@ -23,7 +23,8 @@ export function ResetButton(): JSX.Element {
 						Reset the tracker?
 					</AlertDialog.Title>
 					<AlertDialog.Description className={css.description}>
-						This clears all players and logged moves. It can't be undone.
+						This clears the logged moves and starts a new game. Your players
+						carry over. It can't be undone.
 					</AlertDialog.Description>
 					<div className={css.actions}>
 						<AlertDialog.Cancel asChild>

@@ -11,6 +11,15 @@ function defaultNames(): string[] {
 	return Array.from({ length: MAX_PLAYERS }, (_, i) => `Player ${i + 1}`);
 }
 
+/**
+ * Seed the seat-name inputs, keeping the array at `MAX_PLAYERS` so raising the
+ * count reveals fresh default names. Names carried over from a previous game
+ * (via reset) override the defaults for the seats they cover.
+ */
+function seedNames(previous: Player[]): string[] {
+	return defaultNames().map((name, i) => previous[i]?.name ?? name);
+}
+
 function makeId(): string {
 	if (
 		typeof crypto !== "undefined" &&
@@ -24,9 +33,22 @@ function makeId(): string {
 /** First-run / post-reset screen: pick player count, names, and the Captain. */
 export function PlayerSetup(): JSX.Element {
 	const configurePlayers = useTrackerStore((s) => s.configurePlayers);
-	const [count, setCount] = useState(4);
-	const [names, setNames] = useState<string[]>(defaultNames);
-	const [captainIndex, setCaptainIndex] = useState(0);
+	const previousPlayers = useTrackerStore((s) => s.previousPlayers);
+	const previousCaptainIndex = useTrackerStore((s) => s.previousCaptainIndex);
+
+	// A reset leaves the prior roster here; pre-fill the setup from it so the
+	// next game keeps the same count, names, and Captain. First run has none.
+	const [count, setCount] = useState(() =>
+		previousPlayers.length > 0 ? previousPlayers.length : 4,
+	);
+	const [names, setNames] = useState<string[]>(() =>
+		seedNames(previousPlayers),
+	);
+	const [captainIndex, setCaptainIndex] = useState(() =>
+		previousPlayers.length > 0
+			? Math.min(previousCaptainIndex, previousPlayers.length - 1)
+			: 0,
+	);
 
 	const changeCount = (next: number) => {
 		const clamped = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, next));
