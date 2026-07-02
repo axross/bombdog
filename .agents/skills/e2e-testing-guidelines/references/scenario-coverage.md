@@ -58,7 +58,7 @@ can't reach, which is orthogonal to this E2E metric.
   prints an overall + per-priority + per-area `covered/total` table and a grouped
   list of **uncovered** scenarios, and writes `e2e/.scenario-coverage/summary.json`
   (gitignored).
-- **Gate** — `scripts/check-scenario-coverage.mjs` reads that artifact.
+- **Gate** — `e2e/check-scenario-coverage.mjs` reads that artifact.
   `npm run coverage:scenarios` runs the suite and then this check.
 
 ## Rules

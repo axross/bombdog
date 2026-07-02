@@ -22,7 +22,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const ARTIFACT = join(here, "..", "e2e", ".scenario-coverage", "summary.json");
+const ARTIFACT = join(here, ".scenario-coverage", "summary.json");
 
 // `must` = enforce the hard gate (phase 2); any other value = report-only.
 const GATE = process.env.SCENARIO_GATE ?? "must";
