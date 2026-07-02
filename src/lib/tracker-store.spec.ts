@@ -96,6 +96,40 @@ describe("addMove()", () => {
 	});
 });
 
+describe("removeMove()", () => {
+	it("deletes the move with the given id, leaving the rest in order", () => {
+		state().addMove(dual);
+		state().addMove(solo);
+		state().addMove(equip);
+		const soloId = state().moves[1].id;
+
+		state().removeMove(soloId);
+
+		expect(state().moves.map((m) => m.type)).toEqual(["dual-cut", "equipment"]);
+	});
+
+	it("clears the redo stack when a move is deleted", () => {
+		state().addMove(dual);
+		state().addMove(solo);
+		state().undoLastMove();
+		expect(state().redoStack).toHaveLength(1);
+
+		state().removeMove(state().moves[0].id);
+		expect(state().redoStack).toHaveLength(0);
+	});
+
+	it("leaves state untouched for an unknown id", () => {
+		state().addMove(dual);
+		state().undoLastMove();
+		const before = state();
+
+		state().removeMove("does-not-exist");
+		expect(state().moves).toEqual(before.moves);
+		// the no-op guard preserves the redo stack rather than wiping it.
+		expect(state().redoStack).toHaveLength(1);
+	});
+});
+
 describe("undoLastMove() / redoMove()", () => {
 	it("undoes repeatedly and redoes", () => {
 		state().addMove(dual);

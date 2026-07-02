@@ -70,17 +70,42 @@
 
 		.footer {
 			display: flex;
-			justify-content: flex-end;
+			justify-content: space-between;
+			align-items: center;
+			gap: var(--space-2);
+		}
+
+		/* Cancel + Save stay grouped on the trailing edge; Delete sits opposite. */
+		.actions {
+			display: flex;
 			gap: var(--space-2);
 		}
 
 		.secondary,
-		.primary {
+		.primary,
+		.danger {
 			min-block-size: 44px;
 			padding-inline: var(--space-5);
 			border-radius: var(--radius-sm);
 			font-weight: 600;
 			border: 1px solid var(--border);
+		}
+
+		/* Destructive action, mirroring the Reset trigger: a low-emphasis
+		   danger-text control that fills on hover, kept opposite the primary Save
+		   so it is not tapped by reflex. */
+		.danger {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-1);
+			padding-inline: var(--space-4);
+			background-color: transparent;
+			color: var(--danger-text);
+
+			&:hover {
+				background-color: var(--danger-soft);
+				border-color: var(--danger);
+			}
 		}
 
 		.secondary {

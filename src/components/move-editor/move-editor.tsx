@@ -1,5 +1,6 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { type JSX, useState } from "react";
 import { buildDraft, fieldsFromMove } from "@/components/move-form/draft";
@@ -29,6 +30,7 @@ export function MoveEditor({
 	onClose,
 }: MoveEditorProps): JSX.Element {
 	const updateMove = useTrackerStore((s) => s.updateMove);
+	const removeMove = useTrackerStore((s) => s.removeMove);
 	const [fields, setFields] = useState(() => fieldsFromMove(move));
 	// drive `open` locally so closing plays the exit animation before the parent
 	// unmounts us: Radix keeps the content mounted while data-state="closed"
@@ -40,6 +42,11 @@ export function MoveEditor({
 	const handleSave = () => {
 		if (!draft) return;
 		updateMove(move.id, draft);
+		setOpen(false);
+	};
+
+	const handleDelete = () => {
+		removeMove(move.id);
 		setOpen(false);
 	};
 
@@ -77,20 +84,31 @@ export function MoveEditor({
 					/>
 
 					<div className={css.footer}>
-						<Dialog.Close asChild>
-							<button type="button" className={css.secondary}>
-								Cancel
-							</button>
-						</Dialog.Close>
 						<button
 							type="button"
-							className={css.primary}
-							onClick={handleSave}
-							disabled={!draft}
-							data-testid="save"
+							className={css.danger}
+							onClick={handleDelete}
+							data-testid="delete"
 						>
-							Save
+							<Trash2 size={15} aria-hidden />
+							Delete
 						</button>
+						<div className={css.actions}>
+							<Dialog.Close asChild>
+								<button type="button" className={css.secondary}>
+									Cancel
+								</button>
+							</Dialog.Close>
+							<button
+								type="button"
+								className={css.primary}
+								onClick={handleSave}
+								disabled={!draft}
+								data-testid="save"
+							>
+								Save
+							</button>
+						</div>
 					</div>
 				</Dialog.Content>
 			</Dialog.Portal>

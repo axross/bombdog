@@ -101,6 +101,18 @@ describe("<MoveEditor>", () => {
 		expect(screen.queryByTestId("move-editor")).not.toBeInTheDocument();
 	});
 
+	it("deletes the move from the store and starts closing", () => {
+		render(<MoveEditor move={dualCut} players={players} onClose={vi.fn()} />);
+
+		fireEvent.click(screen.getByTestId("delete"));
+
+		// the move is gone from the store.
+		expect(useTrackerStore.getState().moves).toHaveLength(0);
+		// deleting starts the close: the dialog content is torn down (Radix defers
+		// the parent's onClose to the exit animation, which jsdom never fires).
+		expect(screen.queryByTestId("move-editor")).not.toBeInTheDocument();
+	});
+
 	it("enables Save when the prefilled draft is valid", () => {
 		render(<MoveEditor move={dualCut} players={players} onClose={vi.fn()} />);
 		expect(screen.getByTestId("save")).toBeEnabled();

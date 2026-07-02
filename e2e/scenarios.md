@@ -44,6 +44,7 @@ carries its `@scenario:<id>` tag. The reporter
 | session.undo-redo | Undo/redo walk the move stack; a new move clears redo | session | should |
 | session.edit-move | Edit a logged move in place | session | should |
 | session.edit-cancel | Cancel an edit leaves the logged move unchanged | session | should |
+| session.delete-move | Delete a logged move from its edit panel | session | should |
 | session.collapse | Collapse and expand the composer | session | should |
 | session.log-consecutive | Log two moves back-to-back reusing the same target | session | should |
 | history.shows-moves | Logged moves appear in the history | history | must |
