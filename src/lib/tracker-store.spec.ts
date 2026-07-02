@@ -271,6 +271,47 @@ describe("persist migration (v1 → v2)", () => {
 		});
 	});
 
+	it("drops legacy equipment moves that logged a detector card as free text", () => {
+		const persisted = {
+			moves: [
+				{ id: "1", seq: 1, at: 0, type: "solo-cut", actorId: "a", value: 5 },
+				{
+					id: "2",
+					seq: 2,
+					at: 0,
+					type: "equipment",
+					actorId: "a",
+					equipment: "Triple Detector (3)",
+				},
+				{
+					id: "3",
+					seq: 3,
+					at: 0,
+					type: "equipment",
+					actorId: "a",
+					equipment: "X or Y Ray (10)",
+					note: "checked seat 2",
+				},
+				{
+					id: "4",
+					seq: 4,
+					at: 0,
+					type: "equipment",
+					actorId: "a",
+					equipment: "Rewinder (6)",
+				},
+			],
+		};
+
+		const result = migrate?.(persisted, 1) as {
+			moves: Record<string, unknown>[];
+		};
+
+		// The two detector-card equipment logs are gone; the solo cut and the
+		// still-valid Rewinder equipment survive.
+		expect(result.moves.map((m) => m.id)).toEqual(["1", "4"]);
+	});
+
 	it("leaves already-current state untouched", () => {
 		const persisted = {
 			moves: [{ type: "detector", detector: "triple", values: [3] }],
