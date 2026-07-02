@@ -2,7 +2,7 @@
 
 import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
-import { type JSX, useEffect, useRef, useState } from "react";
+import { type JSX, useEffect, useMemo, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
 import { MoveFilter } from "@/components/move-filter/move-filter";
 import { filterMoves, formatRevealed, getPlayerName } from "@/lib/game";
@@ -150,13 +150,21 @@ export function MoveLog(): JSX.Element {
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [filter, setFilter] = useState<Filter>(EMPTY_MOVE_FILTER);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const prevCount = useRef(0);
 
-	const visibleMoves = filterMoves(moves, filter);
+	const visibleMoves = useMemo(
+		() => filterMoves(moves, filter),
+		[moves, filter],
+	);
 
-	// Keep the newest visible move (bottom) in view as the log grows or the
-	// filter changes.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: re-scroll when the visible count changes
+	// Keep the newest visible move (bottom) in view only when the list *grows*
+	// (a move was logged). Toggling a filter can shrink the list; re-scrolling
+	// then would yank a user reading earlier history back to the bottom.
 	useEffect(() => {
+		const count = visibleMoves.length;
+		const grew = count > prevCount.current;
+		prevCount.current = count;
+		if (!grew) return;
 		const el = scrollRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
 	}, [visibleMoves.length]);

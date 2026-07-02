@@ -58,6 +58,8 @@ export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
 
 /** Apply the log filter, preserving the original move order. */
 export function filterMoves(moves: Move[], filter: MoveFilter): Move[] {
+	// Common case: nothing excluded — return the input untouched, no allocation.
+	if (!isFilterActive(filter)) return moves;
 	return moves.filter((move) => isMoveVisible(move, filter));
 }
 

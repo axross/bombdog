@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
 	filterDialog,
+	logDoubleDetector,
 	logDualCut,
 	logSoloCut,
 	moveLog,
@@ -14,7 +15,8 @@ import {
 // touching the underlying log.
 
 test.describe("move-log filter", () => {
-	// Seed a history with one of each filterable move plus an unaffected one:
+	// Seed a history with one of each move the filter can touch plus an
+	// unaffected one:
 	// #1 successful dual cut, #2 failed dual cut, #3 solo cut, #4 double detector.
 	test.beforeEach(async ({ page }) => {
 		await startTracking(page);
@@ -25,7 +27,12 @@ test.describe("move-log filter", () => {
 			outcome: { reveal: 8 },
 		});
 		await logSoloCut(page, { wire: 5 });
-		await expect(moveRow(page, 3)).toBeVisible();
+		await logDoubleDetector(page, {
+			target: "Player 2",
+			wire: 6,
+			outcome: "success",
+		});
+		await expect(moveRow(page, 4)).toBeVisible();
 	});
 
 	test("excludes successful dual cuts while keeping failed ones", async ({
@@ -59,10 +66,13 @@ test.describe("move-log filter", () => {
 		await filterDialog(page).getByTestId("filter-exclude-both").click();
 		await filterDialog(page).getByTestId("filter-done").click();
 
-		// Both a successful dual cut (#1) and the solo cut (#3) drop out.
+		// Both a successful dual cut (#1) and the solo cut (#3) drop out; the
+		// failed dual cut (#2) and the successful double detector (#4) — which the
+		// filter never touches — stay visible.
 		await expect(moveRow(page, 1)).toHaveCount(0);
 		await expect(moveRow(page, 3)).toHaveCount(0);
 		await expect(moveRow(page, 2)).toBeVisible();
+		await expect(moveRow(page, 4)).toBeVisible();
 		// The active filter is flagged on the toolbar trigger.
 		await expect(moveLog(page).getByTestId("filter-active")).toBeVisible();
 

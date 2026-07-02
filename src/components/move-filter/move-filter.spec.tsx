@@ -20,14 +20,21 @@ async function open(filter: Filter = EMPTY_MOVE_FILTER) {
 }
 
 describe("<MoveFilter>", () => {
-	it("marks the trigger active only when the filter excludes something", () => {
+	it("marks the trigger active — for sighted and screen-reader users — only when the filter excludes something", () => {
 		const { rerender } = render(
 			<MoveFilter filter={EMPTY_MOVE_FILTER} onChange={vi.fn()} />,
 		);
+		// Inactive: no dot, and the accessible name is a plain "Filter".
 		expect(screen.queryByTestId("filter-active")).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Filter" })).toBeInTheDocument();
 
 		rerender(<MoveFilter filter={bothExcluded} onChange={vi.fn()} />);
+		// Active: the dot appears and the accessible name announces the state,
+		// so the cue is not colour-only.
 		expect(screen.getByTestId("filter-active")).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "Filter (active)" }),
+		).toBeInTheDocument();
 	});
 
 	it("toggles the successful-dual-cut exclusion", async () => {
@@ -63,20 +70,40 @@ describe("<MoveFilter>", () => {
 		});
 	});
 
-	it("resets to the empty filter and disables Reset when inactive", async () => {
+	it("resets to the empty filter when active", async () => {
 		const { user, onChange } = await open(bothExcluded);
 		const reset = screen.getByTestId("filter-reset");
-		expect(reset).toBeEnabled();
+		expect(reset).toHaveAttribute("aria-disabled", "false");
 		await user.click(reset);
 		expect(onChange).toHaveBeenCalledWith(EMPTY_MOVE_FILTER);
 	});
 
-	it("disables Reset when nothing is excluded", async () => {
-		await open();
-		expect(screen.getByTestId("filter-reset")).toBeDisabled();
+	it("marks Reset aria-disabled and no-ops it when nothing is excluded", async () => {
+		const { user, onChange } = await open();
+		const reset = screen.getByTestId("filter-reset");
+		expect(reset).toHaveAttribute("aria-disabled", "true");
+		// Kept focusable (not the `disabled` attribute) so activating it never
+		// drops focus out of the dialog; the handler simply does nothing.
+		expect(reset).toBeEnabled();
+		await user.click(reset);
+		expect(onChange).not.toHaveBeenCalled();
 	});
 
-	it("reflects current exclusions via aria-pressed", async () => {
+	it("labels the shortcut 'Exclude both' when nothing is excluded", async () => {
+		await open();
+		expect(screen.getByTestId("filter-exclude-both")).toHaveTextContent(
+			"Exclude both",
+		);
+	});
+
+	it("labels the shortcut 'Clear both' when both are excluded", async () => {
+		await open(bothExcluded);
+		expect(screen.getByTestId("filter-exclude-both")).toHaveTextContent(
+			"Clear both",
+		);
+	});
+
+	it("reflects current exclusions via aria-pressed on the toggles", async () => {
 		await open({ excludeSuccessfulDualCut: true, excludeSoloCut: false });
 		expect(screen.getByTestId("filter-exclude-dual-cut")).toHaveAttribute(
 			"aria-pressed",
@@ -86,9 +113,9 @@ describe("<MoveFilter>", () => {
 			"aria-pressed",
 			"false",
 		);
-		expect(screen.getByTestId("filter-exclude-both")).toHaveAttribute(
+		// The shortcut is a plain action, not a toggle: it carries no aria-pressed.
+		expect(screen.getByTestId("filter-exclude-both")).not.toHaveAttribute(
 			"aria-pressed",
-			"false",
 		);
 	});
 });

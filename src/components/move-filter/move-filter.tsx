@@ -28,11 +28,14 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 				<button
 					type="button"
 					className={clsx(css.trigger, active && css.triggerActive)}
+					aria-label={active ? "Filter (active)" : "Filter"}
 					data-testid="filter"
 				>
 					<ListFilter size={16} aria-hidden />
 					Filter
-					{active && <span className={css.dot} data-testid="filter-active" />}
+					{active && (
+						<span className={css.dot} aria-hidden data-testid="filter-active" />
+					)}
 				</button>
 			</Dialog.Trigger>
 			<Dialog.Portal>
@@ -46,11 +49,12 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 					<p className={css.hint}>Hide the move types you don't need to see.</p>
 
 					{/* Shortcut above the individual toggles: turn both exclusions on
-					    (or off again once both are set) in a single tap. */}
+					    (or off again once both are set) in a single tap. It is a plain
+					    action, not a toggle, so it carries no aria-pressed state — that
+					    would read as "off" in the mixed (one-exclusion) case. */}
 					<button
 						type="button"
 						className={css.both}
-						aria-pressed={bothExcluded}
 						onClick={() =>
 							onChange({
 								excludeSuccessfulDualCut: !bothExcluded,
@@ -59,7 +63,7 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 						}
 						data-testid="filter-exclude-both"
 					>
-						Exclude both
+						{bothExcluded ? "Clear both" : "Exclude both"}
 					</button>
 
 					<div className={css.toggles}>
@@ -100,11 +104,15 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 					</div>
 
 					<div className={css.footer}>
+						{/* Kept enabled even when inactive: disabling the focused Reset
+						    button right after a keyboard user activates it would drop focus
+						    out of the dialog to <body>. It no-ops when nothing is excluded,
+						    and aria-disabled conveys the state without losing focus. */}
 						<button
 							type="button"
 							className={css.reset}
-							onClick={() => onChange(EMPTY_MOVE_FILTER)}
-							disabled={!active}
+							onClick={() => active && onChange(EMPTY_MOVE_FILTER)}
+							aria-disabled={!active}
 							data-testid="filter-reset"
 						>
 							Reset
