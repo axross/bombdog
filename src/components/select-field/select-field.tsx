@@ -6,26 +6,42 @@ import { Select } from "radix-ui";
 import type { JSX } from "react";
 import css from "./select-field.module.css";
 
-/** A single option in a {@link SelectField} dropdown: its stored value and visible label. */
+/**
+ *
+ * A single option in a {@link SelectField} dropdown: its stored value and visible label.
+ *
+ */
 export interface SelectOption {
 	value: string;
 	label: string;
 }
 
-/** Props for {@link SelectField}. */
+/**
+ *
+ * Props for {@link SelectField}.
+ *
+ */
 interface SelectFieldProps {
 	label: string;
 	value: string;
 	onValueChange: (value: string) => void;
 	options: SelectOption[];
 	placeholder?: string;
-	/** Render the label visually (default) or keep it screen-reader only. */
+	/**
+	 *
+	 * Render the label visually (default) or keep it screen-reader only.
+	 *
+	 */
 	hideLabel?: boolean;
 	className?: string;
 	"data-testid"?: string;
 }
 
-/** A labelled dropdown built on Radix Select. */
+/**
+ *
+ * A labelled dropdown built on Radix Select.
+ *
+ */
 export function SelectField({
 	label,
 	value,

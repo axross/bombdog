@@ -21,7 +21,11 @@ const dualCut: DualCutMove = {
 	outcome: "success",
 };
 
-/** Seed the tracker store with the given moves and the standard players/Captain. */
+/**
+ *
+ * Seed the tracker store with the given moves and the standard players/Captain.
+ *
+ */
 function seed(moves: Move[]) {
 	useTrackerStore.setState({
 		players,

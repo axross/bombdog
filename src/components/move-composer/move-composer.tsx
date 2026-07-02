@@ -14,7 +14,11 @@ import { useTrackerStore } from "@/lib/tracker-store";
 import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
 
-/** Bottom-half form to log the next move, with undo/redo. */
+/**
+ *
+ * Bottom-half form to log the next move, with undo/redo.
+ *
+ */
 export function MoveComposer(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
 	const captainIndex = useTrackerStore((s) => s.captainIndex);
@@ -40,9 +44,11 @@ export function MoveComposer(): JSX.Element {
 	};
 
 	/**
+	 *
 	 * Log the built draft, then reset the form for the next move, seeding the
 	 * suggested actor from the same {@link nextActorId} rule a reloaded log runs
 	 * through so the live suggestion matches what a reload would show.
+	 *
 	 */
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();

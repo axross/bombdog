@@ -1,23 +1,37 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** A wire the pad can select: a blue number, the yellow wire, or "?" (unknown). */
+/**
+ *
+ * A wire the pad can select: a blue number, the yellow wire, or "?" (unknown).
+ *
+ */
 export type Wire = number | "yellow" | "unknown";
-/** A revealed actual value recorded when a cut fails. */
+/**
+ *
+ * A revealed actual value recorded when a cut fails.
+ *
+ */
 export type Revealed = number | "yellow" | "unknown";
 
 /**
+ *
  * Navigate to the app and neutralise the Next.js dev-tools badge. Served by
  * `npm run dev`, that badge sits bottom-left inside a `<nextjs-portal>` and
  * intercepts pointer events on the composer's bottom controls (collapse /
  * undo / redo). Hiding it makes those clicks land reliably; it is a no-op
  * against a production build where the badge is absent.
+ *
  */
 export async function gotoApp(page: Page): Promise<void> {
 	await page.goto("/");
 	await page.addStyleTag({ content: "nextjs-portal{display:none!important}" });
 }
 
-/** Complete the setup screen with the default players and open the tracker. */
+/**
+ *
+ * Complete the setup screen with the default players and open the tracker.
+ *
+ */
 export async function startTracking(page: Page): Promise<void> {
 	await gotoApp(page);
 	await page.getByTestId("setup").getByTestId("start").click();
@@ -25,11 +39,13 @@ export async function startTracking(page: Page): Promise<void> {
 }
 
 /**
+ *
  * Drive the setup screen with a specific roster and Captain, then open the
  * tracker. `names` sets the player count (one entry per seat, min 2 / max 5);
  * `captainIndex` is the zero-based seat that holds the Captain (default 0).
  *
  * @throws if `names` is outside the supported 2–5 player range.
+ *
  */
 export async function startTrackingWith(
 	page: Page,
@@ -67,41 +83,67 @@ export async function startTrackingWith(
 	await expect(composer(page)).toBeVisible();
 }
 
-/** The bottom-half move composer. */
+/**
+ *
+ * The bottom-half move composer.
+ *
+ */
 export function composer(page: Page): Locator {
 	return page.getByTestId("composer");
 }
 
-/** The top-half move history. */
+/**
+ *
+ * The top-half move history.
+ *
+ */
 export function moveLog(page: Page): Locator {
 	return page.getByTestId("move-log");
 }
 
-/** A logged move row by its sequence number. */
+/**
+ *
+ * A logged move row by its sequence number.
+ *
+ */
 export function moveRow(page: Page, seq: number): Locator {
 	return moveLog(page).locator(`[data-testid="move"][data-seq="${seq}"]`);
 }
 
-/** Open the move-log filter dialog from its header trigger. */
+/**
+ *
+ * Open the move-log filter dialog from its header trigger.
+ *
+ */
 export async function openFilter(page: Page): Promise<void> {
 	await header(page).getByTestId("filter").click();
 	await expect(page.getByTestId("filter-dialog")).toBeVisible();
 }
 
-/** The move-log filter dialog. */
+/**
+ *
+ * The move-log filter dialog.
+ *
+ */
 export function filterDialog(page: Page): Locator {
 	return page.getByTestId("filter-dialog");
 }
 
-/** The app header, which carries the brand, the filter trigger, and Reset. */
+/**
+ *
+ * The app header, which carries the brand, the filter trigger, and Reset.
+ *
+ */
 export function header(page: Page): Locator {
 	return page.getByTestId("header");
 }
 
 /**
+ *
  * Open a SelectField (by its test id, scoped to the composer) and choose an
  * option. Options are Radix-portaled with the `option` role, so they are
  * targeted by accessible name.
+ *
  */
 export async function chooseInComposer(
 	page: Page,
@@ -112,12 +154,20 @@ export async function chooseInComposer(
 	await page.getByRole("option", { name: optionName, exact: true }).click();
 }
 
-/** Set the acting player from the "Acting" dropdown. */
+/**
+ *
+ * Set the acting player from the "Acting" dropdown.
+ *
+ */
 export async function setActor(page: Page, playerName: string): Promise<void> {
 	await chooseInComposer(page, "acting", playerName);
 }
 
-/** Pick a target player from the segmented control (a single tap). */
+/**
+ *
+ * Pick a target player from the segmented control (a single tap).
+ *
+ */
 export async function pickTarget(
 	page: Page,
 	playerName: string,
@@ -141,14 +191,20 @@ const revealTestId = (value: Revealed) =>
 			? "reveal-unknown"
 			: `reveal-${value}`;
 
-/** Tap a wire on the composer's wire pad. */
+/**
+ *
+ * Tap a wire on the composer's wire pad.
+ *
+ */
 export async function selectWire(page: Page, wire: Wire): Promise<void> {
 	await composer(page).getByTestId(wireTestId(wire)).click();
 }
 
 /**
+ *
  * Set the outcome. `success` taps Success; a `reveal` value taps Fail and then
  * records the actual wire in the popup that opens.
+ *
  */
 export async function setOutcome(
 	page: Page,
@@ -166,12 +222,20 @@ export async function setOutcome(
 	await expect(page.getByTestId("reveal-dialog")).toBeHidden();
 }
 
-/** Submit the composed move. */
+/**
+ *
+ * Submit the composed move.
+ *
+ */
 export async function logMove(page: Page): Promise<void> {
 	await composer(page).getByTestId("log-move").click();
 }
 
-/** Inputs for a dual cut: an optional acting player override, plus the target, wire, and outcome. */
+/**
+ *
+ * Inputs for a dual cut: an optional acting player override, plus the target, wire, and outcome.
+ *
+ */
 interface CutOptions {
 	actor?: string;
 	target: string;
@@ -179,7 +243,11 @@ interface CutOptions {
 	outcome: "success" | { reveal: Revealed };
 }
 
-/** Compose and log a dual cut. */
+/**
+ *
+ * Compose and log a dual cut.
+ *
+ */
 export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
 	await composer(page).getByTestId("tab-dual-cut").click();
 	if (opts.actor) await setActor(page, opts.actor);
@@ -189,18 +257,34 @@ export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
 	await logMove(page);
 }
 
-/** Inputs for a detector action: an optional actor and card override, plus the target, blue values, and outcome. */
+/**
+ *
+ * Inputs for a detector action: an optional actor and card override, plus the target, blue values, and outcome.
+ *
+ */
 interface DetectorOptions {
 	actor?: string;
-	/** The detector card label (e.g. "Triple Detector (3)"); omit for the Double Detector default. */
+	/**
+	 *
+	 * The detector card label (e.g. "Triple Detector (3)"); omit for the Double Detector default.
+	 *
+	 */
 	card?: string;
 	target: string;
-	/** Named blue values: one for double/triple/super, two for the X or Y Ray. */
+	/**
+	 *
+	 * Named blue values: one for double/triple/super, two for the X or Y Ray.
+	 *
+	 */
 	values: Wire[];
 	outcome: "success" | { reveal: Revealed };
 }
 
-/** Compose and log a detector action (blue wires only, no yellow). */
+/**
+ *
+ * Compose and log a detector action (blue wires only, no yellow).
+ *
+ */
 export async function logDetector(
 	page: Page,
 	opts: DetectorOptions,
@@ -214,7 +298,11 @@ export async function logDetector(
 	await logMove(page);
 }
 
-/** Compose and log a solo cut (no target, no outcome). */
+/**
+ *
+ * Compose and log a solo cut (no target, no outcome).
+ *
+ */
 export async function logSoloCut(
 	page: Page,
 	{ actor, wire }: { actor?: string; wire: Wire },
@@ -225,7 +313,11 @@ export async function logSoloCut(
 	await logMove(page);
 }
 
-/** Compose and log an equipment action, optionally with a note. */
+/**
+ *
+ * Compose and log an equipment action, optionally with a note.
+ *
+ */
 export async function logEquipment(
 	page: Page,
 	{

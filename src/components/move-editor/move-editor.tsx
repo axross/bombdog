@@ -8,15 +8,27 @@ import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
 import css from "./move-editor.module.css";
 
-/** Props for {@link MoveEditor}. */
+/**
+ *
+ * Props for {@link MoveEditor}.
+ *
+ */
 interface MoveEditorProps {
-	/** The move being edited. Mount with `key={move.id}` so state resets per move. */
+	/**
+	 *
+	 * The move being edited. Mount with `key={move.id}` so state resets per move.
+	 *
+	 */
 	move: Move;
 	players: Player[];
 	onClose: () => void;
 }
 
-/** Modal editor that corrects a logged move in place (action kind is fixed). */
+/**
+ *
+ * Modal editor that corrects a logged move in place (action kind is fixed).
+ *
+ */
 export function MoveEditor({
 	move,
 	players,

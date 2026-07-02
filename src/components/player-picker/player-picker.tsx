@@ -6,7 +6,11 @@ import type { JSX } from "react";
 import type { SelectOption } from "@/components/select-field/select-field";
 import css from "./player-picker.module.css";
 
-/** Props for {@link PlayerPicker}: the field label and the controlled selection. */
+/**
+ *
+ * Props for {@link PlayerPicker}: the field label and the controlled selection.
+ *
+ */
 interface PlayerPickerProps {
 	label: string;
 	value: string;
@@ -17,8 +21,10 @@ interface PlayerPickerProps {
 }
 
 /**
+ *
  * A single-select segmented control for choosing a player — one tap, versus the
  * two taps a dropdown needs. Buttons fill the row and wrap when names are long.
+ *
  */
 export function PlayerPicker({
 	label,

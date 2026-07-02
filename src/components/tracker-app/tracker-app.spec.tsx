@@ -21,7 +21,11 @@ const moves: Move[] = [
 	},
 ];
 
-/** Seed the tracker store with a state snapshot, filling any unset fields with empty defaults. */
+/**
+ *
+ * Seed the tracker store with a state snapshot, filling any unset fields with empty defaults.
+ *
+ */
 function seed(
 	overrides: Partial<{
 		players: Player[];

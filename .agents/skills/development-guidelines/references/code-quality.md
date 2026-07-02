@@ -49,8 +49,20 @@ This project distinguishes two kinds of comment, each with its own required styl
 
 Doc-comments are the API-level documentation. They follow [TSDoc](https://tsdoc.org) and keep normal prose capitalization (they are NOT lowercased — see line comments below).
 
+Every doc-comment is framed with a blank delimiter line: an empty ` *` line immediately after the opening `/**`, and an empty ` *` line immediately before the closing `*/`. This applies to every doc-comment, including a one-line summary or a terse member doc — there are no single-line `/** … */` doc-comments. For example:
+
+```ts
+/**
+ *
+ * Resolve a player's display name, tolerant of unknown ids.
+ *
+ */
+export function getPlayerName(players: Player[], id: string): string { … }
+```
+
 **Guidelines:**
 
+- MUST frame every doc-comment with an empty ` *` line right after `/**` and an empty ` *` line right before `*/` — no single-line `/** … */` doc-comments, including member docs.
 - MUST give every **type definition** — every `interface`, `type` alias, `enum`, and every module-level exported `const` that defines a value/table — a TSDoc doc-comment stating what it is.
 - MUST give every **function whose body exceeds 5 lines** a TSDoc doc-comment stating what it does. This includes non-exported helpers and inner React components, not just exported functions.
 - MUST tag any function that can throw with `@throws`, naming the condition (e.g. `@throws if the kind has no matching option`). A function that returns `null`/`undefined` on failure does NOT throw and MUST NOT get `@throws`.

@@ -13,9 +13,11 @@ const players: Player[] = [
 ];
 
 /**
+ *
  * MoveForm is fully controlled, so drive it from a harness that owns `type` and
  * `fields`, mirroring the composer's plumbing so the form is exercised through
  * its public props.
+ *
  */
 function Harness({
 	initialType = "dual-cut",

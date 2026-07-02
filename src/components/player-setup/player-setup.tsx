@@ -12,17 +12,21 @@ function defaultNames(): string[] {
 }
 
 /**
+ *
  * Seed the seat-name inputs, keeping the array at `MAX_PLAYERS` so raising the
  * count reveals fresh default names. Names carried over from a previous game
  * (via reset) override the defaults for the seats they cover.
+ *
  */
 function seedNames(previous: Player[]): string[] {
 	return defaultNames().map((name, i) => previous[i]?.name ?? name);
 }
 
 /**
+ *
  * Generate a stable seat id, preferring `crypto.randomUUID` and falling back to
  * a random base-36 string in environments where it is unavailable.
+ *
  */
 function makeId(): string {
 	if (
@@ -34,7 +38,11 @@ function makeId(): string {
 	return `p_${Math.random().toString(36).slice(2)}`;
 }
 
-/** First-run / post-reset screen: pick player count, names, and the Captain. */
+/**
+ *
+ * First-run / post-reset screen: pick player count, names, and the Captain.
+ *
+ */
 export function PlayerSetup(): JSX.Element {
 	const configurePlayers = useTrackerStore((s) => s.configurePlayers);
 	const previousPlayers = useTrackerStore((s) => s.previousPlayers);
@@ -65,8 +73,10 @@ export function PlayerSetup(): JSX.Element {
 	};
 
 	/**
+	 *
 	 * Build the roster from the entered names (blank names fall back to
 	 * "Player N") and hand it to the store to open the tracker.
+	 *
 	 */
 	const handleStart = () => {
 		const players: Player[] = names.slice(0, count).map((name, i) => ({

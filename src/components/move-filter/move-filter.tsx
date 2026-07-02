@@ -8,16 +8,22 @@ import { isFilterActive } from "@/lib/game";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./move-filter.module.css";
 
-/** Props for {@link MoveFilter}: the current filter and its change handler. */
+/**
+ *
+ * Props for {@link MoveFilter}: the current filter and its change handler.
+ *
+ */
 interface MoveFilterProps {
 	filter: Filter;
 	onChange: (filter: Filter) => void;
 }
 
 /**
+ *
  * The move-log filter: a trigger button that opens a dialog for hiding move
  * types. The trigger is meant to sit in the app header, so it stays in view
  * while the history scrolls below it.
+ *
  */
 export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 	const active = isFilterActive(filter);

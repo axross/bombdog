@@ -11,35 +11,67 @@ import {
 } from "@/lib/types";
 import css from "./wire-pad.module.css";
 
-/** Options shared by both selection modes of {@link WirePad}. */
+/**
+ *
+ * Options shared by both selection modes of {@link WirePad}.
+ *
+ */
 interface BaseProps {
-	/** Optional heading shown above the pad. */
+	/**
+	 *
+	 * Optional heading shown above the pad.
+	 *
+	 */
 	label?: string;
-	/** Hide the Yellow option — detectors indicate blue values only. */
+	/**
+	 *
+	 * Hide the Yellow option — detectors indicate blue values only.
+	 *
+	 */
 	blueOnly?: boolean;
-	/** Offer the "?" (unknown) option for wires cut/named without a known value. */
+	/**
+	 *
+	 * Offer the "?" (unknown) option for wires cut/named without a known value.
+	 *
+	 */
 	allowUnknown?: boolean;
 	className?: string;
 	"data-testid"?: string;
 }
 
-/** Single-select pad: exactly one wire (or none). */
+/**
+ *
+ * Single-select pad: exactly one wire (or none).
+ *
+ */
 interface SingleProps extends BaseProps {
 	multiple?: false;
 	value: WireValueOrUnknown | null;
 	onValueChange: (value: WireValueOrUnknown) => void;
 }
 
-/** Multi-select pad: an ordered set of wires, optionally capped at `max`. */
+/**
+ *
+ * Multi-select pad: an ordered set of wires, optionally capped at `max`.
+ *
+ */
 interface MultiProps extends BaseProps {
 	multiple: true;
 	values: WireValueOrUnknown[];
 	onValuesChange: (values: WireValueOrUnknown[]) => void;
-	/** Cap on simultaneous selections; extra picks push out the oldest. */
+	/**
+	 *
+	 * Cap on simultaneous selections; extra picks push out the oldest.
+	 *
+	 */
 	max?: number;
 }
 
-/** A {@link WirePad} in either mode, discriminated by the `multiple` flag. */
+/**
+ *
+ * A {@link WirePad} in either mode, discriminated by the `multiple` flag.
+ *
+ */
 type WirePadProps = SingleProps | MultiProps;
 
 function toKey(value: WireValueOrUnknown): string {
@@ -53,9 +85,11 @@ function fromKey(key: string): WireValueOrUnknown {
 }
 
 /**
+ *
  * Grid of wire buttons: 1–12 and (unless blue-only) Yellow. Defaults to a
  * single-select toggle; pass `multiple` to let several wires be chosen at once
  * (used by the X or Y Ray, which names two values against one wire).
+ *
  */
 export function WirePad(props: WirePadProps): JSX.Element {
 	const { label, blueOnly = false, allowUnknown = false, className } = props;

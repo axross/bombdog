@@ -23,13 +23,19 @@ import { type DraftFields, detectorValues } from "./draft";
 import css from "./move-form.module.css";
 
 /**
+ *
  * Props for {@link MoveForm}. The form is fully controlled: the parent owns the
  * action `type` and the `fields`, and is notified of every change.
+ *
  */
 interface MoveFormProps {
 	players: Player[];
 	type: MoveType;
-	/** When provided, the action-type tabs are shown (add mode). */
+	/**
+	 *
+	 * When provided, the action-type tabs are shown (add mode).
+	 *
+	 */
 	onTypeChange?: (type: MoveType) => void;
 	fields: DraftFields;
 	onFieldsChange: (fields: DraftFields) => void;
@@ -62,8 +68,10 @@ const DETECTOR_SELECT_OPTIONS: SelectOption[] = DETECTOR_OPTIONS.map((d) => ({
 }));
 
 /**
+ *
  * The action-dependent controls that live inside the tab panel. Kept separate
  * so the add (tabs) and edit (fixed type) paths render identical inputs.
+ *
  */
 function MoveFields({
 	type,
@@ -198,10 +206,12 @@ function MoveFields({
 }
 
 /**
+ *
  * The shared input body for adding and editing a move. The acting player comes
  * first (it applies to every action); the action type is chosen with tabs whose
  * panel holds exactly the controls that action needs. In edit mode the type is
  * fixed, so the tab strip is replaced by a static header.
+ *
  */
 export function MoveForm({
 	players,

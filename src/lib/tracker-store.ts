@@ -12,35 +12,75 @@ import { idbStorage, STORAGE_KEY } from "./idb-storage";
 import type { Move, MoveDraft, Player, TrackerState } from "./types";
 
 /**
+ *
  * The live tracker store: the persisted {@link TrackerState} plus the ephemeral
  * client-only state (redo history, hydration flag, carried-over roster) and the
  * actions that mutate them.
+ *
  */
 interface TrackerStore extends TrackerState {
-	/** Moves removed by undo, awaiting redo. Never persisted. */
+	/**
+	 *
+	 * Moves removed by undo, awaiting redo. Never persisted.
+	 *
+	 */
 	redoStack: Move[];
-	/** True once IndexedDB rehydration has completed (client-only). */
+	/**
+	 *
+	 * True once IndexedDB rehydration has completed (client-only).
+	 *
+	 */
 	hasHydrated: boolean;
 	/**
+	 *
 	 * The roster from the game most recently cleared by `reset`, kept so the
 	 * setup screen can pre-fill the next game's player count, names, and Captain.
+	 *
 	 */
 	previousPlayers: Player[];
 	previousCaptainIndex: number;
 
-	/** Set the roster and Captain seat for a new game. */
+	/**
+	 *
+	 * Set the roster and Captain seat for a new game.
+	 *
+	 */
 	configurePlayers: (players: Player[], captainIndex: number) => void;
-	/** Move the Captain to a different seat. */
+	/**
+	 *
+	 * Move the Captain to a different seat.
+	 *
+	 */
 	setCaptain: (captainIndex: number) => void;
-	/** Log a new move from a draft, clearing the redo history. */
+	/**
+	 *
+	 * Log a new move from a draft, clearing the redo history.
+	 *
+	 */
 	addMove: (draft: MoveDraft) => void;
-	/** Correct an existing move's fields in place; its `type` cannot change. */
+	/**
+	 *
+	 * Correct an existing move's fields in place; its `type` cannot change.
+	 *
+	 */
 	updateMove: (id: string, draft: MoveDraft) => void;
-	/** Remove the most recent move, pushing it onto the redo stack. */
+	/**
+	 *
+	 * Remove the most recent move, pushing it onto the redo stack.
+	 *
+	 */
 	undoLastMove: () => void;
-	/** Re-apply the most recently undone move. */
+	/**
+	 *
+	 * Re-apply the most recently undone move.
+	 *
+	 */
 	redoMove: () => void;
-	/** Clear the current game, carrying its roster over to the setup screen. */
+	/**
+	 *
+	 * Clear the current game, carrying its roster over to the setup screen.
+	 *
+	 */
 	reset: () => void;
 }
 
@@ -51,11 +91,13 @@ const EMPTY_STATE: TrackerState = {
 };
 
 /**
+ *
  * Generate a unique id for a new move.
  *
  * @remarks
  * Prefers `crypto.randomUUID`; when it is unavailable (older runtimes or
  * non-secure contexts) it falls back to a timestamp-plus-random string.
+ *
  */
 function createId(): string {
 	if (
@@ -67,12 +109,20 @@ function createId(): string {
 	return `m_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e9).toString(36)}`;
 }
 
-/** The next sequence number, one past the highest `seq` among existing moves. */
+/**
+ *
+ * The next sequence number, one past the highest `seq` among existing moves.
+ *
+ */
 function nextSeq(moves: Move[]): number {
 	return moves.reduce((max, move) => Math.max(max, move.seq), 0) + 1;
 }
 
-/** Build a persisted `Move` from an editable draft plus generated fields. */
+/**
+ *
+ * Build a persisted `Move` from an editable draft plus generated fields.
+ *
+ */
 function draftToMove(
 	draft: MoveDraft,
 	id: string,
@@ -83,11 +133,13 @@ function draftToMove(
 }
 
 /**
+ *
  * Detector cards that were logged as free-text equipment before they became
  * first-class detector actions (they were removed from `EQUIPMENT_OPTIONS`).
  * Legacy equipment moves carrying these labels are dropped on migration: they
  * lack the target, value, and outcome a detector move needs, so they can't be
  * converted — only discarded.
+ *
  */
 const REMOVED_DETECTOR_EQUIPMENT = new Set([
 	"Triple Detector (3)",
@@ -95,7 +147,11 @@ const REMOVED_DETECTOR_EQUIPMENT = new Set([
 	"X or Y Ray (10)",
 ]);
 
-/** Whether a persisted move is a pre-v2 equipment log of a now-detector card. */
+/**
+ *
+ * Whether a persisted move is a pre-v2 equipment log of a now-detector card.
+ *
+ */
 function isRemovedDetectorEquipment(move: unknown): boolean {
 	return (
 		!!move &&
@@ -107,7 +163,11 @@ function isRemovedDetectorEquipment(move: unknown): boolean {
 	);
 }
 
-/** Rewrite a pre-v2 "double-detector" move into the unified "detector" shape. */
+/**
+ *
+ * Rewrite a pre-v2 "double-detector" move into the unified "detector" shape.
+ *
+ */
 function rewriteLegacyDoubleDetector(move: unknown): unknown {
 	if (
 		!move ||

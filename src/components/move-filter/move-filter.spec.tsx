@@ -9,7 +9,11 @@ const bothExcluded: Filter = {
 	excludeSoloCut: true,
 };
 
-/** Render with a spy onChange and open the dialog. */
+/**
+ *
+ * Render with a spy onChange and open the dialog.
+ *
+ */
 async function open(filter: Filter = EMPTY_MOVE_FILTER) {
 	const onChange = vi.fn();
 	const user = userEvent.setup();
