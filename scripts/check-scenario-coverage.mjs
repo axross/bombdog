@@ -45,13 +45,18 @@ try {
 
 const problems = [];
 
-// structural tag errors are always a failure, in every phase.
+// structural errors are always a failure, in every phase.
+if (Array.isArray(summary.catalogErrors) && summary.catalogErrors.length > 0) {
+	problems.push(
+		`catalog errors in e2e/scenarios.md:\n${summary.catalogErrors.map((e) => `    · ${e}`).join("\n")}`,
+	);
+}
 if (
 	Array.isArray(summary.unknownScenarioTags) &&
 	summary.unknownScenarioTags.length > 0
 ) {
 	problems.push(
-		`unknown @scenario: tags (not in e2e/scenarios.ts): ${summary.unknownScenarioTags.join(", ")}`,
+		`unknown @scenario: tags (not in e2e/scenarios.md): ${summary.unknownScenarioTags.join(", ")}`,
 	);
 }
 if (Array.isArray(summary.facetErrors) && summary.facetErrors.length > 0) {

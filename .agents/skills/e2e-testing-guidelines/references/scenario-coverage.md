@@ -37,10 +37,13 @@ can't reach, which is orthogonal to this E2E metric.
 
 ## Mechanism
 
-- **Catalog** — `e2e/scenarios.ts` holds a typed array `SCENARIOS` of
-  `{ id, title, area, priority }`. `id` is a stable, dotted join key (e.g.
-  `log.dual-cut.success`); `priority` is `must` | `should` | `may`; `area` is
-  one of the `AREAS`.
+- **Catalog** — `e2e/scenarios.md` holds a markdown table with columns
+  `ID | Title | Area | Priority` (one row per journey). There is **no scenario
+  list in code** — the catalog is authored as human-reviewable markdown. `ID` is
+  a stable, dotted join key (e.g. `log.dual-cut.success`); `Priority` is `must` |
+  `should` | `may`. The reporter parses this table (column order is read from the
+  header) and fails the run on a malformed catalog (bad header, duplicate id, or
+  a priority outside must/should/may).
 - **Tags** — tests declare coverage with **plain string** tags (no builder
   helpers) via the object-options form `test(title, { tag: [...] }, fn)`:
   - `@scenario:<id>` — **the join key**: which catalog journey the test covers.
@@ -61,17 +64,17 @@ can't reach, which is orthogonal to this E2E metric.
 ## Rules
 
 - MUST tag every e2e test with a plain-string `@scenario:<id>` from
-  `e2e/scenarios.ts`, plus the matching `@area:<area>` and `@priority:<priority>`
+  `e2e/scenarios.md`, plus the matching `@area:<area>` and `@priority:<priority>`
   facet tags for each scenario it covers. An untagged test contributes nothing to
-  coverage. Tags are plain strings (Playwright requires them to start with `@`);
-  the tag prefixes are exported from `e2e/scenarios.ts` for the reporter's use.
+  coverage. Tags are plain strings (Playwright requires them to start with `@`).
 - MUST keep the `@area:`/`@priority:` facet tags consistent with the catalog: the
   reporter fails the run if a test is **missing** a facet its covered scenario
   implies, or carries a **stray** facet no covered scenario implies. This keeps
   `--grep @priority:must` / `--grep @area:<area>` trustworthy.
-- MUST add a new entry to `SCENARIOS` when a change introduces a new user-facing
-  journey, and tag the test that asserts its outcome. Tag the **asserting** test,
-  not every test that merely passes through the journey — executed ≠ asserted.
+- MUST add a new row to the `e2e/scenarios.md` table when a change introduces a
+  new user-facing journey, and tag the test that asserts its outcome. Tag the
+  **asserting** test, not every test that merely passes through the journey —
+  executed ≠ asserted.
 - MUST NOT rename a scenario `id` without updating every `@scenario:` tag that
   references it in the same commit — the id is the contract between catalog and
   tests.
