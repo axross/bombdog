@@ -47,6 +47,11 @@ test.describe("setup", () => {
 		await expect(
 			composer(page).getByTestId("target").getByRole("radio", { name: "Ada" }),
 		).toBeVisible();
+		// the fifth seat (Ed) reached the composer too — the five-player maximum,
+		// which a smaller roster would not show.
+		await expect(
+			composer(page).getByTestId("target").getByRole("radio", { name: "Ed" }),
+		).toBeVisible();
 	});
 });
 

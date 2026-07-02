@@ -74,20 +74,26 @@ const pct = (t: Tally): number =>
 const tagValues = (tags: readonly string[], prefix: string): string[] =>
 	tags.filter((t) => t.startsWith(prefix)).map((t) => t.slice(prefix.length));
 
-/** Split a markdown table row `| a | b |` into trimmed cells. */
+/**
+ * Split a markdown table row `| a | b |` into trimmed cells, honouring the
+ * markdown escape for a literal pipe (`\|`) so a title may contain one.
+ */
 const cells = (row: string): string[] =>
 	row
 		.trim()
 		.replace(/^\|/, "")
 		.replace(/\|$/, "")
-		.split("|")
-		.map((c) => c.trim());
+		// split on unescaped pipes only, then unescape `\|` back to `|`.
+		.split(/(?<!\\)\|/)
+		.map((c) => c.replace(/\\\|/g, "|").trim());
 
 const isSeparatorRow = (row: string[]): boolean =>
 	row.every((c) => /^:?-{2,}:?$/.test(c));
 
 /**
  * Parse the first markdown table in `e2e/scenarios.md` into the scenario catalog.
+ * Only the first contiguous block of `|`-prefixed lines is read, so unrelated
+ * prose or a second table elsewhere in the file cannot pollute the catalog.
  * Column order is read from the header, so the table can be reordered freely.
  */
 function parseCatalog(text: string): {
@@ -95,10 +101,15 @@ function parseCatalog(text: string): {
 	errors: string[];
 } {
 	const errors: string[] = [];
-	const rows = text
-		.split("\n")
-		.map((l) => l.trim())
-		.filter((l) => l.startsWith("|"))
+	const lines = text.split("\n").map((l) => l.trim());
+	const start = lines.findIndex((l) => l.startsWith("|"));
+	if (start < 0) {
+		return { scenarios: [], errors: ["catalog has no table rows"] };
+	}
+	let end = start;
+	while (end < lines.length && lines[end].startsWith("|")) end++;
+	const rows = lines
+		.slice(start, end)
 		.map(cells)
 		.filter((row) => !isSeparatorRow(row));
 
