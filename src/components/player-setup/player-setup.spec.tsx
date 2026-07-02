@@ -83,7 +83,23 @@ describe("<PlayerSetup>", () => {
 		expect(input).toHaveValue("Zoe");
 	});
 
-	it("selects the whole name when a seat input gains focus", async () => {
+	it("selects the whole name when a seat input gains keyboard focus", async () => {
+		render(<PlayerSetup />);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Name of player 1",
+		});
+		// focus without a mouse — the reliable path the feature targets, with no
+		// mouseup to fight; the onFocus handler should select the whole value.
+		input.focus();
+		expect(input).toHaveFocus();
+
+		// the entire default value is selected, so the next keystroke replaces it.
+		expect(input.selectionStart).toBe(0);
+		expect(input.selectionEnd).toBe("Player 1".length);
+	});
+
+	it("selects the whole name when a seat input is clicked", async () => {
 		const user = userEvent.setup();
 		render(<PlayerSetup />);
 
@@ -92,7 +108,8 @@ describe("<PlayerSetup>", () => {
 		});
 		await user.click(input);
 
-		// the entire default value is selected, so the next keystroke replaces it.
+		// onMouseUp preventDefault keeps the focus-time selection instead of
+		// letting the click collapse it to a caret.
 		expect(input.selectionStart).toBe(0);
 		expect(input.selectionEnd).toBe("Player 1".length);
 	});
