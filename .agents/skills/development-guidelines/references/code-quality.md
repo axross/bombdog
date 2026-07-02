@@ -65,10 +65,8 @@ export function getPlayerName(players: Player[], id: string): string { … }
 - MUST give every **function whose body exceeds 5 lines** a TSDoc doc-comment stating what it does. This includes non-exported helpers and inner React components, not just exported functions.
 - MUST tag any function that can throw with `@throws`, naming the condition (e.g. `@throws if the kind has no matching option`). A function that returns `null`/`undefined` on failure does NOT throw and MUST NOT get `@throws`.
 - MUST put specific, heavy, or "why" detail that aids understanding but would clutter the summary into a `@remarks` block rather than the opening sentence.
-- SHOULD add `@param` / `@returns` only when the name and type do not already make the meaning obvious; do NOT add restating noise.
-- SHOULD cross-reference related symbols with `{@link Name}`, as the reference files do.
+- SHOULD add `@param` / `@returns` only when the name and type do not already make the meaning obvious, and cross-reference related symbols with `{@link Name}` as the reference files do; do NOT add restating noise.
 - SHOULD document individual interface/type members only when a member is non-obvious; self-evident members (e.g. `className`, an id field) need no member doc.
-- MAY use a one-line `/** … */` for a simple helper and a multi-line block for anything with nuance.
 - Test files are exempt from the function rule: do NOT add TSDoc to `describe`/`it`/`test`/`beforeEach` callbacks or inline test bodies. DO document genuinely reusable named helpers (e.g. in `e2e/helpers/`) whose body exceeds 5 lines.
 
 ### Line Comments
@@ -83,8 +81,6 @@ Line comments (`// …`) are written in a lowercase style and kept to a minimum.
 
 **Guidelines:**
 
-- MUST document every type definition and every function whose body exceeds 5 lines with a TSDoc doc-comment, per the Doc-Comments rules above.
-- MUST tag throwing functions with `@throws` and move heavy detail into `@remarks`.
 - MUST write `//` line comments in the lowercase style, preserving the proper-noun / identifier / acronym exceptions.
 - MUST keep line comments minimal and remove a `//` comment that only restates the code it precedes.
 - MUST let the linter/formatter enforce comment conventions where it can, and fix any comment-style violations it reports.
