@@ -31,6 +31,7 @@ Apply these keywords consistently in this document and the documents linked from
 | [Code Review Guideline](.agents/skills/code-review-guideline/SKILL.md) | Reviewing a diff, pull request, local change, or post-implementation self-review |
 | [Development Guidelines](.agents/skills/development-guidelines/SKILL.md) | Implementing, refactoring, running commands, preparing commits, adding dependencies, writing source comments or TSDoc doc-comments, or checking current docs |
 | [E2E Testing Guidelines](.agents/skills/e2e-testing-guidelines/SKILL.md) | Writing, running, reviewing, or maintaining end-to-end tests, snapshots, route coverage, or browser assertions |
+| [Loop Engineering](.agents/skills/loop-engineering/SKILL.md) | Operating the autonomous issue-to-pull-request loop: running the `/loop` dispatcher, reacting to an issue/PR event, moving the `loop:*` state machine forward, or setting up the routine and dispatch workflow |
 | [Maintainable Code Guidelines](.agents/skills/maintainable-code-guidelines/SKILL.md) | Reviewing readability, naming, abstraction boundaries, complexity, dead code, or scope discipline |
 | [Performance and Reliability Requirements](.agents/skills/performance-and-reliability-requirements/SKILL.md) | Reviewing data-access cost, server/client boundaries, caching, asset/image optimization, bundle weight, or runtime failure behavior |
 | [Project Structure](.agents/skills/project-structure/SKILL.md) | Navigating the repository, locating files, placing new modules, or checking directory/stack conventions |
