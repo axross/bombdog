@@ -16,6 +16,8 @@
 /test-results
 /blob-report
 /playwright/.cache
+# e2e scenario-coverage artifact (regenerated on every e2e run)
+/e2e/.scenario-coverage/
 
 # next.js
 /.next/

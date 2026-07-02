@@ -45,6 +45,18 @@ Test File Conventions sets the required project default: flag a new test file th
 - MUST flag a test body that does not group each action into discrete steps per [e2e-testing-guidelines › structure](../../e2e-testing-guidelines/references/structure.md).
 - MUST flag a chained-locator chain that re-roots at the page level mid-test instead of narrowing from a previously captured locator — defeats the readability of the nesting pattern.
 
+## Scenario Coverage
+
+Scenario Coverage is this project's E2E coverage metric: *which real user journeys the Playwright suite exercises*, tracked via an authored catalog — a markdown table at `e2e/scenarios.md` — and per-test tags: a `@scenario:<id>` join tag plus `@area:`/`@priority:` facet tags. It is **not** E2E line coverage — no app instrumentation is used. See [e2e-testing-guidelines › scenario-coverage](../../e2e-testing-guidelines/references/scenario-coverage.md) for the mechanism.
+
+**Guidelines:**
+
+- MUST report scenario-coverage evidence when a change adds or changes a user-facing journey: the overall + per-priority `covered/total` from `npm run coverage:scenarios`, and any newly-surfaced gaps.
+- MUST flag a Major when a change adds a new user-facing journey without a corresponding row in the `e2e/scenarios.md` catalog table — an incomplete catalog inflates the percentage.
+- MUST treat a new `must` scenario as a blocker until a passing tagged test covers it (`npm run coverage:scenarios` hard-gates `must` at 100%); `should`/`may` gaps are reported, not blocking.
+- MUST flag a stale/typo `@scenario:` tag or a `@area:`/`@priority:` facet tag that disagrees with the catalog (both are plain strings, validated at run time by the reporter, which fails the run), and a tag placed on a test that passes *through* a journey without asserting its outcome — tag the asserting test.
+- SHOULD note surfaced `should`/`may` gaps as follow-up work rather than silently expanding scope to close them.
+
 ## Test Helpers
 
 Test Helpers sets the required project default: flag a setup or API call made inline in a test body when an existing shared helper exists for that resource. Use the helper.

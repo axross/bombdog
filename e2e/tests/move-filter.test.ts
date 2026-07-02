@@ -35,9 +35,13 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 4)).toBeVisible();
 	});
 
-	test("excludes successful dual cuts while keeping failed ones", async ({
-		page,
-	}) => {
+	test("excludes successful dual cuts while keeping failed ones", {
+		tag: [
+			"@scenario:history.filter.exclude-dual-cut",
+			"@area:history",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-exclude-dual-cut").click();
 		await filterDialog(page).getByTestId("filter-done").click();
@@ -49,7 +53,13 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 3)).toBeVisible();
 	});
 
-	test("excludes solo cuts", async ({ page }) => {
+	test("excludes solo cuts", {
+		tag: [
+			"@scenario:history.filter.exclude-solo-cut",
+			"@area:history",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-exclude-solo-cut").click();
 		await filterDialog(page).getByTestId("filter-done").click();
@@ -59,9 +69,14 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 2)).toBeVisible();
 	});
 
-	test("the shortcut excludes both, and reset restores everything", async ({
-		page,
-	}) => {
+	test("the shortcut excludes both, and reset restores everything", {
+		tag: [
+			"@scenario:history.filter.exclude-both",
+			"@scenario:history.filter.reset",
+			"@area:history",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-exclude-both").click();
 		await filterDialog(page).getByTestId("filter-done").click();

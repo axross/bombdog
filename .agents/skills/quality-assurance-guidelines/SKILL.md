@@ -32,6 +32,7 @@ See [e2e-coverage.md](./references/e2e-coverage.md) for:
 - New visually distinct UI elements expose a stable test id per the project's testable-component conventions, if defined
 - Test files use the project's required locator and structure conventions per [e2e-testing-guidelines](../e2e-testing-guidelines/SKILL.md)
 - Shared test helpers are reused (not duplicated inline in the test file)
+- Scenario-coverage evidence (`npm run coverage:scenarios`): a new user-facing journey is added to the `e2e/scenarios.md` catalog table and tagged; a new `must` journey is a blocker until covered. This tracks **scenario** coverage (user journeys), not E2E line coverage.
 
 ## Unit Test Coverage
 

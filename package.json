@@ -14,7 +14,8 @@
 		"test:watch": "vitest",
 		"test:unit": "vitest run",
 		"test:coverage": "vitest run --coverage",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"coverage:scenarios": "playwright test && node e2e/check-scenario-coverage.mjs"
 	},
 	"dependencies": {
 		"clsx": "^2.1.1",

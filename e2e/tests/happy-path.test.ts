@@ -19,16 +19,24 @@ import {
 // composer.
 
 test.describe("setup", () => {
-	test("configures a two-player game (the minimum)", async ({ page }) => {
+	test("configures a two-player game (the minimum)", {
+		tag: ["@scenario:setup.min-players", "@area:setup", "@priority:should"],
+	}, async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
 		await expect(composer(page)).toBeVisible();
 		// the Captain (seat 1) takes the first turn, so the composer suggests Uno.
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
 
-	test("configures five players with names and a chosen Captain", async ({
-		page,
-	}) => {
+	test("configures five players with names and a chosen Captain", {
+		tag: [
+			"@scenario:setup.max-players",
+			"@scenario:setup.custom-names",
+			"@scenario:setup.choose-captain",
+			"@area:setup",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
 		await startTrackingWith(page, {
 			names: ["Ada", "Bo", "Cy", "Di", "Ed"],
 			captainIndex: 2,
@@ -39,11 +47,18 @@ test.describe("setup", () => {
 		await expect(
 			composer(page).getByTestId("target").getByRole("radio", { name: "Ada" }),
 		).toBeVisible();
+		// the fifth seat (Ed) reached the composer too — the five-player maximum,
+		// which a smaller roster would not show.
+		await expect(
+			composer(page).getByTestId("target").getByRole("radio", { name: "Ed" }),
+		).toBeVisible();
 	});
 });
 
 test.describe("logging each action type", () => {
-	test("dual cut — success", async ({ page }) => {
+	test("dual cut — success", {
+		tag: ["@scenario:log.dual-cut.success", "@area:logging", "@priority:must"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
 
@@ -57,7 +72,13 @@ test.describe("logging each action type", () => {
 		await expect(row.getByRole("img", { name: "Wire 9" })).toBeVisible();
 	});
 
-	test("dual cut — fail records the actual wire", async ({ page }) => {
+	test("dual cut — fail records the actual wire", {
+		tag: [
+			"@scenario:log.dual-cut.fail-reveal",
+			"@area:logging",
+			"@priority:must",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Compose the cut and verify Log move is blocked until the reveal", async () => {
@@ -86,7 +107,9 @@ test.describe("logging each action type", () => {
 		});
 	});
 
-	test("solo cut — no target or outcome", async ({ page }) => {
+	test("solo cut — no target or outcome", {
+		tag: ["@scenario:log.solo-cut", "@area:logging", "@priority:must"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logSoloCut(page, { wire: 5 });
 
@@ -97,7 +120,9 @@ test.describe("logging each action type", () => {
 		await expect(row.getByTestId("badge")).toHaveCount(0);
 	});
 
-	test('cut — logs a "?" (unknown) wire value', async ({ page }) => {
+	test('cut — logs a "?" (unknown) wire value', {
+		tag: ["@scenario:log.unknown-wire", "@area:logging", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		// the cut pads offer "?" for a wire whose value is unknown.
 		await logSoloCut(page, { wire: "unknown" });
@@ -109,7 +134,9 @@ test.describe("logging each action type", () => {
 		);
 	});
 
-	test("double detector — targeted, blue wires only", async ({ page }) => {
+	test("double detector — targeted, blue wires only", {
+		tag: ["@scenario:log.double-detector", "@area:logging", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
 		// detectors read blue values only: no Yellow option is offered.
@@ -130,7 +157,9 @@ test.describe("logging each action type", () => {
 		);
 	});
 
-	test("X or Y Ray — names two values against one wire", async ({ page }) => {
+	test("X or Y Ray — names two values against one wire", {
+		tag: ["@scenario:log.detector.xy-ray", "@area:logging", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDetector(page, {
 			card: "X or Y Ray (10)",
@@ -146,7 +175,9 @@ test.describe("logging each action type", () => {
 		await expect(row.getByRole("img", { name: "Wire 11" })).toBeVisible();
 	});
 
-	test("super detector — points at a whole stand", async ({ page }) => {
+	test("super detector — points at a whole stand", {
+		tag: ["@scenario:log.detector.super", "@area:logging", "@priority:may"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
 
@@ -164,7 +195,9 @@ test.describe("logging each action type", () => {
 		await expect(badge).toHaveAttribute("data-revealed", "2");
 	});
 
-	test("equipment — with a note", async ({ page }) => {
+	test("equipment — with a note", {
+		tag: ["@scenario:log.equipment", "@area:logging", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logEquipment(page, {
 			equipment: "Rewinder (6)",
@@ -178,9 +211,9 @@ test.describe("logging each action type", () => {
 });
 
 test.describe("session flow", () => {
-	test("the composer's suggested actor advances to the next seat after a move", async ({
-		page,
-	}) => {
+	test("the composer's suggested actor advances to the next seat after a move", {
+		tag: ["@scenario:session.turn-advance", "@area:session", "@priority:must"],
+	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) starts, so the composer suggests Player 1.
 		await expect(composer(page).getByTestId("acting")).toContainText(
@@ -194,9 +227,13 @@ test.describe("session flow", () => {
 		);
 	});
 
-	test("logging equipment keeps the turn on the same actor", async ({
-		page,
-	}) => {
+	test("logging equipment keeps the turn on the same actor", {
+		tag: [
+			"@scenario:session.equipment-no-advance",
+			"@area:session",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) starts a cut, passing the turn to Player 2.
 		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
@@ -217,9 +254,13 @@ test.describe("session flow", () => {
 		);
 	});
 
-	test("off-turn equipment returns the suggestion to the turn-holder", async ({
-		page,
-	}) => {
+	test("off-turn equipment returns the suggestion to the turn-holder", {
+		tag: [
+			"@scenario:session.off-turn-equipment",
+			"@area:session",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 		// Captain (Player 1) cuts, so the turn belongs to Player 2.
 		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
@@ -236,9 +277,9 @@ test.describe("session flow", () => {
 		);
 	});
 
-	test("undo and redo walk the move stack; a new move clears redo", async ({
-		page,
-	}) => {
+	test("undo and redo walk the move stack; a new move clears redo", {
+		tag: ["@scenario:session.undo-redo", "@area:session", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Log two moves", async () => {
@@ -270,7 +311,9 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("edits a logged move in place", async ({ page }) => {
+	test("edits a logged move in place", {
+		tag: ["@scenario:session.edit-move", "@area:session", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Log a successful dual cut", async () => {
@@ -298,7 +341,9 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("collapses and expands the composer", async ({ page }) => {
+	test("collapses and expands the composer", {
+		tag: ["@scenario:session.collapse", "@area:session", "@priority:should"],
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Collapse and verify the form and Log move hide while undo/redo stay", async () => {
@@ -316,7 +361,16 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("persists the full session across a reload", async ({ page }) => {
+	test("persists the full session across a reload", {
+		tag: [
+			"@scenario:persist.reload",
+			"@scenario:log.dual-cut.fail-yellow",
+			"@area:persistence",
+			"@area:logging",
+			"@priority:must",
+			"@priority:may",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 
 		await test.step("Log a failed cut and a solo cut", async () => {

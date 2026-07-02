@@ -14,21 +14,35 @@ import {
 // first gate — if any fails, deeper happy-path tests aren't worth running.
 
 test.describe("smoke", () => {
-	test("boots to the setup screen", async ({ page }) => {
+	test("boots to the setup screen", {
+		tag: ["@scenario:setup.boots", "@area:setup", "@priority:must", "@smoke"],
+	}, async ({ page }) => {
 		await gotoApp(page);
 		await expect(page.getByRole("heading", { name: "Bombdog" })).toBeVisible();
 		await expect(page.getByTestId("setup").getByTestId("start")).toBeVisible();
 	});
 
-	test("starting a game opens the tracker with an empty history", async ({
-		page,
-	}) => {
+	test("starting a game opens the tracker with an empty history", {
+		tag: [
+			"@scenario:setup.default-start",
+			"@area:setup",
+			"@priority:must",
+			"@smoke",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await expect(composer(page)).toBeVisible();
 		await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 	});
 
-	test("logging a move adds it to the history", async ({ page }) => {
+	test("logging a move adds it to the history", {
+		tag: [
+			"@scenario:history.shows-moves",
+			"@area:history",
+			"@priority:must",
+			"@smoke",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, {
 			target: "Player 2",
@@ -38,7 +52,14 @@ test.describe("smoke", () => {
 		await expect(moveRow(page, 1)).toBeVisible();
 	});
 
-	test("logged state survives a reload", async ({ page }) => {
+	test("logged state survives a reload", {
+		tag: [
+			"@scenario:persist.reload",
+			"@area:persistence",
+			"@priority:must",
+			"@smoke",
+		],
+	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, {
 			target: "Player 2",
@@ -52,9 +73,14 @@ test.describe("smoke", () => {
 		await expect(moveRow(page, 1)).toBeVisible();
 	});
 
-	test("reset returns to the setup screen with the roster carried over", async ({
-		page,
-	}) => {
+	test("reset returns to the setup screen with the roster carried over", {
+		tag: [
+			"@scenario:lifecycle.reset",
+			"@area:lifecycle",
+			"@priority:must",
+			"@smoke",
+		],
+	}, async ({ page }) => {
 		await startTrackingWith(page, {
 			names: ["Alice", "Bob", "Carol"],
 			captainIndex: 1,
