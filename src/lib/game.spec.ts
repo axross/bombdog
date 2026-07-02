@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
 	filterMoves,
-	formatRevealed,
 	formatWire,
 	getPlayerName,
 	isFilterActive,
 	isMoveVisible,
 	nextActorId,
 	targetPlayerOrder,
+	wireLabel,
 } from "./game";
 import {
 	type DualCutMove,
@@ -46,26 +46,30 @@ describe("getPlayerName()", () => {
 });
 
 describe("formatWire()", () => {
-	it("formats blue values as numbers", () => {
+	it("formats a blue value as its number", () => {
 		expect(formatWire(9)).toBe("9");
 	});
 
-	it("formats yellow", () => {
-		expect(formatWire("yellow")).toBe("Yellow");
+	it("formats yellow as 'Y'", () => {
+		expect(formatWire("yellow")).toBe("Y");
+	});
+
+	it("formats an unknown wire as '?'", () => {
+		expect(formatWire("unknown")).toBe("?");
 	});
 });
 
-describe("formatRevealed()", () => {
-	it("labels an unknown wire as '?'", () => {
-		expect(formatRevealed("unknown")).toBe("?");
+describe("wireLabel()", () => {
+	it("labels a blue value with its number", () => {
+		expect(wireLabel(9)).toBe("Wire 9");
 	});
 
-	it("labels yellow as 'Y'", () => {
-		expect(formatRevealed("yellow")).toBe("Y");
+	it("labels yellow", () => {
+		expect(wireLabel("yellow")).toBe("Yellow wire");
 	});
 
-	it("labels a blue value as its number", () => {
-		expect(formatRevealed(9)).toBe("9");
+	it("labels an unknown wire", () => {
+		expect(wireLabel("unknown")).toBe("Unknown wire");
 	});
 });
 

@@ -367,6 +367,33 @@ describe("fieldsFromMove()", () => {
 		});
 	});
 
+	it('seeds an unknown ("?") cut value so the editor reflects it', () => {
+		const move: SoloCutMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "solo-cut",
+			actorId: "b",
+			value: "unknown",
+		};
+		expect(fieldsFromMove(move).value).toBe("unknown");
+	});
+
+	it('seeds unknown ("?") detector values so the editor reflects them', () => {
+		const move: DetectorMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "detector",
+			detector: "double",
+			actorId: "a",
+			targetId: "c",
+			values: ["unknown"],
+			outcome: "success",
+		};
+		expect(fieldsFromMove(move).values).toEqual(["unknown"]);
+	});
+
 	it("seeds equipment fields including the note", () => {
 		const move: EquipmentMove = {
 			id: "1",

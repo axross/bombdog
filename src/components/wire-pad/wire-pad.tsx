@@ -3,6 +3,7 @@
 import { clsx } from "clsx";
 import { ToggleGroup } from "radix-ui";
 import type { JSX } from "react";
+import { formatWire, wireLabel } from "@/lib/game";
 import {
 	BLUE_WIRE_VALUES,
 	type WireValue,
@@ -67,30 +68,30 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					key={n}
 					value={toKey(n)}
 					className={css.wire}
-					aria-label={`Wire ${n}`}
+					aria-label={wireLabel(n)}
 					data-testid={`wire-${n}`}
 				>
-					{n}
+					{formatWire(n)}
 				</ToggleGroup.Item>
 			))}
 			{!blueOnly && (
 				<ToggleGroup.Item
 					value="yellow"
 					className={clsx(css.wire, css.yellow)}
-					aria-label="Yellow wire"
+					aria-label={wireLabel("yellow")}
 					data-testid="wire-yellow"
 				>
-					Y
+					{formatWire("yellow")}
 				</ToggleGroup.Item>
 			)}
 			{allowUnknown && (
 				<ToggleGroup.Item
 					value="unknown"
 					className={clsx(css.wire, css.unknown)}
-					aria-label="Unknown wire"
+					aria-label={wireLabel("unknown")}
 					data-testid="wire-unknown"
 				>
-					?
+					{formatWire("unknown")}
 				</ToggleGroup.Item>
 			)}
 		</>

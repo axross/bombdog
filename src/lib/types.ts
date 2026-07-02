@@ -43,6 +43,10 @@ export type BlueWireValueOrUnknown = BlueWireValue | "unknown";
 /**
  * The wire's true value, revealed when a cut fails: a real wire value or
  * "unknown" ("?", used by some special rules where the value stays hidden).
+ *
+ * Structurally identical to {@link WireValueOrUnknown}; kept as a distinct name
+ * so a `revealed` field reads as the *revealed truth* rather than a *named*
+ * value. Use `WireValueOrUnknown` for the value a player announces.
  */
 export type RevealedWire = WireValueOrUnknown;
 

@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 import { Check, X } from "lucide-react";
 import { type JSX, useState } from "react";
 import { RevealDialog } from "@/components/reveal-dialog/reveal-dialog";
-import { formatRevealed } from "@/lib/game";
+import { formatWire } from "@/lib/game";
 import type { Outcome, RevealedWire } from "@/lib/types";
 import css from "./outcome-toggle.module.css";
 
@@ -61,7 +61,7 @@ export function OutcomeToggle({
 				>
 					<X size={18} aria-hidden />
 					Fail
-					{isFail && revealed !== null ? ` (${formatRevealed(revealed)})` : ""}
+					{isFail && revealed !== null ? ` (${formatWire(revealed)})` : ""}
 				</button>
 			</div>
 

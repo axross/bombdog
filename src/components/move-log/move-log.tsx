@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useMemo, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
-import { filterMoves, formatRevealed, getPlayerName } from "@/lib/game";
+import { filterMoves, formatWire, getPlayerName, wireLabel } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import {
 	detectorOption,
@@ -31,26 +31,22 @@ function kindLabel(move: Move): string {
 		: KIND_LABEL[move.type];
 }
 
+const CHIP_VARIANT: Record<"blue" | "yellow" | "unknown", string> = {
+	blue: css.chipBlue,
+	yellow: css.chipYellow,
+	unknown: css.chipUnknown,
+};
+
 function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
-	if (value === "unknown") {
-		return (
-			<span
-				role="img"
-				className={clsx(css.chip, css.chipUnknown)}
-				aria-label="Unknown wire"
-			>
-				?
-			</span>
-		);
-	}
-	const isYellow = value === "yellow";
+	const variant =
+		value === "unknown" ? "unknown" : value === "yellow" ? "yellow" : "blue";
 	return (
 		<span
 			role="img"
-			className={clsx(css.chip, isYellow ? css.chipYellow : css.chipBlue)}
-			aria-label={isYellow ? "Yellow wire" : `Wire ${value}`}
+			className={clsx(css.chip, CHIP_VARIANT[variant])}
+			aria-label={wireLabel(value)}
 		>
-			{isYellow ? "Y" : value}
+			{formatWire(value)}
 		</span>
 	);
 }
@@ -68,7 +64,7 @@ function OutcomeBadge({
 		outcome === "success"
 			? "success"
 			: showReveal
-				? `fail (${formatRevealed(revealed)})`
+				? `fail (${formatWire(revealed)})`
 				: "fail";
 	return (
 		<span
@@ -78,7 +74,7 @@ function OutcomeBadge({
 			)}
 			data-testid="badge"
 			data-outcome={outcome}
-			data-revealed={showReveal ? formatRevealed(revealed) : undefined}
+			data-revealed={showReveal ? formatWire(revealed) : undefined}
 		>
 			<Icon size={14} aria-hidden />
 			{text}
