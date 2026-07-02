@@ -7,6 +7,7 @@ import { formatWire, wireLabel } from "@/lib/game";
 import { BLUE_WIRE_VALUES, type RevealedWire } from "@/lib/types";
 import css from "./reveal-dialog.module.css";
 
+/** Props for {@link RevealDialog}: its open state and the reveal callbacks. */
 interface RevealDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;

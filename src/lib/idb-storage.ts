@@ -1,6 +1,6 @@
-// Storage adapters for zustand's `persist` middleware.
+// storage adapters for zustand's `persist` middleware.
 //
-// The browser adapter is backed by IndexedDB (via idb-keyval). When IndexedDB
+// the browser adapter is backed by IndexedDB (via idb-keyval). when IndexedDB
 // is unavailable — server-side rendering, or a browser in private mode that
 // blocks it — we fall back to an in-memory Map so the store still works (state
 // simply won't survive a reload in that degraded case).
@@ -35,6 +35,13 @@ const idbBackedStorage: StateStorage = {
 	},
 };
 
+/**
+ * Whether the runtime exposes a usable `indexedDB` global.
+ *
+ * @remarks
+ * Wrapped in try/catch because reading `indexedDB` can throw in sandboxed
+ * contexts; server-side rendering simply lacks the global.
+ */
 function isIndexedDbAvailable(): boolean {
 	try {
 		return typeof indexedDB !== "undefined";

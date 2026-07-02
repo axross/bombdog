@@ -6,11 +6,13 @@ import { Select } from "radix-ui";
 import type { JSX } from "react";
 import css from "./select-field.module.css";
 
+/** A single option in a {@link SelectField} dropdown: its stored value and visible label. */
 export interface SelectOption {
 	value: string;
 	label: string;
 }
 
+/** Props for {@link SelectField}. */
 interface SelectFieldProps {
 	label: string;
 	value: string;
@@ -35,11 +37,11 @@ export function SelectField({
 	"data-testid": dataTestId,
 }: SelectFieldProps): JSX.Element {
 	return (
-		// A plain wrapper (not <label>): the control is a Radix Select trigger,
+		// a plain wrapper (not <label>): the control is a Radix Select trigger,
 		// which is labelled via its own aria-label below.
 		<div className={clsx(css.field, className)}>
 			<span className={hideLabel ? css.srOnly : css.label}>{label}</span>
-			{/* Pass the empty string (not undefined) so the Select stays controlled:
+			{/* pass the empty string (not undefined) so the Select stays controlled:
 			    undefined flips Radix into uncontrolled mode, which desyncs from
 			    state after the field is reset (e.g. after logging a move). Radix
 			    shows the placeholder for an empty-string value. */}

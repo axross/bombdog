@@ -8,6 +8,7 @@ import { isFilterActive } from "@/lib/game";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./move-filter.module.css";
 
+/** Props for {@link MoveFilter}: the current filter and its change handler. */
 interface MoveFilterProps {
 	filter: Filter;
 	onChange: (filter: Filter) => void;
@@ -48,8 +49,8 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 					<Dialog.Title className={css.title}>Filter moves</Dialog.Title>
 					<p className={css.hint}>Hide the move types you don't need to see.</p>
 
-					{/* Shortcut above the individual toggles: turn both exclusions on
-					    (or off again once both are set) in a single tap. It is a plain
+					{/* shortcut above the individual toggles: turn both exclusions on
+					    (or off again once both are set) in a single tap. it is a plain
 					    action, not a toggle, so it carries no aria-pressed state — that
 					    would read as "off" in the mixed (one-exclusion) case. */}
 					<button
@@ -104,9 +105,9 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 					</div>
 
 					<div className={css.footer}>
-						{/* Kept enabled even when inactive: disabling the focused Reset
+						{/* kept enabled even when inactive: disabling the focused Reset
 						    button right after a keyboard user activates it would drop focus
-						    out of the dialog to <body>. It no-ops when nothing is excluded,
+						    out of the dialog to <body>. it no-ops when nothing is excluded,
 						    and aria-disabled conveys the state without losing focus. */}
 						<button
 							type="button"

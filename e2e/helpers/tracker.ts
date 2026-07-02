@@ -28,12 +28,14 @@ export async function startTracking(page: Page): Promise<void> {
  * Drive the setup screen with a specific roster and Captain, then open the
  * tracker. `names` sets the player count (one entry per seat, min 2 / max 5);
  * `captainIndex` is the zero-based seat that holds the Captain (default 0).
+ *
+ * @throws if `names` is outside the supported 2–5 player range.
  */
 export async function startTrackingWith(
 	page: Page,
 	{ names, captainIndex = 0 }: { names: string[]; captainIndex?: number },
 ): Promise<void> {
-	// The roster must fit the stepper's range (MIN_PLAYERS 2 … MAX_PLAYERS 5);
+	// the roster must fit the stepper's range (MIN_PLAYERS 2 … MAX_PLAYERS 5);
 	// outside it the Add/Remove button is disabled and the loop below would hang
 	// until timeout, so fail fast with a clear message instead.
 	const target = names.length;
@@ -169,6 +171,7 @@ export async function logMove(page: Page): Promise<void> {
 	await composer(page).getByTestId("log-move").click();
 }
 
+/** Inputs for a dual cut: an optional acting player override, plus the target, wire, and outcome. */
 interface CutOptions {
 	actor?: string;
 	target: string;
@@ -186,6 +189,7 @@ export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
 	await logMove(page);
 }
 
+/** Inputs for a detector action: an optional actor and card override, plus the target, blue values, and outcome. */
 interface DetectorOptions {
 	actor?: string;
 	/** The detector card label (e.g. "Triple Detector (3)"); omit for the Double Detector default. */

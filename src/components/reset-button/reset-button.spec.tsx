@@ -30,12 +30,12 @@ describe("<ResetButton>", () => {
 
 		const dialog = screen.getByRole("alertdialog");
 		expect(within(dialog).getByText("Reset the tracker?")).toBeInTheDocument();
-		// Still intact until confirmed.
+		// still intact until confirmed.
 		expect(useTrackerStore.getState().players).toHaveLength(1);
 
 		await user.click(within(dialog).getByRole("button", { name: "Reset" }));
 		expect(useTrackerStore.getState().players).toHaveLength(0);
-		// The cleared roster is retained so the next game can reuse it.
+		// the cleared roster is retained so the next game can reuse it.
 		expect(useTrackerStore.getState().previousPlayers).toEqual([
 			{ id: "a", name: "Alice" },
 		]);

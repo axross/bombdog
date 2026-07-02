@@ -1,8 +1,8 @@
-// Domain model for the Bomb Busters move tracker.
+// domain model for the Bomb Busters move tracker.
 //
-// This app is a *pure logger*: it records what players do and displays the
-// history. It does not validate game rules or track derived state such as the
-// detonator. Every type here describes something the user explicitly entered.
+// this app is a *pure logger*: it records what players do and displays the
+// history. it does not validate game rules or track derived state such as the
+// detonator. every type here describes something the user explicitly entered.
 
 /** A blue wire value (1–12) or the single "yellow" value shared by all yellows. */
 export type WireValue =
@@ -50,6 +50,7 @@ export type BlueWireValueOrUnknown = BlueWireValue | "unknown";
  */
 export type RevealedWire = WireValueOrUnknown;
 
+/** Which kind of action a move records. */
 export type MoveType = "dual-cut" | "solo-cut" | "detector" | "equipment";
 
 /**
@@ -267,6 +268,8 @@ export const DETECTOR_OPTIONS: DetectorOption[] = [
  * without a matching option here, or corrupt persisted data. Fail loud rather
  * than silently substituting the wrong card (which would mislabel the move and
  * apply the wrong value count).
+ *
+ * @throws if `kind` has no matching option (an unknown detector kind).
  */
 export function detectorOption(kind: DetectorKind): DetectorOption {
 	const option = DETECTOR_OPTIONS.find((d) => d.kind === kind);

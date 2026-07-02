@@ -1,4 +1,4 @@
-// Pure, UI-agnostic helpers for the tracker. Kept separate from the store so
+// pure, UI-agnostic helpers for the tracker. kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
 import type { Move, MoveFilter, Player, WireValueOrUnknown } from "./types";
@@ -61,7 +61,7 @@ export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
 
 /** Apply the log filter, preserving the original move order. */
 export function filterMoves(moves: Move[], filter: MoveFilter): Move[] {
-	// Common case: nothing excluded — return the input untouched, no allocation.
+	// common case: nothing excluded — return the input untouched, no allocation.
 	if (!isFilterActive(filter)) return moves;
 	return moves.filter((move) => isMoveVisible(move, filter));
 }
@@ -91,7 +91,7 @@ export function nextActorId(
 	if (players.length === 0) return undefined;
 	// `players` is non-empty here, so the modulo index is always in bounds.
 	const captainSeatId = players[captainIndex % players.length].id;
-	// Skip equipment moves: they never pass the turn, so the rotation continues
+	// skip equipment moves: they never pass the turn, so the rotation continues
 	// from the last non-equipment move.
 	const lastTurnMove = moves.findLast((m) => m.type !== "equipment");
 	if (!lastTurnMove) return captainSeatId;

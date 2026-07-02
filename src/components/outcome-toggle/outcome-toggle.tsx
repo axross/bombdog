@@ -8,6 +8,7 @@ import { formatWire } from "@/lib/game";
 import type { Outcome, RevealedWire } from "@/lib/types";
 import css from "./outcome-toggle.module.css";
 
+/** Props for {@link OutcomeToggle}. */
 interface OutcomeToggleProps {
 	outcome: Outcome | null;
 	revealed: RevealedWire | null;

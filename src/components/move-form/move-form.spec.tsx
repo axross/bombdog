@@ -84,11 +84,11 @@ describe("<MoveForm>", () => {
 			screen.getByRole("radiogroup", { name: "Wire" }),
 		).toBeInTheDocument();
 		expect(screen.getByRole("group", { name: "Result" })).toBeInTheDocument();
-		// Yellow is offered for a dual cut (not blue-only).
+		// yellow is offered for a dual cut (not blue-only).
 		expect(
 			screen.getByRole("radio", { name: "Yellow wire" }),
 		).toBeInTheDocument();
-		// The "?" (unknown) option is offered for the cut wire.
+		// the "?" (unknown) option is offered for the cut wire.
 		expect(
 			screen.getByRole("radio", { name: "Unknown wire" }),
 		).toBeInTheDocument();
@@ -119,21 +119,21 @@ describe("<MoveForm>", () => {
 
 		await user.click(screen.getByRole("tab", { name: "Detectors" }));
 
-		// The detector-card dropdown (labelled "Equipment") picks which detector.
+		// the detector-card dropdown (labelled "Equipment") picks which detector.
 		expect(
 			screen.getByRole("combobox", { name: "Equipment" }),
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole("radiogroup", { name: "Target" }),
 		).toBeInTheDocument();
-		// The value pad is a multi-select toolbar of blue wires.
+		// the value pad is a multi-select toolbar of blue wires.
 		expect(screen.getByRole("toolbar", { name: "Value" })).toBeInTheDocument();
 		expect(screen.getByRole("group", { name: "Result" })).toBeInTheDocument();
-		// Blue-only: the Yellow option is not rendered.
+		// blue-only: the Yellow option is not rendered.
 		expect(
 			screen.queryByRole("radio", { name: "Yellow wire" }),
 		).not.toBeInTheDocument();
-		// The "?" (unknown) option is still offered for a detector value.
+		// the "?" (unknown) option is still offered for a detector value.
 		expect(
 			screen.getByRole("button", { name: "Unknown wire" }),
 		).toBeInTheDocument();
@@ -150,7 +150,7 @@ describe("<MoveForm>", () => {
 			/>,
 		);
 
-		// The X or Y Ray names two values, so the pad is a two-slot multi-select.
+		// the X or Y Ray names two values, so the pad is a two-slot multi-select.
 		expect(
 			screen.getByRole("toolbar", { name: "Values (pick two)" }),
 		).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("<MoveForm>", () => {
 			screen.getByRole("combobox", { name: "Equipment" }),
 		).toBeInTheDocument();
 		expect(screen.getByPlaceholderText(/moved detonator/)).toBeInTheDocument();
-		// Cut-only controls are gone.
+		// cut-only controls are gone.
 		expect(
 			screen.queryByRole("radiogroup", { name: "Wire" }),
 		).not.toBeInTheDocument();

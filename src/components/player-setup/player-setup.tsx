@@ -20,6 +20,10 @@ function seedNames(previous: Player[]): string[] {
 	return defaultNames().map((name, i) => previous[i]?.name ?? name);
 }
 
+/**
+ * Generate a stable seat id, preferring `crypto.randomUUID` and falling back to
+ * a random base-36 string in environments where it is unavailable.
+ */
 function makeId(): string {
 	if (
 		typeof crypto !== "undefined" &&
@@ -36,8 +40,8 @@ export function PlayerSetup(): JSX.Element {
 	const previousPlayers = useTrackerStore((s) => s.previousPlayers);
 	const previousCaptainIndex = useTrackerStore((s) => s.previousCaptainIndex);
 
-	// A reset leaves the prior roster here; pre-fill the setup from it so the
-	// next game keeps the same count, names, and Captain. First run has none.
+	// a reset leaves the prior roster here; pre-fill the setup from it so the
+	// next game keeps the same count, names, and Captain. first run has none.
 	const [count, setCount] = useState(() =>
 		previousPlayers.length > 0 ? previousPlayers.length : 4,
 	);
@@ -114,7 +118,7 @@ export function PlayerSetup(): JSX.Element {
 				aria-label="Choose the Captain"
 			>
 				{Array.from({ length: count }, (_, i) => (
-					// Seats are positional: the seat index *is* the identity here
+					// seats are positional: the seat index *is* the identity here
 					// (the Captain is tracked by index), so an index key is correct.
 					// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
 					<div key={i} className={css.seat}>

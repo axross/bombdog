@@ -11,6 +11,7 @@ import {
 } from "@/lib/types";
 import css from "./wire-pad.module.css";
 
+/** Options shared by both selection modes of {@link WirePad}. */
 interface BaseProps {
 	/** Optional heading shown above the pad. */
 	label?: string;
@@ -38,6 +39,7 @@ interface MultiProps extends BaseProps {
 	max?: number;
 }
 
+/** A {@link WirePad} in either mode, discriminated by the `multiple` flag. */
 type WirePadProps = SingleProps | MultiProps;
 
 function toKey(value: WireValueOrUnknown): string {
@@ -59,7 +61,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 	const { label, blueOnly = false, allowUnknown = false, className } = props;
 	const dataTestId = props["data-testid"];
 
-	// The buttons are identical across modes; only the enclosing Root's
+	// the buttons are identical across modes; only the enclosing Root's
 	// selection semantics differ, so build them once and place them in either.
 	const buttons = (
 		<>
@@ -97,7 +99,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 		</>
 	);
 
-	// Shared across both selection modes; only `type`/`value`/`onValueChange`
+	// shared across both selection modes; only `type`/`value`/`onValueChange`
 	// differ, so the mode-specific Root supplies just those three.
 	const rootProps = {
 		className: css.pad,
@@ -114,7 +116,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					value={props.values.map(toKey)}
 					onValueChange={(next) => {
 						const parsed = next.map(fromKey);
-						// Cap the selection: picking a wire beyond `max` drops the oldest.
+						// cap the selection: picking a wire beyond `max` drops the oldest.
 						props.onValuesChange(props.max ? parsed.slice(-props.max) : parsed);
 					}}
 					{...rootProps}

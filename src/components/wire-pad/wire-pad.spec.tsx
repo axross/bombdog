@@ -149,7 +149,7 @@ describe("<WirePad>", () => {
 				<WirePad multiple values={[3, 11]} onValuesChange={vi.fn()} blueOnly />,
 			);
 
-			// Multi-select renders toggle buttons whose selection is the ARIA
+			// multi-select renders toggle buttons whose selection is the ARIA
 			// pressed state (single-select uses radios + checked instead).
 			expect(screen.getByRole("button", { name: "Wire 3" })).toHaveAttribute(
 				"aria-pressed",
@@ -193,7 +193,7 @@ describe("<WirePad>", () => {
 
 			await user.click(screen.getByRole("button", { name: "Wire 5" }));
 
-			// The third pick pushes out the earliest (3), keeping the last two.
+			// the third pick pushes out the earliest (3), keeping the last two.
 			expect(onValuesChange).toHaveBeenCalledWith([11, 5]);
 		});
 

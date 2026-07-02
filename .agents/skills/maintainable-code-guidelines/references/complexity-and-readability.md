@@ -39,6 +39,16 @@ Dead Code sets the required project default: flag commented-out code blocks intr
 - MUST flag an exported symbol from a changed module that has zero callers in the diff or in the existing codebase. Either remove the export or add the caller in the same change.
 - SHOULD flag an empty `try`/`catch` (e.g., `catch { /* swallow */ }`) — errors must be rethrown or reported, not swallowed.
 
+## Comments and Doc-Comments
+
+Comments and Doc-Comments sets the reviewer's default: verify the change follows the project's comment rules, owned by [development-guidelines › code-quality › Comments](../../development-guidelines/references/code-quality.md). Flag violations and link to that rule rather than restating it.
+
+**Guidelines:**
+
+- MUST flag a changed type definition, or a changed/added function whose body exceeds 5 lines, that lacks a TSDoc doc-comment — Minor (Major when it is an exported API or a function that can throw without an `@throws` tag).
+- MUST flag a `//` line comment that is not in the required lowercase style (ignoring the proper-noun / identifier / acronym exceptions) — Nit.
+- SHOULD flag a `//` comment that merely restates the code it precedes, and a comment that buries heavy detail in the summary line instead of a `@remarks` block.
+
 ## Type Reuse
 
 Type Reuse sets the required project default: flag an inline object type repeated more than once in the diff — extract into a named type alias.

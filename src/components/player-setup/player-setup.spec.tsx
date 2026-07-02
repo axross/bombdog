@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-	// Runs even if a test throws mid-way, so a stubbed global can't leak into
+	// runs even if a test throws mid-way, so a stubbed global can't leak into
 	// the next test in this worker.
 	vi.unstubAllGlobals();
 	useTrackerStore.setState({
@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 function seatRows(): HTMLElement[] {
-	// Each seat exposes a "Make player N the Captain" radio; use its inputs to
+	// each seat exposes a "Make player N the Captain" radio; use its inputs to
 	// scope name/radio queries per row.
 	return screen.getAllByRole("radio");
 }
@@ -40,7 +40,7 @@ describe("<PlayerSetup>", () => {
 	it("renders with the default player count and named seats", () => {
 		render(<PlayerSetup />);
 
-		// Default count is 4.
+		// default count is 4.
 		expect(screen.getByText("4")).toBeInTheDocument();
 		expect(seatRows()).toHaveLength(4);
 		expect(
@@ -58,13 +58,13 @@ describe("<PlayerSetup>", () => {
 		const add = screen.getByRole("button", { name: "Add a player" });
 		const remove = screen.getByRole("button", { name: "Remove a player" });
 
-		// From 4 up to MAX_PLAYERS (5); the add button then disables.
+		// from 4 up to MAX_PLAYERS (5); the add button then disables.
 		await user.click(add);
 		expect(screen.getByText(String(MAX_PLAYERS))).toBeInTheDocument();
 		expect(seatRows()).toHaveLength(MAX_PLAYERS);
 		expect(add).toBeDisabled();
 
-		// Back down to MIN_PLAYERS (2); the remove button then disables.
+		// back down to MIN_PLAYERS (2); the remove button then disables.
 		await user.click(remove);
 		await user.click(remove);
 		await user.click(remove);
@@ -87,7 +87,7 @@ describe("<PlayerSetup>", () => {
 		const user = userEvent.setup();
 		render(<PlayerSetup />);
 
-		// Make the highest seat (player 4, index 3) the Captain.
+		// make the highest seat (player 4, index 3) the Captain.
 		await user.click(
 			screen.getByRole("radio", { name: "Make player 4 the Captain" }),
 		);
@@ -95,7 +95,7 @@ describe("<PlayerSetup>", () => {
 			screen.getByRole("radio", { name: "Make player 4 the Captain" }),
 		).toBeChecked();
 
-		// Drop the count to 3 — seat index 3 no longer exists, so the Captain
+		// drop the count to 3 — seat index 3 no longer exists, so the Captain
 		// re-clamps down to the new highest seat (index 2 → player 3).
 		await user.click(screen.getByRole("button", { name: "Remove a player" }));
 		expect(
@@ -164,7 +164,7 @@ describe("<PlayerSetup>", () => {
 	});
 
 	it("still generates seat ids when crypto.randomUUID is unavailable", async () => {
-		// Exercises the makeId() fallback used in browsers without randomUUID.
+		// exercises the makeId() fallback used in browsers without randomUUID.
 		vi.stubGlobal("crypto", { randomUUID: undefined });
 		const user = userEvent.setup();
 		render(<PlayerSetup />);
@@ -175,6 +175,6 @@ describe("<PlayerSetup>", () => {
 		expect(players).toHaveLength(4);
 		expect(new Set(players.map((p) => p.id)).size).toBe(4);
 		for (const p of players) expect(p.id).toMatch(/^p_/);
-		// Restoration happens in afterEach so it survives an early assertion failure.
+		// restoration happens in afterEach so it survives an early assertion failure.
 	});
 });

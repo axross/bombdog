@@ -1,5 +1,5 @@
-// Form state shared by the composer (add) and editor (update), plus the pure
-// logic that turns it into a validated `MoveDraft`. Keeping this separate from
+// form state shared by the composer (add) and editor (update), plus the pure
+// logic that turns it into a validated `MoveDraft`. keeping this separate from
 // the JSX makes validity rules easy to unit-test.
 
 import {
@@ -35,6 +35,11 @@ export interface DraftFields {
 	note: string;
 }
 
+/**
+ * A blank {@link DraftFields} with every field cleared, optionally seeded with
+ * the acting player. The starting point for the composer in add mode, and the
+ * base that {@link fieldsFromMove} spreads the edited move over.
+ */
 export function emptyDraftFields(actorId = ""): DraftFields {
 	return {
 		actorId,

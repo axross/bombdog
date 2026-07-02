@@ -9,7 +9,7 @@ describe("detectorOption()", () => {
 	});
 
 	it("throws for an unknown kind rather than substituting a default", () => {
-		// Only reachable via corrupt persisted data or a kind added to the union
+		// only reachable via corrupt persisted data or a kind added to the union
 		// without a matching option; a cast simulates that invalid input.
 		expect(() => detectorOption("laser" as DetectorKind)).toThrow(
 			/Unknown detector kind: laser/,
