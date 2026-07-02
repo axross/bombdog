@@ -1,9 +1,11 @@
-// Pure, UI-agnostic helpers for the tracker. Kept separate from the store so
+// pure, UI-agnostic helpers for the tracker. kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
 import type { Move, MoveFilter, Player, WireValueOrUnknown } from "./types";
 
-/** Resolve a player's display name, tolerant of unknown ids. */
+/**
+ * Resolve a player's display name, tolerant of unknown ids.
+ */
 export function getPlayerName(players: Player[], id: string): string {
 	return players.find((p) => p.id === id)?.name ?? "Unknown";
 }
@@ -44,7 +46,9 @@ export function targetPlayerOrder(
 	];
 }
 
-/** Whether a move survives the log filter (`true` = shown, `false` = hidden). */
+/**
+ * Whether a move survives the log filter (`true` = shown, `false` = hidden).
+ */
 export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
 	if (
 		filter.excludeSuccessfulDualCut &&
@@ -59,14 +63,18 @@ export function isMoveVisible(move: Move, filter: MoveFilter): boolean {
 	return true;
 }
 
-/** Apply the log filter, preserving the original move order. */
+/**
+ * Apply the log filter, preserving the original move order.
+ */
 export function filterMoves(moves: Move[], filter: MoveFilter): Move[] {
-	// Common case: nothing excluded — return the input untouched, no allocation.
+	// common case: nothing excluded — return the input untouched, no allocation.
 	if (!isFilterActive(filter)) return moves;
 	return moves.filter((move) => isMoveVisible(move, filter));
 }
 
-/** True when the filter excludes at least one move type. */
+/**
+ * True when the filter excludes at least one move type.
+ */
 export function isFilterActive(filter: MoveFilter): boolean {
 	return filter.excludeSuccessfulDualCut || filter.excludeSoloCut;
 }
@@ -91,7 +99,7 @@ export function nextActorId(
 	if (players.length === 0) return undefined;
 	// `players` is non-empty here, so the modulo index is always in bounds.
 	const captainSeatId = players[captainIndex % players.length].id;
-	// Skip equipment moves: they never pass the turn, so the rotation continues
+	// skip equipment moves: they never pass the turn, so the rotation continues
 	// from the last non-equipment move.
 	const lastTurnMove = moves.findLast((m) => m.type !== "equipment");
 	if (!lastTurnMove) return captainSeatId;

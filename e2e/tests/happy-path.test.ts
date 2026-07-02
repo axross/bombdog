@@ -13,7 +13,7 @@ import {
 	startTrackingWith,
 } from "../helpers/tracker";
 
-// Happy-path coverage of the main use cases a player runs through a session:
+// happy-path coverage of the main use cases a player runs through a session:
 // configuring a roster, logging each of the four action types, watching the
 // suggested actor advance, undo/redo, editing a logged move, and collapsing the
 // composer.
@@ -22,7 +22,7 @@ test.describe("setup", () => {
 	test("configures a two-player game (the minimum)", async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
 		await expect(composer(page)).toBeVisible();
-		// The Captain (seat 1) takes the first turn, so the composer suggests Uno.
+		// the Captain (seat 1) takes the first turn, so the composer suggests Uno.
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
 
@@ -33,9 +33,9 @@ test.describe("setup", () => {
 			names: ["Ada", "Bo", "Cy", "Di", "Ed"],
 			captainIndex: 2,
 		});
-		// The chosen Captain (Cy, seat 3) acts first, so the composer suggests Cy.
+		// the chosen Captain (Cy, seat 3) acts first, so the composer suggests Cy.
 		await expect(composer(page).getByTestId("acting")).toContainText("Cy");
-		// The custom names reached the composer's target control.
+		// the custom names reached the composer's target control.
 		await expect(
 			composer(page).getByTestId("target").getByRole("radio", { name: "Ada" }),
 		).toBeVisible();
@@ -64,14 +64,14 @@ test.describe("logging each action type", () => {
 			await pickTarget(page, "Player 2");
 			await selectWire(page, 9);
 			await composer(page).getByTestId("outcome-fail").click();
-			// A fail can't be logged until the actual wire value is recorded.
+			// a fail can't be logged until the actual wire value is recorded.
 			await expect(composer(page).getByTestId("log-move")).toBeDisabled();
 		});
 
 		await test.step("Record the actual wire (8) in the popup", async () => {
 			await page.getByTestId("reveal-dialog").getByTestId("reveal-8").click();
 			await expect(page.getByTestId("reveal-dialog")).toBeHidden();
-			// The chosen value is echoed on the Fail button and unblocks logging.
+			// the chosen value is echoed on the Fail button and unblocks logging.
 			await expect(composer(page).getByTestId("outcome-fail")).toContainText(
 				"(8)",
 			);
@@ -93,13 +93,13 @@ test.describe("logging each action type", () => {
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Solo cut");
 		await expect(row.getByRole("img", { name: "Wire 5" })).toBeVisible();
-		// Solo cut has no success/fail badge.
+		// solo cut has no success/fail badge.
 		await expect(row.getByTestId("badge")).toHaveCount(0);
 	});
 
 	test('cut — logs a "?" (unknown) wire value', async ({ page }) => {
 		await startTracking(page);
-		// The cut pads offer "?" for a wire whose value is unknown.
+		// the cut pads offer "?" for a wire whose value is unknown.
 		await logSoloCut(page, { wire: "unknown" });
 
 		const row = moveRow(page, 1);
@@ -112,7 +112,7 @@ test.describe("logging each action type", () => {
 	test("double detector — targeted, blue wires only", async ({ page }) => {
 		await startTracking(page);
 		await composer(page).getByTestId("tab-detector").click();
-		// Detectors read blue values only: no Yellow option is offered.
+		// detectors read blue values only: no Yellow option is offered.
 		await expect(composer(page).getByTestId("wire-yellow")).toHaveCount(0);
 
 		await logDetector(page, {
@@ -121,7 +121,7 @@ test.describe("logging each action type", () => {
 			outcome: "success",
 		});
 		const row = moveRow(page, 1);
-		// The default detector card names itself in the log.
+		// the default detector card names itself in the log.
 		await expect(row).toContainText("Double Detector");
 		await expect(row.getByRole("img", { name: "Wire 6" })).toBeVisible();
 		await expect(row.getByTestId("badge")).toHaveAttribute(
@@ -141,7 +141,7 @@ test.describe("logging each action type", () => {
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("X or Y Ray (10)");
-		// Both named values render as chips.
+		// both named values render as chips.
 		await expect(row.getByRole("img", { name: "Wire 3" })).toBeVisible();
 		await expect(row.getByRole("img", { name: "Wire 11" })).toBeVisible();
 	});
@@ -188,7 +188,7 @@ test.describe("session flow", () => {
 		);
 
 		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
-		// Play passes clockwise, so the composer now suggests Player 2.
+		// play passes clockwise, so the composer now suggests Player 2.
 		await expect(composer(page).getByTestId("acting")).toContainText(
 			"Player 2",
 		);
@@ -210,7 +210,7 @@ test.describe("session flow", () => {
 			"Player 2",
 		);
 
-		// The next cut finally passes the turn on to Player 3.
+		// the next cut finally passes the turn on to Player 3.
 		await logDualCut(page, { target: "Player 1", wire: 7, outcome: "success" });
 		await expect(composer(page).getByTestId("acting")).toContainText(
 			"Player 3",
@@ -227,7 +227,7 @@ test.describe("session flow", () => {
 			"Player 2",
 		);
 
-		// Player 4 fires equipment off-turn (overriding the Acting dropdown). It
+		// Player 4 fires equipment off-turn (overriding the Acting dropdown). it
 		// doesn't take the turn, so the suggestion snaps back to Player 2 — not to
 		// Player 4 and not clockwise from it.
 		await logEquipment(page, { actor: "Player 4", equipment: "Post-it (4)" });

@@ -9,7 +9,9 @@ const bothExcluded: Filter = {
 	excludeSoloCut: true,
 };
 
-/** Render with a spy onChange and open the dialog. */
+/**
+ * Render with a spy onChange and open the dialog.
+ */
 async function open(filter: Filter = EMPTY_MOVE_FILTER) {
 	const onChange = vi.fn();
 	const user = userEvent.setup();
@@ -24,12 +26,12 @@ describe("<MoveFilter>", () => {
 		const { rerender } = render(
 			<MoveFilter filter={EMPTY_MOVE_FILTER} onChange={vi.fn()} />,
 		);
-		// Inactive: no dot, and the accessible name is a plain "Filter".
+		// inactive: no dot, and the accessible name is a plain "Filter".
 		expect(screen.queryByTestId("filter-active")).not.toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Filter" })).toBeInTheDocument();
 
 		rerender(<MoveFilter filter={bothExcluded} onChange={vi.fn()} />);
-		// Active: the dot appears and the accessible name announces the state,
+		// active: the dot appears and the accessible name announces the state,
 		// so the cue is not colour-only.
 		expect(screen.getByTestId("filter-active")).toBeInTheDocument();
 		expect(
@@ -82,7 +84,7 @@ describe("<MoveFilter>", () => {
 		const { user, onChange } = await open();
 		const reset = screen.getByTestId("filter-reset");
 		expect(reset).toHaveAttribute("aria-disabled", "true");
-		// Kept focusable (not the `disabled` attribute) so activating it never
+		// kept focusable (not the `disabled` attribute) so activating it never
 		// drops focus out of the dialog; the handler simply does nothing.
 		expect(reset).toBeEnabled();
 		await user.click(reset);
@@ -113,7 +115,7 @@ describe("<MoveFilter>", () => {
 			"aria-pressed",
 			"false",
 		);
-		// The shortcut is a plain action, not a toggle: it carries no aria-pressed.
+		// the shortcut is a plain action, not a toggle: it carries no aria-pressed.
 		expect(screen.getByTestId("filter-exclude-both")).not.toHaveAttribute(
 			"aria-pressed",
 		);

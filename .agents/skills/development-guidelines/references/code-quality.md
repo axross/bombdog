@@ -43,16 +43,46 @@ Linting sets the required project default: run `npm run lint` after formatting t
 
 ## Comments
 
-Comments sets the required project default: follow the project's established comment style. The linter/formatter enforces it where it can, and existing source files are the authority for anything it does not.
+This project distinguishes two kinds of comment, each with its own required style: **doc-comments** (`/** … */`, TSDoc) that describe an API, and **line comments** (`// …`) that explain a specific spot in the code. `src/lib/types.ts` and `src/lib/game.ts` are the reference for both — read them before writing comments and match their voice.
 
-- Match the casing, punctuation, and phrasing conventions already used in the surrounding source files.
-- Proper nouns, code identifiers, and acronyms keep their natural casing regardless of the project's general comment convention.
-- This applies to source-code comments only. It does NOT apply to commit messages (see [commit-messages.md](./commit-messages.md)) or to prose documentation.
-- Any linter suppression directive comments follow the tool's required casing for the directive itself; the trailing human-readable reason follows the project's comment style.
+### Doc-Comments (TSDoc)
+
+Doc-comments are the API-level documentation. They follow [TSDoc](https://tsdoc.org) and keep normal prose capitalization (they are NOT lowercased — see line comments below).
+
+Every doc-comment is written in the multi-line form: the opening `/**` sits alone on its own line, the closing `*/` sits alone on its own line, and the content lives on the ` * …` lines between them. There are no single-line `/** … */` doc-comments — even a one-line summary or a terse member doc spans three lines. For example:
+
+```ts
+/**
+ * Resolve a player's display name, tolerant of unknown ids.
+ */
+export function getPlayerName(players: Player[], id: string): string { … }
+```
 
 **Guidelines:**
 
-- MUST follow the project's established comment style; read the surrounding source files before adding comments and match what is already there.
+- MUST write every doc-comment in the multi-line form — `/**` alone on the opening line, `*/` alone on the closing line, content on the ` * …` lines between. No single-line `/** … */` doc-comments, including member docs. Do NOT pad with blank ` *` lines right after `/**` or right before `*/`.
+- MUST give every **type definition** — every `interface`, `type` alias, `enum`, and every module-level exported `const` that defines a value/table — a TSDoc doc-comment stating what it is.
+- MUST give every **function whose body exceeds 5 lines** a TSDoc doc-comment stating what it does. This includes non-exported helpers and inner React components, not just exported functions.
+- MUST tag any function that can throw with `@throws`, naming the condition (e.g. `@throws if the kind has no matching option`). A function that returns `null`/`undefined` on failure does NOT throw and MUST NOT get `@throws`.
+- MUST put specific, heavy, or "why" detail that aids understanding but would clutter the summary into a `@remarks` block rather than the opening sentence.
+- SHOULD add `@param` / `@returns` only when the name and type do not already make the meaning obvious, and cross-reference related symbols with `{@link Name}` as the reference files do; do NOT add restating noise.
+- SHOULD document individual interface/type members only when a member is non-obvious; self-evident members (e.g. `className`, an id field) need no member doc.
+- Test files are exempt from the function rule: do NOT add TSDoc to `describe`/`it`/`test`/`beforeEach` callbacks or inline test bodies. DO document genuinely reusable named helpers (e.g. in `e2e/helpers/`) whose body exceeds 5 lines.
+
+### Line Comments
+
+Line comments (`// …`) are written in a lowercase style and kept to a minimum.
+
+- Lowercase the first letter of every `//` comment and of each sentence within it.
+- EXCEPTION — keep natural casing when the token is a proper noun, a code identifier, or an acronym/initialism: brands and libraries (`Radix`, `Biome`, `Playwright`, `IndexedDB`; stylized-lowercase names like `zustand`/`jsdom` stay lowercase), acronyms (`ARIA`, `CSS`, `DOM`, `SSR`, `UUID`, `e2e`), version tags (`v1`, `v2`), person/fixture names (`Alice`), and proper-noun domain terms that name a specific role or entity (in this game: `Captain`, and card names such as `Double Detector`, `Super Detector`, `X or Y Ray`). Generic domain words (`dual cut`, `solo cut`, `detector`, `equipment`, `player`, `wire`, `blue`, `yellow`) are NOT exceptions and are lowercased at sentence start.
+- This lowercase rule is scoped to `//` comments. It does NOT apply to TSDoc `/** … */` prose, to commit messages (see [commit-messages.md](./commit-messages.md)), or to prose documentation. A JSX-forced `{/* … */}` block that functions as an explanatory line comment follows the same lowercase style.
+- A linter suppression directive (`biome-ignore …`, `v8 ignore …`) keeps the directive's required casing; only the trailing human-readable reason follows the lowercase style.
+- Keep line comments minimal: write one only when it is mandatory or critically helpful to understand control flow, a business-logic step, or a non-obvious reason/circumstance that the code alone does not convey. Do NOT add a comment that merely restates the next line; do NOT delete a comment that explains "why", an edge case, or non-obvious behavior.
+
+**Guidelines:**
+
+- MUST write `//` line comments in the lowercase style, preserving the proper-noun / identifier / acronym exceptions.
+- MUST keep line comments minimal and remove a `//` comment that only restates the code it precedes.
 - MUST let the linter/formatter enforce comment conventions where it can, and fix any comment-style violations it reports.
 
 ## Import Hygiene

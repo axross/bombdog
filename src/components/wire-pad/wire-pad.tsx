@@ -11,33 +11,51 @@ import {
 } from "@/lib/types";
 import css from "./wire-pad.module.css";
 
+/**
+ * Options shared by both selection modes of {@link WirePad}.
+ */
 interface BaseProps {
-	/** Optional heading shown above the pad. */
+	/**
+	 * Optional heading shown above the pad.
+	 */
 	label?: string;
-	/** Hide the Yellow option — detectors indicate blue values only. */
+	/**
+	 * Hide the Yellow option — detectors indicate blue values only.
+	 */
 	blueOnly?: boolean;
-	/** Offer the "?" (unknown) option for wires cut/named without a known value. */
+	/**
+	 * Offer the "?" (unknown) option for wires cut/named without a known value.
+	 */
 	allowUnknown?: boolean;
 	className?: string;
 	"data-testid"?: string;
 }
 
-/** Single-select pad: exactly one wire (or none). */
+/**
+ * Single-select pad: exactly one wire (or none).
+ */
 interface SingleProps extends BaseProps {
 	multiple?: false;
 	value: WireValueOrUnknown | null;
 	onValueChange: (value: WireValueOrUnknown) => void;
 }
 
-/** Multi-select pad: an ordered set of wires, optionally capped at `max`. */
+/**
+ * Multi-select pad: an ordered set of wires, optionally capped at `max`.
+ */
 interface MultiProps extends BaseProps {
 	multiple: true;
 	values: WireValueOrUnknown[];
 	onValuesChange: (values: WireValueOrUnknown[]) => void;
-	/** Cap on simultaneous selections; extra picks push out the oldest. */
+	/**
+	 * Cap on simultaneous selections; extra picks push out the oldest.
+	 */
 	max?: number;
 }
 
+/**
+ * A {@link WirePad} in either mode, discriminated by the `multiple` flag.
+ */
 type WirePadProps = SingleProps | MultiProps;
 
 function toKey(value: WireValueOrUnknown): string {
@@ -59,7 +77,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 	const { label, blueOnly = false, allowUnknown = false, className } = props;
 	const dataTestId = props["data-testid"];
 
-	// The buttons are identical across modes; only the enclosing Root's
+	// the buttons are identical across modes; only the enclosing Root's
 	// selection semantics differ, so build them once and place them in either.
 	const buttons = (
 		<>
@@ -97,7 +115,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 		</>
 	);
 
-	// Shared across both selection modes; only `type`/`value`/`onValueChange`
+	// shared across both selection modes; only `type`/`value`/`onValueChange`
 	// differ, so the mode-specific Root supplies just those three.
 	const rootProps = {
 		className: css.pad,
@@ -114,7 +132,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					value={props.values.map(toKey)}
 					onValueChange={(next) => {
 						const parsed = next.map(fromKey);
-						// Cap the selection: picking a wire beyond `max` drops the oldest.
+						// cap the selection: picking a wire beyond `max` drops the oldest.
 						props.onValuesChange(props.max ? parsed.slice(-props.max) : parsed);
 					}}
 					{...rootProps}

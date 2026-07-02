@@ -9,8 +9,8 @@ import {
 	startTrackingWith,
 } from "../helpers/tracker";
 
-// Smoke tests: a handful of shallow checks that the app boots and its core
-// loop (set up → log → persist → reset) is wired end to end. They are the
+// smoke tests: a handful of shallow checks that the app boots and its core
+// loop (set up → log → persist → reset) is wired end to end. they are the
 // first gate — if any fails, deeper happy-path tests aren't worth running.
 
 test.describe("smoke", () => {
@@ -65,7 +65,7 @@ test.describe("smoke", () => {
 
 		const setup = page.getByTestId("setup");
 		await expect(setup.getByTestId("start")).toBeVisible();
-		// The previous player count, names, and Captain are pre-filled.
+		// the previous player count, names, and Captain are pre-filled.
 		await expect(setup.getByText("3")).toBeVisible();
 		await expect(
 			setup.getByRole("textbox", { name: "Name of player 1" }),

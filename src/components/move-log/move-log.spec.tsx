@@ -133,19 +133,19 @@ describe("<MoveLog>", () => {
 		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 
 		expect(screen.getByText("Solo cut")).toBeInTheDocument();
-		// The Yellow wire renders its dedicated chip.
+		// the yellow wire renders its dedicated chip.
 		expect(screen.getByLabelText("Yellow wire")).toBeInTheDocument();
-		// Each detector names the specific card used.
+		// each detector names the specific card used.
 		expect(screen.getByText("Double Detector")).toBeInTheDocument();
 		expect(screen.getByText("X or Y Ray (10)")).toBeInTheDocument();
-		// A failed detector shows the revealed "?" (unknown) on its badge…
+		// a failed detector shows the revealed "?" (unknown) on its badge…
 		expect(screen.getByText(/fail \(\?\)/)).toBeInTheDocument();
 		// …and a failed dual cut shows the numeric revealed value.
 		expect(screen.getByText(/fail \(8\)/)).toBeInTheDocument();
-		// The X or Y Ray names two values, so both chips render.
+		// the X or Y Ray names two values, so both chips render.
 		expect(screen.getByLabelText("Wire 3")).toBeInTheDocument();
 		expect(screen.getByLabelText("Wire 11")).toBeInTheDocument();
-		// Equipment notes are appended after an em dash.
+		// equipment notes are appended after an em dash.
 		expect(screen.getByText(/seat 3 is empty/)).toBeInTheDocument();
 	});
 
@@ -194,7 +194,7 @@ describe("<MoveLog>", () => {
 			/>,
 		);
 
-		// Both moves are excluded, so the filtered-empty state shows instead.
+		// both moves are excluded, so the filtered-empty state shows instead.
 		expect(screen.queryByTestId("move")).not.toBeInTheDocument();
 		expect(screen.getByTestId("filtered-empty")).toBeInTheDocument();
 	});

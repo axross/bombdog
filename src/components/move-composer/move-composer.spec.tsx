@@ -42,7 +42,7 @@ describe("<MoveComposer>", () => {
 		render(<MoveComposer />);
 
 		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
-		// Solo cut needs no target/outcome; the actor defaults to the Captain.
+		// solo cut needs no target/outcome; the actor defaults to the Captain.
 		await user.click(screen.getByRole("radio", { name: "Wire 7" }));
 
 		const logButton = screen.getByRole("button", { name: "Log move" });
@@ -62,7 +62,7 @@ describe("<MoveComposer>", () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
-		// Dual cut is the default and targets another player (segmented control).
+		// dual cut is the default and targets another player (segmented control).
 		expect(
 			screen.getByRole("radiogroup", { name: "Target" }),
 		).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe("<MoveComposer>", () => {
 		render(<MoveComposer />);
 
 		await user.click(screen.getByRole("tab", { name: "Detectors" }));
-		// The default card is the Double Detector; the actor defaults to the Captain.
+		// the default card is the Double Detector; the actor defaults to the Captain.
 		await user.click(screen.getByRole("radio", { name: "Bob" }));
 		await user.click(screen.getByRole("button", { name: "Wire 7" }));
 		await user.click(screen.getByRole("button", { name: "Success" }));
@@ -109,7 +109,7 @@ describe("<MoveComposer>", () => {
 		await user.click(collapse);
 		const expand = screen.getByRole("button", { name: "Expand composer" });
 		expect(expand).toHaveAttribute("aria-expanded", "false");
-		// While collapsed the Log move button is removed from the a11y tree (inert).
+		// while collapsed the Log move button is removed from the a11y tree (inert).
 		expect(screen.getByRole("button", { name: "Log move" })).toHaveAttribute(
 			"inert",
 		);

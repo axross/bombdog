@@ -20,6 +20,10 @@ function seedNames(previous: Player[]): string[] {
 	return defaultNames().map((name, i) => previous[i]?.name ?? name);
 }
 
+/**
+ * Generate a stable seat id, preferring `crypto.randomUUID` and falling back to
+ * a random base-36 string in environments where it is unavailable.
+ */
 function makeId(): string {
 	if (
 		typeof crypto !== "undefined" &&
@@ -30,14 +34,16 @@ function makeId(): string {
 	return `p_${Math.random().toString(36).slice(2)}`;
 }
 
-/** First-run / post-reset screen: pick player count, names, and the Captain. */
+/**
+ * First-run / post-reset screen: pick player count, names, and the Captain.
+ */
 export function PlayerSetup(): JSX.Element {
 	const configurePlayers = useTrackerStore((s) => s.configurePlayers);
 	const previousPlayers = useTrackerStore((s) => s.previousPlayers);
 	const previousCaptainIndex = useTrackerStore((s) => s.previousCaptainIndex);
 
-	// A reset leaves the prior roster here; pre-fill the setup from it so the
-	// next game keeps the same count, names, and Captain. First run has none.
+	// a reset leaves the prior roster here; pre-fill the setup from it so the
+	// next game keeps the same count, names, and Captain. first run has none.
 	const [count, setCount] = useState(() =>
 		previousPlayers.length > 0 ? previousPlayers.length : 4,
 	);
@@ -60,6 +66,10 @@ export function PlayerSetup(): JSX.Element {
 		setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
 	};
 
+	/**
+	 * Build the roster from the entered names (blank names fall back to
+	 * "Player N") and hand it to the store to open the tracker.
+	 */
 	const handleStart = () => {
 		const players: Player[] = names.slice(0, count).map((name, i) => ({
 			id: makeId(),
@@ -114,7 +124,7 @@ export function PlayerSetup(): JSX.Element {
 				aria-label="Choose the Captain"
 			>
 				{Array.from({ length: count }, (_, i) => (
-					// Seats are positional: the seat index *is* the identity here
+					// seats are positional: the seat index *is* the identity here
 					// (the Captain is tracked by index), so an index key is correct.
 					// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
 					<div key={i} className={css.seat}>

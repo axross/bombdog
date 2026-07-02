@@ -18,11 +18,11 @@ import css from "./tracker-app.module.css";
 export function TrackerApp(): JSX.Element {
 	const hasHydrated = useTrackerStore((s) => s.hasHydrated);
 	const players = useTrackerStore((s) => s.players);
-	// The move-log filter lives here so its trigger can sit in the header while
+	// the move-log filter lives here so its trigger can sit in the header while
 	// the log below consumes the resulting filter.
 	const [filter, setFilter] = useState<Filter>(EMPTY_MOVE_FILTER);
 
-	// Hydration is deferred (skipHydration) so server and first client render
+	// hydration is deferred (skipHydration) so server and first client render
 	// match; kick it off once mounted.
 	useEffect(() => {
 		void useTrackerStore.persist.rehydrate();

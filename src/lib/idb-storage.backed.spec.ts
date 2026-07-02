@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Exercises the IndexedDB-backed branch of `idbStorage`. Under jsdom there is
+// exercises the IndexedDB-backed branch of `idbStorage`. under jsdom there is
 // no `indexedDB`, so the module normally resolves to the in-memory fallback
-// (covered in idb-storage.spec.ts). Here we stub a global `indexedDB` and mock
+// (covered in idb-storage.spec.ts). here we stub a global `indexedDB` and mock
 // idb-keyval, then re-import the module so it selects the idb-backed adapter.
 
 const get = vi.fn();
@@ -21,7 +21,7 @@ describe("idbStorage (IndexedDB-backed adapter)", () => {
 		get.mockReset();
 		set.mockReset();
 		del.mockReset();
-		// Make isIndexedDbAvailable() true when the module is evaluated.
+		// make isIndexedDbAvailable() true when the module is evaluated.
 		vi.stubGlobal("indexedDB", {} as IDBFactory);
 	});
 

@@ -32,7 +32,7 @@ describe("<OutcomeToggle>", () => {
 		await user.click(screen.getByRole("button", { name: /Fail/ }));
 
 		expect(screen.getByTestId("reveal-dialog")).toBeInTheDocument();
-		// Opening the dialog alone does not record an outcome.
+		// opening the dialog alone does not record an outcome.
 		expect(onChange).not.toHaveBeenCalled();
 	});
 

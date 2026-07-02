@@ -1,5 +1,5 @@
-// Form state shared by the composer (add) and editor (update), plus the pure
-// logic that turns it into a validated `MoveDraft`. Keeping this separate from
+// form state shared by the composer (add) and editor (update), plus the pure
+// logic that turns it into a validated `MoveDraft`. keeping this separate from
 // the JSX makes validity rules easy to unit-test.
 
 import {
@@ -14,13 +14,19 @@ import {
 	type WireValueOrUnknown,
 } from "@/lib/types";
 
-/** The superset of fields any action can need; unused ones are ignored. */
+/**
+ * The superset of fields any action can need; unused ones are ignored.
+ */
 export interface DraftFields {
 	actorId: string;
 	targetId: string;
-	/** The named/cut wire value, or "?" when unknown. */
+	/**
+	 * The named/cut wire value, or "?" when unknown.
+	 */
 	value: WireValueOrUnknown | null;
-	/** Which detector card the "detector" action uses. */
+	/**
+	 * Which detector card the "detector" action uses.
+	 */
 	detector: DetectorKind;
 	/**
 	 * Named blue values for the detector action (one or two). Blue-only by type:
@@ -29,12 +35,19 @@ export interface DraftFields {
 	 */
 	values: BlueWireValueOrUnknown[];
 	outcome: Outcome | null;
-	/** The wire's true value, chosen when the outcome is a failure. */
+	/**
+	 * The wire's true value, chosen when the outcome is a failure.
+	 */
 	revealed: RevealedWire | null;
 	equipment: string;
 	note: string;
 }
 
+/**
+ * A blank {@link DraftFields} with every field cleared, optionally seeded with
+ * the acting player. The starting point for the composer in add mode, and the
+ * base that {@link fieldsFromMove} spreads the edited move over.
+ */
 export function emptyDraftFields(actorId = ""): DraftFields {
 	return {
 		actorId,
@@ -62,7 +75,9 @@ export function detectorValues(
 	return values.slice(-detectorOption(kind).valueCount);
 }
 
-/** Seed the form from an existing move (for editing). */
+/**
+ * Seed the form from an existing move (for editing).
+ */
 export function fieldsFromMove(move: Move): DraftFields {
 	const base = emptyDraftFields(move.actorId);
 	switch (move.type) {

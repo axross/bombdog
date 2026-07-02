@@ -24,7 +24,9 @@ const KIND_LABEL: Record<MoveType, string> = {
 	equipment: "Equipment",
 };
 
-/** The action label shown on a row; detectors name the specific card used. */
+/**
+ * The action label shown on a row; detectors name the specific card used.
+ */
 function kindLabel(move: Move): string {
 	return move.type === "detector"
 		? detectorOption(move.detector).label
@@ -37,6 +39,9 @@ const CHIP_VARIANT: Record<"blue" | "yellow" | "unknown", string> = {
 	unknown: css.chipUnknown,
 };
 
+/**
+ * A wire value shown as a colour-coded chip: blue, yellow, or "?" (unknown).
+ */
 function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
 	const variant =
 		value === "unknown" ? "unknown" : value === "yellow" ? "yellow" : "blue";
@@ -51,6 +56,10 @@ function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
 	);
 }
 
+/**
+ * Success/fail badge for a guess-based move. On a failure with a known
+ * `revealed` value, the badge also shows that value (e.g. "fail (8)").
+ */
 function OutcomeBadge({
 	outcome,
 	revealed,
@@ -82,6 +91,10 @@ function OutcomeBadge({
 	);
 }
 
+/**
+ * The move-type-specific detail: wire chip(s) plus, for guess-based moves, an
+ * outcome badge; equipment shows its name and optional note instead.
+ */
 function MoveDetail({ move }: { move: Move }): JSX.Element {
 	switch (move.type) {
 		case "dual-cut":
@@ -112,6 +125,10 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 	}
 }
 
+/**
+ * A single row in the history: sequence number, actor (and target, for moves
+ * that have one), the action label, its detail, and an edit control.
+ */
 function MoveRow({
 	move,
 	players,
@@ -174,8 +191,8 @@ export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 		[moves, filter],
 	);
 
-	// Keep the newest visible move (bottom) in view only when the list *grows*
-	// (a move was logged). Toggling a filter can shrink the list; re-scrolling
+	// keep the newest visible move (bottom) in view only when the list *grows*
+	// (a move was logged). toggling a filter can shrink the list; re-scrolling
 	// then would yank a user reading earlier history back to the bottom.
 	useEffect(() => {
 		const count = visibleMoves.length;
@@ -221,7 +238,7 @@ export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 					key={editingMove.id}
 					move={editingMove}
 					players={players}
-					// Runs on the editor's exit animation (e2e-covered; jsdom unmounts
+					// runs on the editor's exit animation (e2e-covered; jsdom unmounts
 					// the dialog synchronously, so the close callback never fires here).
 					/* v8 ignore next */
 					onClose={() => setEditingId(null)}

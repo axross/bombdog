@@ -21,6 +21,9 @@ const dualCut: DualCutMove = {
 	outcome: "success",
 };
 
+/**
+ * Seed the tracker store with the given moves and the standard players/Captain.
+ */
 function seed(moves: Move[]) {
 	useTrackerStore.setState({
 		players,
@@ -54,10 +57,10 @@ describe("<MoveEditor>", () => {
 	it("prefills the move's fields", () => {
 		render(<MoveEditor move={dualCut} players={players} onClose={vi.fn()} />);
 
-		// Fixed action type shown as a static header (no tabs in edit mode).
+		// fixed action type shown as a static header (no tabs in edit mode).
 		expect(screen.getByText("Dual cut")).toBeInTheDocument();
 		expect(screen.queryByRole("tab")).not.toBeInTheDocument();
-		// The prefilled wire value is checked.
+		// the prefilled wire value is checked.
 		expect(screen.getByRole("radio", { name: "Wire 9" })).toHaveAttribute(
 			"aria-checked",
 			"true",
@@ -68,17 +71,17 @@ describe("<MoveEditor>", () => {
 		const onClose = vi.fn();
 		render(<MoveEditor move={dualCut} players={players} onClose={onClose} />);
 
-		// Change the wire from 9 to 5, then save.
+		// change the wire from 9 to 5, then save.
 		fireEvent.click(screen.getByRole("radio", { name: "Wire 5" }));
 		fireEvent.click(screen.getByTestId("save"));
 
-		// The store is mutated in place (same id/seq, new value).
+		// the store is mutated in place (same id/seq, new value).
 		const updated = useTrackerStore.getState().moves[0] as DualCutMove;
 		expect(updated.value).toBe(5);
 		expect(updated.id).toBe("m1");
 		expect(updated.seq).toBe(3);
 
-		// Saving triggers the close: the dialog content is torn down. Radix defers
+		// saving triggers the close: the dialog content is torn down. Radix defers
 		// the parent's onClose to the content's exit animationEnd, which never
 		// fires under jsdom (no CSS animations), so the observable signal here is
 		// that the dialog is gone.
@@ -91,10 +94,10 @@ describe("<MoveEditor>", () => {
 
 		fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
-		// The move is unchanged.
+		// the move is unchanged.
 		const after = useTrackerStore.getState().moves[0] as DualCutMove;
 		expect(after.value).toBe(9);
-		// Cancelling starts the close (content torn down, no store write).
+		// cancelling starts the close (content torn down, no store write).
 		expect(screen.queryByTestId("move-editor")).not.toBeInTheDocument();
 	});
 
@@ -104,7 +107,7 @@ describe("<MoveEditor>", () => {
 	});
 
 	it("disables Save while a required field is missing", () => {
-		// A move missing its target yields an invalid draft, disabling Save.
+		// a move missing its target yields an invalid draft, disabling Save.
 		const incomplete: DualCutMove = {
 			...dualCut,
 			targetId: "",
@@ -121,8 +124,8 @@ describe("<MoveEditor>", () => {
 		const onClose = vi.fn();
 		render(<MoveEditor move={dualCut} players={players} onClose={onClose} />);
 
-		// An animationEnd while still open (e.g. the entrance animation) must not
-		// trigger onClose. The exit-animation close path is covered by e2e.
+		// an animationEnd while still open (e.g. the entrance animation) must not
+		// trigger onClose. the exit-animation close path is covered by e2e.
 		fireEvent.animationEnd(screen.getByTestId("move-editor"));
 		expect(onClose).not.toHaveBeenCalled();
 	});

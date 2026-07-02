@@ -14,7 +14,9 @@ import { useTrackerStore } from "@/lib/tracker-store";
 import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
 
-/** Bottom-half form to log the next move, with undo/redo. */
+/**
+ * Bottom-half form to log the next move, with undo/redo.
+ */
 export function MoveComposer(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
 	const captainIndex = useTrackerStore((s) => s.captainIndex);
@@ -39,16 +41,21 @@ export function MoveComposer(): JSX.Element {
 		setType(next);
 	};
 
+	/**
+	 * Log the built draft, then reset the form for the next move, seeding the
+	 * suggested actor from the same {@link nextActorId} rule a reloaded log runs
+	 * through so the live suggestion matches what a reload would show.
+	 */
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
-		// Defensive: the submit button is disabled whenever `draft` is null.
+		// defensive: the submit button is disabled whenever `draft` is null.
 		/* v8 ignore next */
 		if (!draft) return;
 		addMove(draft);
-		// Suggest the next actor with the same rule the log rehydrates through:
-		// append the just-logged move and ask nextActorId. It ignores equipment
+		// suggest the next actor with the same rule the log rehydrates through:
+		// append the just-logged move and ask nextActorId. it ignores equipment
 		// (so the turn stays put) and advances clockwise for every other move —
-		// one source of truth, so the live suggestion matches a reload. The id/
+		// one source of truth, so the live suggestion matches a reload. the id/
 		// seq/at are placeholders: nextActorId only reads `type` and `actorId`.
 		const suggested =
 			nextActorId(players, captainIndex, [
@@ -65,7 +72,7 @@ export function MoveComposer(): JSX.Element {
 			aria-label="Log a move"
 			data-testid="composer"
 		>
-			{/* Kept mounted and animated (grid-rows 1fr↔0fr) so the composer height
+			{/* kept mounted and animated (grid-rows 1fr↔0fr) so the composer height
 			    interpolates and the flex-sibling move log grows/shrinks in step.
 			    `inert` removes the collapsed form from tab order + a11y tree. */}
 			<div

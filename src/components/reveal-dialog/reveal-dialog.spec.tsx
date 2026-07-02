@@ -88,7 +88,7 @@ describe("<RevealDialog>", () => {
 		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
 
-	// The highlight is a hashed CSS-module `selected` class; assert it toggles on
+	// the highlight is a hashed CSS-module `selected` class; assert it toggles on
 	// the recorded cell and is absent from a sibling (reaching the branch alone
 	// wouldn't prove anything).
 	it("highlights the currently-recorded numeric value only", () => {

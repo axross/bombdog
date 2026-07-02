@@ -8,14 +8,21 @@ import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
 import css from "./move-editor.module.css";
 
+/**
+ * Props for {@link MoveEditor}.
+ */
 interface MoveEditorProps {
-	/** The move being edited. Mount with `key={move.id}` so state resets per move. */
+	/**
+	 * The move being edited. Mount with `key={move.id}` so state resets per move.
+	 */
 	move: Move;
 	players: Player[];
 	onClose: () => void;
 }
 
-/** Modal editor that corrects a logged move in place (action kind is fixed). */
+/**
+ * Modal editor that corrects a logged move in place (action kind is fixed).
+ */
 export function MoveEditor({
 	move,
 	players,
@@ -23,7 +30,7 @@ export function MoveEditor({
 }: MoveEditorProps): JSX.Element {
 	const updateMove = useTrackerStore((s) => s.updateMove);
 	const [fields, setFields] = useState(() => fieldsFromMove(move));
-	// Drive `open` locally so closing plays the exit animation before the parent
+	// drive `open` locally so closing plays the exit animation before the parent
 	// unmounts us: Radix keeps the content mounted while data-state="closed"
 	// animates, and onAnimationEnd then hands control back to the parent.
 	const [open, setOpen] = useState(true);
@@ -50,9 +57,9 @@ export function MoveEditor({
 					aria-describedby={undefined}
 					data-testid="move-editor"
 					onAnimationEnd={(event) => {
-						// Unmount only after the exit animation on the content itself
+						// unmount only after the exit animation on the content itself
 						// (guard against the enter animation and bubbled child events).
-						// The close path runs on the exit animation, which jsdom never
+						// the close path runs on the exit animation, which jsdom never
 						// fires (Radix unmounts synchronously); it's covered by e2e.
 						/* v8 ignore next */
 						if (!open && event.target === event.currentTarget) onClose();

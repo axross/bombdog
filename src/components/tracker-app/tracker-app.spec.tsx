@@ -21,6 +21,9 @@ const moves: Move[] = [
 	},
 ];
 
+/**
+ * Seed the tracker store with a state snapshot, filling any unset fields with empty defaults.
+ */
 function seed(
 	overrides: Partial<{
 		players: Player[];
@@ -90,12 +93,12 @@ describe("<TrackerApp>", () => {
 
 		const header = screen.getByTestId("header");
 		expect(within(header).getByText("Bombdog")).toBeInTheDocument();
-		// The filter trigger and reset now share the header.
+		// the filter trigger and reset now share the header.
 		expect(within(header).getByTestId("filter")).toBeInTheDocument();
 		expect(
 			within(header).getByRole("button", { name: "Reset" }),
 		).toBeInTheDocument();
-		// Move history + composer are mounted.
+		// move history + composer are mounted.
 		expect(screen.getByTestId("move-log")).toBeInTheDocument();
 		expect(
 			screen.getByRole("button", { name: "Log move" }),

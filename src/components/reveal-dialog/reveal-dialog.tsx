@@ -7,12 +7,19 @@ import { formatWire, wireLabel } from "@/lib/game";
 import { BLUE_WIRE_VALUES, type RevealedWire } from "@/lib/types";
 import css from "./reveal-dialog.module.css";
 
+/**
+ * Props for {@link RevealDialog}: its open state and the reveal callbacks.
+ */
 interface RevealDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	/** Called with the chosen actual wire value; the dialog then closes. */
+	/**
+	 * Called with the chosen actual wire value; the dialog then closes.
+	 */
 	onSelect: (value: RevealedWire) => void;
-	/** The currently-recorded value, highlighted when reopened to edit. */
+	/**
+	 * The currently-recorded value, highlighted when reopened to edit.
+	 */
 	current: RevealedWire | null;
 }
 

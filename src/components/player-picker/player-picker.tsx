@@ -6,6 +6,9 @@ import type { JSX } from "react";
 import type { SelectOption } from "@/components/select-field/select-field";
 import css from "./player-picker.module.css";
 
+/**
+ * Props for {@link PlayerPicker}: the field label and the controlled selection.
+ */
 interface PlayerPickerProps {
 	label: string;
 	value: string;
@@ -34,7 +37,7 @@ export function PlayerPicker({
 				type="single"
 				value={value}
 				onValueChange={(next) => {
-					// Ignore the empty value so tapping the selected player again does
+					// ignore the empty value so tapping the selected player again does
 					// not clear a required field.
 					if (next) onValueChange(next);
 				}}

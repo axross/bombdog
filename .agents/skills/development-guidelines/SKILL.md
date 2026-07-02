@@ -1,6 +1,6 @@
 ---
 name: development-guidelines
-description: Apply this skill at the start of EVERY task in this project. Covers the format/lint loop, scoped change management, current-docs lookup triggers, run-script commands, verification requirements, data-layer/migration handling, end-to-end test expectations, and Conventional Commits. Use even when the user does not mention formatting, linting, testing, dependencies, migrations, docs, commands, or commit wording.
+description: Apply this skill at the start of EVERY task in this project. Covers the format/lint loop, scoped change management, current-docs lookup triggers, run-script commands, source-comment and TSDoc doc-comment conventions, verification requirements, data-layer/migration handling, end-to-end test expectations, and Conventional Commits. Use even when the user does not mention formatting, linting, testing, comments, doc-comments, dependencies, migrations, docs, commands, or commit wording.
 ---
 
 # Development Guidelines
@@ -13,7 +13,7 @@ See [code-quality.md](./references/code-quality.md) for:
 
 - The formatter/linter format/lint workflow
 - Language compliance requirements
-- Comment style in source files
+- Line-comment style and TSDoc doc-comment conventions in source files
 - Import hygiene
 
 ## Change Management

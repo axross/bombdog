@@ -10,9 +10,9 @@ import {
 	startTracking,
 } from "../helpers/tracker";
 
-// Regression: logging a move must reset the whole composer — including the
+// regression: logging a move must reset the whole composer — including the
 // target segmented control — so the next move can be entered and logged without
-// re-toggling any field. (A controlled-Select bug once left Log move disabled
+// re-toggling any field. (a controlled-Select bug once left Log move disabled
 // until the target was re-tapped.)
 test("re-enables Log move for the next dual cut without re-toggling target", async ({
 	page,

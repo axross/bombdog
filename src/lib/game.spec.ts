@@ -104,7 +104,7 @@ describe("nextActorId()", () => {
 	});
 
 	it("wraps around clockwise after the last seat acts", () => {
-		// Last actor sits in the final seat, so play wraps to seat 0.
+		// last actor sits in the final seat, so play wraps to seat 0.
 		expect(nextActorId(players, 0, [dualCut("c", 1)])).toBe("a");
 	});
 
@@ -144,7 +144,7 @@ describe("nextActorId()", () => {
 	});
 });
 
-// Shared move fixtures for the filter contracts below.
+// shared move fixtures for the filter contracts below.
 const failedDual: DualCutMove = {
 	id: "d-fail",
 	seq: 1,

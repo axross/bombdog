@@ -8,12 +8,19 @@ import { formatWire } from "@/lib/game";
 import type { Outcome, RevealedWire } from "@/lib/types";
 import css from "./outcome-toggle.module.css";
 
+/**
+ * Props for {@link OutcomeToggle}.
+ */
 interface OutcomeToggleProps {
 	outcome: Outcome | null;
 	revealed: RevealedWire | null;
-	/** Sets both at once: success clears the revealed value; fail records it. */
+	/**
+	 * Sets both at once: success clears the revealed value; fail records it.
+	 */
 	onChange: (outcome: Outcome, revealed: RevealedWire | null) => void;
-	/** Optional heading shown above the buttons. */
+	/**
+	 * Optional heading shown above the buttons.
+	 */
 	label?: string;
 	className?: string;
 	"data-testid"?: string;

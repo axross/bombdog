@@ -10,12 +10,12 @@ import {
 	startTracking,
 } from "../helpers/tracker";
 
-// Move-log filter: a header button opens a dialog that hides move types
+// move-log filter: a header button opens a dialog that hides move types
 // (successful dual cuts and/or solo cuts) from the displayed history without
 // touching the underlying log.
 
 test.describe("move-log filter", () => {
-	// Seed a history with one of each move the filter can touch plus an
+	// seed a history with one of each move the filter can touch plus an
 	// unaffected one:
 	// #1 successful dual cut, #2 failed dual cut, #3 solo cut, #4 detector.
 	test.beforeEach(async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe("move-log filter", () => {
 		await filterDialog(page).getByTestId("filter-exclude-dual-cut").click();
 		await filterDialog(page).getByTestId("filter-done").click();
 
-		// The successful dual cut (#1) is hidden; the failed one (#2) and the solo
+		// the successful dual cut (#1) is hidden; the failed one (#2) and the solo
 		// cut (#3) remain.
 		await expect(moveRow(page, 1)).toHaveCount(0);
 		await expect(moveRow(page, 2)).toBeVisible();
@@ -66,21 +66,21 @@ test.describe("move-log filter", () => {
 		await filterDialog(page).getByTestId("filter-exclude-both").click();
 		await filterDialog(page).getByTestId("filter-done").click();
 
-		// Both a successful dual cut (#1) and the solo cut (#3) drop out; the
+		// both a successful dual cut (#1) and the solo cut (#3) drop out; the
 		// failed dual cut (#2) and the successful detector (#4) — which the
 		// filter never touches — stay visible.
 		await expect(moveRow(page, 1)).toHaveCount(0);
 		await expect(moveRow(page, 3)).toHaveCount(0);
 		await expect(moveRow(page, 2)).toBeVisible();
 		await expect(moveRow(page, 4)).toBeVisible();
-		// The active filter is flagged on the header trigger.
+		// the active filter is flagged on the header trigger.
 		await expect(header(page).getByTestId("filter-active")).toBeVisible();
 
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-reset").click();
 		await filterDialog(page).getByTestId("filter-done").click();
 
-		// Everything returns and the active flag clears.
+		// everything returns and the active flag clears.
 		await expect(moveRow(page, 1)).toBeVisible();
 		await expect(moveRow(page, 3)).toBeVisible();
 		await expect(header(page).getByTestId("filter-active")).toHaveCount(0);

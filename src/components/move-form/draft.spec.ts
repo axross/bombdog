@@ -211,9 +211,9 @@ describe("buildDraft()", () => {
 			targetId: "b",
 			outcome: "success" as const,
 		};
-		// One value is not enough for a two-value ray.
+		// one value is not enough for a two-value ray.
 		expect(buildDraft("detector", { ...base, values: [4] })).toBeNull();
-		// A repeated value is not two distinct wires.
+		// a repeated value is not two distinct wires.
 		expect(buildDraft("detector", { ...base, values: [4, 4] })).toBeNull();
 		expect(buildDraft("detector", { ...base, values: [4, 9] })).toMatchObject({
 			type: "detector",
@@ -267,7 +267,7 @@ describe("buildDraft()", () => {
 
 describe("detectorValues()", () => {
 	it("keeps the most recent value for one-value detectors", () => {
-		// Downgrading to a one-value card drops the oldest pick, matching the pad.
+		// downgrading to a one-value card drops the oldest pick, matching the pad.
 		expect(detectorValues([4, 9], "triple")).toEqual([9]);
 		expect(detectorValues([4, 9], "super")).toEqual([9]);
 	});

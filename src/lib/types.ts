@@ -1,10 +1,12 @@
-// Domain model for the Bomb Busters move tracker.
+// domain model for the Bomb Busters move tracker.
 //
-// This app is a *pure logger*: it records what players do and displays the
-// history. It does not validate game rules or track derived state such as the
-// detonator. Every type here describes something the user explicitly entered.
+// this app is a *pure logger*: it records what players do and displays the
+// history. it does not validate game rules or track derived state such as the
+// detonator. every type here describes something the user explicitly entered.
 
-/** A blue wire value (1–12) or the single "yellow" value shared by all yellows. */
+/**
+ * A blue wire value (1–12) or the single "yellow" value shared by all yellows.
+ */
 export type WireValue =
 	| 1
 	| 2
@@ -20,10 +22,14 @@ export type WireValue =
 	| 12
 	| "yellow";
 
-/** Blue-only wire value. Detectors indicate blue values only (per the FAQ). */
+/**
+ * Blue-only wire value. Detectors indicate blue values only (per the FAQ).
+ */
 export type BlueWireValue = Exclude<WireValue, "yellow">;
 
-/** Whether a guess-based action succeeded or failed. */
+/**
+ * Whether a guess-based action succeeded or failed.
+ */
 export type Outcome = "success" | "fail";
 
 /**
@@ -50,6 +56,9 @@ export type BlueWireValueOrUnknown = BlueWireValue | "unknown";
  */
 export type RevealedWire = WireValueOrUnknown;
 
+/**
+ * Which kind of action a move records.
+ */
 export type MoveType = "dual-cut" | "solo-cut" | "detector" | "equipment";
 
 /**
@@ -67,39 +76,62 @@ export type MoveType = "dual-cut" | "solo-cut" | "detector" | "equipment";
  */
 export type DetectorKind = "double" | "triple" | "super" | "x-or-y-ray";
 
-/** A player occupies a seat; seat order is the array index in `players`. */
+/**
+ * A player occupies a seat; seat order is the array index in `players`.
+ */
 export interface Player {
 	id: string;
 	name: string;
 }
 
+/**
+ * The fields shared by every move, whatever its action type.
+ */
 interface BaseMove {
-	/** Stable unique id. */
+	/**
+	 * Stable unique id.
+	 */
 	id: string;
-	/** Monotonic sequence number, assigned when the move is logged. */
+	/**
+	 * Monotonic sequence number, assigned when the move is logged.
+	 */
 	seq: number;
-	/** Creation/last-edit timestamp (epoch ms). */
+	/**
+	 * Creation/last-edit timestamp (epoch ms).
+	 */
 	at: number;
-	/** Player who performed the move. */
+	/**
+	 * Player who performed the move.
+	 */
 	actorId: string;
 	type: MoveType;
 }
 
-/** Duo cut: actor names a value and points at a teammate's (or own) wire. */
+/**
+ * Duo cut: actor names a value and points at a teammate's (or own) wire.
+ */
 export interface DualCutMove extends BaseMove {
 	type: "dual-cut";
 	targetId: string;
-	/** The named wire value, or "?" when the cut wire's value is unknown. */
+	/**
+	 * The named wire value, or "?" when the cut wire's value is unknown.
+	 */
 	value: WireValueOrUnknown;
 	outcome: Outcome;
-	/** The wire's true value, recorded when the cut failed. */
+	/**
+	 * The wire's true value, recorded when the cut failed.
+	 */
 	revealed?: RevealedWire;
 }
 
-/** Solo cut: actor cuts the last copies of a value from their own hand; always safe. */
+/**
+ * Solo cut: actor cuts the last copies of a value from their own hand; always safe.
+ */
 export interface SoloCutMove extends BaseMove {
 	type: "solo-cut";
-	/** The cut wire value, or "?" when the value is unknown. */
+	/**
+	 * The cut wire value, or "?" when the value is unknown.
+	 */
 	value: WireValueOrUnknown;
 }
 
@@ -118,17 +150,25 @@ export interface DetectorMove extends BaseMove {
 	 */
 	values: BlueWireValueOrUnknown[];
 	outcome: Outcome;
-	/** The wire's true value, recorded when the detector failed. */
+	/**
+	 * The wire's true value, recorded when the detector failed.
+	 */
 	revealed?: RevealedWire;
 }
 
-/** Equipment: actor uses a shared single-use tool. */
+/**
+ * Equipment: actor uses a shared single-use tool.
+ */
 export interface EquipmentMove extends BaseMove {
 	type: "equipment";
 	equipment: string;
 	note?: string;
 }
 
+/**
+ * Any logged move: the discriminated union over the four action types, tagged
+ * by `type`. This is what the log stores and renders.
+ */
 export type Move = DualCutMove | SoloCutMove | DetectorMove | EquipmentMove;
 
 /**
@@ -162,32 +202,46 @@ export type MoveDraft =
  * the displayed history; it never touches the persisted moves themselves.
  */
 export interface MoveFilter {
-	/** Hide dual cuts whose outcome was a success. */
+	/**
+	 * Hide dual cuts whose outcome was a success.
+	 */
 	excludeSuccessfulDualCut: boolean;
-	/** Hide solo cuts. */
+	/**
+	 * Hide solo cuts.
+	 */
 	excludeSoloCut: boolean;
 }
 
-/** A filter that excludes nothing — the initial and reset state. */
+/**
+ * A filter that excludes nothing — the initial and reset state.
+ */
 export const EMPTY_MOVE_FILTER: MoveFilter = {
 	excludeSuccessfulDualCut: false,
 	excludeSoloCut: false,
 };
 
-/** The persisted slice of tracker state. */
+/**
+ * The persisted slice of tracker state.
+ */
 export interface TrackerState {
 	players: Player[];
-	/** Seat index of the Captain; seeds turn rotation. */
+	/**
+	 * Seat index of the Captain; seeds turn rotation.
+	 */
 	captainIndex: number;
 	moves: Move[];
 }
 
-/** All blue wire values, in order. */
+/**
+ * All blue wire values, in order.
+ */
 export const BLUE_WIRE_VALUES: BlueWireValue[] = [
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 ];
 
-/** Player count bounds supported by the setup screen. */
+/**
+ * Player count bounds supported by the setup screen.
+ */
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 5;
 
@@ -212,15 +266,23 @@ export const EQUIPMENT_OPTIONS = [
 	"Label ＝ (12)",
 ] as const;
 
-/** How many blue values a detector names: two for the X or Y Ray, one otherwise. */
+/**
+ * How many blue values a detector names: two for the X or Y Ray, one otherwise.
+ */
 export type DetectorValueCount = 1 | 2;
 
-/** A selectable detector card: its kind, its composer/log label, and value count. */
+/**
+ * A selectable detector card: its kind, its composer/log label, and value count.
+ */
 export interface DetectorOption {
 	kind: DetectorKind;
-	/** Label shown in the composer dropdown and the move log. */
+	/**
+	 * Label shown in the composer dropdown and the move log.
+	 */
 	label: string;
-	/** How many distinct blue values the actor names. */
+	/**
+	 * How many distinct blue values the actor names.
+	 */
 	valueCount: DetectorValueCount;
 	/**
 	 * Whether the card targets a player's whole stand (the Super Detector) rather
@@ -267,6 +329,8 @@ export const DETECTOR_OPTIONS: DetectorOption[] = [
  * without a matching option here, or corrupt persisted data. Fail loud rather
  * than silently substituting the wrong card (which would mislabel the move and
  * apply the wrong value count).
+ *
+ * @throws if `kind` has no matching option (an unknown detector kind).
  */
 export function detectorOption(kind: DetectorKind): DetectorOption {
 	const option = DETECTOR_OPTIONS.find((d) => d.kind === kind);

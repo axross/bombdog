@@ -22,10 +22,16 @@ import {
 import { type DraftFields, detectorValues } from "./draft";
 import css from "./move-form.module.css";
 
+/**
+ * Props for {@link MoveForm}. The form is fully controlled: the parent owns the
+ * action `type` and the `fields`, and is notified of every change.
+ */
 interface MoveFormProps {
 	players: Player[];
 	type: MoveType;
-	/** When provided, the action-type tabs are shown (add mode). */
+	/**
+	 * When provided, the action-type tabs are shown (add mode).
+	 */
 	onTypeChange?: (type: MoveType) => void;
 	fields: DraftFields;
 	onFieldsChange: (fields: DraftFields) => void;
@@ -72,7 +78,7 @@ function MoveFields({
 	fields: DraftFields;
 	onFieldsChange: (fields: DraftFields) => void;
 }): JSX.Element {
-	// Targets list everyone, but the acting player is pushed last (self-target
+	// targets list everyone, but the acting player is pushed last (self-target
 	// is legal yet rare) and flagged so it reads clearly.
 	const targetOptions: SelectOption[] = targetPlayerOrder(
 		players,
@@ -97,7 +103,7 @@ function MoveFields({
 					label="Equipment"
 					value={fields.detector}
 					onValueChange={(kind) =>
-						// Trim the selection to the new card's value count (e.g. dropping
+						// trim the selection to the new card's value count (e.g. dropping
 						// down from the two-value X or Y Ray to a one-value detector).
 						update({
 							detector: kind as DetectorKind,
@@ -110,8 +116,8 @@ function MoveFields({
 			)}
 
 			{needsTarget && (
-				// A segmented control (one tap). The acting player is intentionally
-				// included last: some mission rules allow a self-dual-cut. The Super
+				// a segmented control (one tap). the acting player is intentionally
+				// included last: some mission rules allow a self-dual-cut. the Super
 				// Detector points at a player's whole stand, so the same picker fits.
 				<PlayerPicker
 					label={
@@ -143,7 +149,7 @@ function MoveFields({
 					max={detector.valueCount}
 					values={fields.values}
 					onValuesChange={(values) =>
-						// The pad is blue-only, so this narrows to blue values (still
+						// the pad is blue-only, so this narrows to blue values (still
 						// possibly "?"); yellow can never be picked here.
 						update({
 							values: values.filter(

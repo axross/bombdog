@@ -79,7 +79,7 @@ describe("addMove()", () => {
 	});
 
 	describe("when crypto.randomUUID is unavailable", () => {
-		// Unconditional restore that survives an early failure and doesn't depend
+		// unconditional restore that survives an early failure and doesn't depend
 		// on crypto.randomUUID being present at load time.
 		afterEach(() => {
 			vi.unstubAllGlobals();
@@ -244,7 +244,7 @@ describe("persist migration (v1 → v2)", () => {
 			outcome: "fail",
 			revealed: "unknown",
 		});
-		// Non-detector moves pass through untouched.
+		// non-detector moves pass through untouched.
 		expect(result.moves[1]).toMatchObject({ type: "dual-cut", value: 9 });
 	});
 
@@ -307,7 +307,7 @@ describe("persist migration (v1 → v2)", () => {
 			moves: Record<string, unknown>[];
 		};
 
-		// The two detector-card equipment logs are gone; the solo cut and the
+		// the two detector-card equipment logs are gone; the solo cut and the
 		// still-valid Rewinder equipment survive.
 		expect(result.moves.map((m) => m.id)).toEqual(["1", "4"]);
 	});

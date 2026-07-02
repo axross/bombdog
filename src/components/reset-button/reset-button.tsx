@@ -5,7 +5,9 @@ import type { JSX } from "react";
 import { useTrackerStore } from "@/lib/tracker-store";
 import css from "./reset-button.module.css";
 
-/** Clears the logged moves behind a confirmation, keeping the roster for reuse. */
+/**
+ * Clears the logged moves behind a confirmation, keeping the roster for reuse.
+ */
 export function ResetButton(): JSX.Element {
 	const reset = useTrackerStore((s) => s.reset);
 

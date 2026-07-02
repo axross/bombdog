@@ -23,7 +23,7 @@ describe("<SelectField>", () => {
 		);
 
 		expect(screen.getByText("Target")).toBeInTheDocument();
-		// The trigger is still labelled via aria-label for assistive tech.
+		// the trigger is still labelled via aria-label for assistive tech.
 		expect(
 			screen.getByRole("combobox", { name: "Target" }),
 		).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe("<SelectField>", () => {
 			/>,
 		);
 
-		// The accessible name still resolves through the trigger's aria-label.
+		// the accessible name still resolves through the trigger's aria-label.
 		expect(screen.getByLabelText("Target")).toBeInTheDocument();
 		expect(
 			screen.getByRole("combobox", { name: "Target" }),
