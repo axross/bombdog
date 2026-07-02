@@ -70,8 +70,12 @@ export function isFilterActive(filter: MoveFilter): boolean {
 
 /**
  * The seat that should act next: the Captain seeds the rotation, and after each
- * logged move play passes to the seat clockwise (next index) of the last actor.
- * Returns the player id, or `undefined` when there are no players.
+ * turn-advancing move play passes to the seat clockwise (next index) of the last
+ * actor. Returns the player id, or `undefined` when there are no players.
+ *
+ * Equipment moves do not advance the turn — the shared single-use tools fire
+ * without ending the actor's turn — so they are ignored when finding the last
+ * actor. Detector moves (a separate move type) still advance the turn.
  *
  * This is only a *suggestion* — the composer lets the user override it, because
  * equipment can fire off-turn and empty-handed players get skipped.
@@ -84,9 +88,11 @@ export function nextActorId(
 	if (players.length === 0) return undefined;
 	// `players` is non-empty here, so the modulo index is always in bounds.
 	const captainSeatId = players[captainIndex % players.length].id;
-	if (moves.length === 0) return captainSeatId;
-	const lastActorId = moves[moves.length - 1].actorId;
-	const lastSeat = players.findIndex((p) => p.id === lastActorId);
+	// Skip equipment moves: they never pass the turn, so the rotation continues
+	// from the last non-equipment move.
+	const lastTurnMove = moves.findLast((m) => m.type !== "equipment");
+	if (!lastTurnMove) return captainSeatId;
+	const lastSeat = players.findIndex((p) => p.id === lastTurnMove.actorId);
 	if (lastSeat === -1) return captainSeatId;
 	return players[(lastSeat + 1) % players.length].id;
 }

@@ -182,6 +182,48 @@ test.describe("session flow", () => {
 		);
 	});
 
+	test("logging equipment keeps the turn on the same actor", async ({
+		page,
+	}) => {
+		await startTracking(page);
+		// Captain (Player 1) starts a cut, passing the turn to Player 2.
+		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
+
+		// Player 2 uses equipment: it doesn't end the turn, so it stays on Player 2.
+		await logEquipment(page, { equipment: "Post-it (4)" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
+
+		// The next cut finally passes the turn on to Player 3.
+		await logDualCut(page, { target: "Player 1", wire: 7, outcome: "success" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 3",
+		);
+	});
+
+	test("off-turn equipment returns the suggestion to the turn-holder", async ({
+		page,
+	}) => {
+		await startTracking(page);
+		// Captain (Player 1) cuts, so the turn belongs to Player 2.
+		await logDualCut(page, { target: "Player 2", wire: 4, outcome: "success" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
+
+		// Player 4 fires equipment off-turn (overriding the Acting dropdown). It
+		// doesn't take the turn, so the suggestion snaps back to Player 2 — not to
+		// Player 4 and not clockwise from it.
+		await logEquipment(page, { actor: "Player 4", equipment: "Post-it (4)" });
+		await expect(composer(page).getByTestId("acting")).toContainText(
+			"Player 2",
+		);
+	});
+
 	test("undo and redo walk the move stack; a new move clears redo", async ({
 		page,
 	}) => {

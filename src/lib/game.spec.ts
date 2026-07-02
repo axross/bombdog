@@ -35,6 +35,17 @@ function dualCut(actorId: string, seq: number): DualCutMove {
 	};
 }
 
+function equipmentMove(actorId: string, seq: number): Move {
+	return {
+		id: `m${seq}`,
+		seq,
+		at: seq,
+		type: "equipment",
+		actorId,
+		equipment: "Radar",
+	};
+}
+
 describe("getPlayerName()", () => {
 	it("resolves a known player", () => {
 		expect(getPlayerName(players, "b")).toBe("Bob");
@@ -101,6 +112,31 @@ describe("nextActorId()", () => {
 
 	it("falls back to the Captain when the last actor is unknown", () => {
 		expect(nextActorId(players, 2, [dualCut("gone", 1)])).toBe("c");
+	});
+
+	it("does not advance the turn for an equipment move", () => {
+		// Alice cut, so Bob is up; Bob using equipment keeps the turn on Bob.
+		const moves: Move[] = [dualCut("a", 1), equipmentMove("b", 2)];
+		expect(nextActorId(players, 0, moves)).toBe("b");
+	});
+
+	it("ignores off-turn equipment when advancing", () => {
+		// Alice cut (Bob is up); Carol fires equipment off-turn — still Bob's turn.
+		const moves: Move[] = [dualCut("a", 1), equipmentMove("c", 2)];
+		expect(nextActorId(players, 0, moves)).toBe("b");
+	});
+
+	it("skips trailing equipment moves back to the last cut", () => {
+		const moves: Move[] = [
+			dualCut("a", 1),
+			equipmentMove("b", 2),
+			equipmentMove("c", 3),
+		];
+		expect(nextActorId(players, 0, moves)).toBe("b");
+	});
+
+	it("suggests the Captain when only equipment moves exist", () => {
+		expect(nextActorId(players, 1, [equipmentMove("a", 1)])).toBe("b");
 	});
 });
 
