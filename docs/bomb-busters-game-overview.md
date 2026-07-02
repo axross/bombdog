@@ -11,10 +11,10 @@
 > full. **Secondary sources:** BoardGameGeek, Spiel des Jahres, Pegasus Spiele, the
 > official FAQ, and numerous published rules explainers and reviews (linked at the end).
 >
-> **Confidence notes:** Where a detail is not printed in the base rulebook (notably the
-> exact per-number mapping of equipment effects, and the exact detonator track length per
-> player count), the text below says so explicitly and gives the best cross-referenced
-> answer rather than inventing specifics.
+> **Confidence notes:** The equipment cards are now enumerated with their exact names, effects,
+> and unlock numbers (§9). Where a detail is still not printed in the base rulebook (notably the
+> exact detonator track length per player count), the text below says so explicitly and gives the
+> best cross-referenced answer rather than inventing specifics.
 
 ---
 
@@ -169,7 +169,7 @@ The exact retail contents:
 
 ### Info Tokens
 
-- Numbered markers that record the **true value of a wrongly-guessed wire.** On a failed Duo
+- Numbered markers that record the **true value of a wrongly-guessed wire.** On a failed Dual
   cut against a blue/yellow wire, the owner places an Info token in front of that wire showing
   what it actually is. This penalizes the team (detonator advances) **and simultaneously gives
   the team free, permanent deduction information.**
@@ -243,7 +243,11 @@ same scales to other "X out of Y" values and to red wires.
 Play proceeds **clockwise starting with the Captain.** On your turn you are the **active bomb
 disposal expert** and must perform **exactly one** of three actions:
 
-### 6.1 Duo Cut (the main action)
+### 6.1 Dual Cut (the main action)
+
+> **Terminology note:** this document uses **"Dual cut"** throughout (matching the companion
+> app). The official Cocktail Games English rulebook prints the same action as **"Duo cut."**
+> They are the same action under two spellings.
 
 Cut **2 identical wires** — one of yours, one of a teammate's. **Point to a specific wire in a
 teammate's stand and announce a value** (e.g., *"This wire is a 9"*). You must hold a matching
@@ -291,9 +295,9 @@ turns, play passes among the rest.
 
 ### Yellow Wires
 
-- Cut like blue wires (Duo or Solo). The printed number matters **only for ordering**; in play
+- Cut like blue wires (Dual or Solo). The printed number matters **only for ordering**; in play
   **all yellows are one value: "YELLOW."**
-- To Duo-cut a yellow: hold a yellow yourself, point at a teammate's wire and say **"this wire
+- To Dual-cut a yellow: hold a yellow yourself, point at a teammate's wire and say **"this wire
   is yellow."** Correct → both cut. Wrong → **yellow Info token** placed and **detonator
   advances one space** (same as blue).
 - **Solo cut on yellow** only when **you hold every remaining yellow.**
@@ -315,9 +319,9 @@ Each player holds a **Character card** giving a **one-time personal ability, use
 the card face down.** In the **base game the five character cards are functionally identical:
 every one grants the "Double Detector"** (the characters differ only in art/flavor; one card
 doubles as the **Captain** marker). More powerful scanners (Triple Detector, Super Detector,
-X or Y Ray, radar) are **Equipment**, not character abilities (see §9).
+X or Y Ray, General Radar) are **Equipment**, not character abilities (see §9).
 
-**Double Detector** — during a **Duo cut**, announce a value and point at **TWO** wires in a
+**Double Detector** — during a **Dual cut**, announce a value and point at **TWO** wires in a
 teammate's stand (instead of one):
 
 - **Success — at least one** of the two named wires matches the value.
@@ -328,12 +332,13 @@ teammate's stand (instead of one):
 - **Red-wire safety valve:** if **only one** of the two named wires is **red**, **the bomb does
   NOT explode.** The teammate doesn't reveal/name the red one; instead they place an Info token
   in front of the **non-red** named wire. (This makes the Double Detector meaningfully safer
-  than a plain Duo cut — pointing at two tiles can "absorb" a red without detonating, provided
+  than a plain Dual cut — pointing at two tiles can "absorb" a red without detonating, provided
   the other named tile isn't also wrong in a way that matters.)
 
 **Related equipment:** the team also unlocks stronger scanners as **Equipment** — the **Triple
-Detector**, the **Super Detector**, and the **X or Y Ray** (see §9). These are separate cards
-with their own effects, not upgrades that stack onto the Double Detector.
+Detector**, the **Super Detector**, and the **X or Y Ray** (see §9). Each is its own card, but
+the rulebook lets the **X or Y Ray combine with the Double, Triple, or Super Detector** to name
+**two values across several wires at once**.
 
 ---
 
@@ -356,39 +361,54 @@ mission unfolds.
   even out of turn** — and a player may use **several in a row.** (You may openly *suggest*
   using equipment; see §11.)
 
-### Equipment Effects (known types)
+### The Detector Family (extended Dual cuts)
 
-The base rulebook does **not** print a numbered list mapping each value to a specific effect,
-and the exact assignments vary by mission/box. The **detector-family** equipment behaves like an
-extended Duo cut: the turn player names the value(s) and designates the **target wire(s)**; if a
-target wire matches a named value, it is cut (a wrong guess advances the detonator, and hitting a
-red wire still detonates). Their exact effects are:
+Several equipment cards are **stronger detectors** that resolve like a Dual cut: the turn player
+names the value(s) and designates the **target wire(s)**; the guess succeeds if a target wire
+matches a named value. A wrong guess advances the detonator, and hitting a red wire still
+detonates (the Double Detector's one-red safety valve, §8, applies to the detectors too).
 
-- **Double Detector** — the turn player says **one** number and points at **two different**
-  target wires. (Also the base-game character ability; see §8.)
-- **Triple Detector** — the turn player says **one** number and points at **three different**
-  target wires.
-- **Super Detector** — the turn player says **one** number and points at a **player**; **every**
-  wire in that player's hand becomes a target wire for the guess.
-- **X or Y Ray** — the turn player says **two** numbers and points at a **single** target wire
-  (the wire may be either of the two named numbers).
+- **Double Detector** — say **one** number and point at **two different** target wires. This is
+  each player's **Character-card** ability (§8); a spare copy can also appear as team equipment.
+- **Triple Detector** — say **one** number and point at **three different** target wires.
+- **Super Detector** — say **one** number and point at a **whole player's stand**; **every** wire
+  that player holds becomes a target wire for the guess.
+- **X or Y Ray** — say **two** numbers while pointing at a **single** target wire (the wire may be
+  either of the two named numbers).
 
-Additional effect families surface across the campaign. These are attested by explainers rather
-than spelled out in the base rules, so treat the specifics as mission-dependent:
+> **Combining detectors (official).** Per the rulebook, the **X or Y Ray can be combined with the
+> Triple, Super, or Double Detector** to name **two values across several wires at once** — e.g.,
+> X or Y Ray + Triple Detector points at three wires while naming two candidate values.
 
-- **Radar** — call out a number to learn **who holds** a wire of that value (information without
-  a risky cut).
-- **Detonator relief / "extra life"** — mitigate a mistake (e.g., move the detonator back /
-  ignore a strike).
-- **Protection from a bad guess** — shields the team from the consequence of a wrong guess.
-- **Free cut / reveal** helpers — cut or reveal certain wires without the normal guess/risk.
-- Later boxes add further pieces (e.g., a **"toolbox"** equipment introduced in the 9–19 box)
-  and new twists.
+### The Full Equipment List
 
-> **Accuracy flag:** the four detector cards above have fixed, confirmed effects, but *which*
-> unlock number is printed on each card is mission-dependent and not publicly enumerated in the
-> base rules. The remaining effect **families** are well-attested in spirit but vary by box; the
-> exact card-by-card mapping is best read off the physical cards.
+Each equipment card has a **fixed name, effect, and unlock number** printed on it (the number in
+the top-left corner). The **base box holds 12 equipment cards, one per unlock value 1–12**; each
+mission puts out a subset (as many as there are players). The confirmed cards:
+
+| Unlock | Card | Effect |
+| --- | --- | --- |
+| **1** | **Label ≠** | Place the **≠ token** in front of two **adjacent** wires of **different** values in a hand (a permanent public clue). |
+| **3** | **Triple Detector** | During a Dual cut, say one value and point at **three** wires in a teammate's stand. |
+| **4** | **Post-It** | Place **one Info token** in front of one of **your own** blue wires (free information). |
+| **5** | **Super Detector** | During a Dual cut, say one value and point at a teammate's **whole stand** — every wire is a target. |
+| **6** | **Rewinder** | Move the detonator dial **back one space**. |
+| **7** | **Emergency Batteries** | Turn **one or two used Character cards** back face up (recharge spent Double Detectors). |
+| **8** | **General Radar** | Say a number 1–12; **every player** answers whether they hold that value (information, no cut). |
+| **9** | **Stabilizer** | If the **next Dual cut fails**, the detonator does **not** move **and a red wire does not explode**. |
+| **10** | **X or Y Ray** | During a Dual cut, say **two** values while pointing at **one** wire (it may be either). |
+| **11** | **Coffee Mug** | **Skip your turn** and choose who the next active player is. |
+| **12** | **Label =** | Place the **= token** in front of two **adjacent** wires of the **same** value in a hand. |
+
+The twelfth base card (the unlock value not shown above) is a second team **Double Detector**,
+usable by anyone in addition to each player's Character-card copy. Later Surprise boxes add
+further equipment — e.g., the **Fast Pass** (Solo-cut two identical wires even when they are
+*not* the last of that value) and the **Disintegrator** (an instant effect: draw a random
+Info-token number and every player cuts their matching wires) — plus new mission twists.
+
+> **Note on sourcing:** the base rulebook illustrates the equipment system but does not print the
+> full card-by-card list; the effects above are transcribed from the physical cards. Treat the
+> Surprise-box cards as spoilers you will meet in later missions.
 
 ---
 
@@ -458,12 +478,12 @@ replayable.
 - **Missions 4–7 — Training (Optimists):** practice rounds to prepare for the exam.
 - **Mission 8 — The "Exam":** passing it **earns the right to open the first Surprise box.**
 - **Missions 9–19 — First Surprise box:** opened after Mission 8; you record wins/losses in the
-  **table on the back of the box.** Introduces new elements — e.g., a new **"toolbox"**
-  equipment card and small rule twists — and expands the equipment system.
+  **table on the back of the box.** Introduces new equipment cards and small rule twists,
+  expanding the equipment system.
 - **Later Surprise boxes (5 in total):** each unlocks more missions plus **new equipment, new
-  variant rules, and surprises.** Reviewers deliberately avoid spoiling their contents to
-  preserve discovery. Advanced missions also introduce components like the **"=" and "≠"
-  tokens** (relationship constraints defined on the Mission card).
+  variant rules, and surprises** (e.g., the **Fast Pass** and **Disintegrator** equipment).
+  Reviewers deliberately avoid spoiling their contents to preserve discovery. The **"=" and "≠"
+  tokens** are played by the **Label** equipment cards and by certain advanced missions.
 - **Mission 66 — Finale:** uses the dedicated **Bomb Busters pawn** reserved for this final
   mission ("don't worry about it before then").
 
@@ -505,7 +525,7 @@ recorded** (Info + Validation tokens). From these:
 - **Turn mistakes into information.** A wrong guess is costly, but the resulting Info token is
   permanent public data. Sometimes a low-risk "probing" guess is worth the detonator space for
   what it reveals — but weigh it against the small mistake budget.
-- **Sequence your safe cuts.** Cash in guaranteed cuts (Solo cuts, near-certain Duo cuts)
+- **Sequence your safe cuts.** Cash in guaranteed cuts (Solo cuts, near-certain Dual cuts)
   before spending detector abilities or taking risks, so you unlock equipment (via cut pairs)
   and shrink the search space first.
 - **Use the Double Detector for red safety and 50/50s.** Because a single red among two named
@@ -527,7 +547,7 @@ recorded** (Info + Validation tokens). From these:
    tokens show the tiles right of it. A gap at the 2nd position, bounded below by a revealed 1
    and above by the 7, plus the count of visible 4s, makes that tile **almost certainly a 4** —
    and the Captain holds a 4.
-3. **Duo cut:** the Captain points at that tile and says *"this is a 4."*
+3. **Dual cut:** the Captain points at that tile and says *"this is a 4."*
    - **If right:** the teammate flips their 4 face up (position unchanged); the Captain flips
      one of their own 4s. If that completes all four 4s, a **Validation token** goes on "4," and
      if a "4" equipment exists it is now unlocked.
@@ -571,11 +591,11 @@ recorded** (Info + Validation tokens). From these:
 - **Equipment can fire off-turn and be chained.** Most equipment is usable by anyone at any
   time, even out of turn, and several can be used in a row.
 - **Equipment quantity = player count**, chosen per the mission.
-- **X or Y Ray targets a single wire with two numbers.** You point at **one** target wire and
-  name **two** candidate numbers (the wire may be either); it is not a multi-wire or
-  multi-detector combo.
-- **Super Detector targets a whole player.** You name one number and point at a **player**, and
-  every wire in that player's hand becomes a target wire for the guess.
+- **X or Y Ray targets a single wire with two numbers.** On its own you point at **one** target
+  wire and name **two** candidate numbers (the wire may be either). It may also be **combined**
+  with the Double/Triple/Super Detector to name two values across several wires (official).
+- **Super Detector targets a whole player.** You name one number and point at a **player's whole
+  stand**, and every wire that player holds becomes a target wire for the guess.
 - **Validation tokens are advisory but vital** — they don't change legality directly but prevent
   fatal mistakes by clearly marking closed numbers.
 - **Partial special wires ("X out of Y") stay permanently uncertain** — the set-aside tile is
@@ -583,8 +603,10 @@ recorded** (Info + Validation tokens). From these:
 - **Empty-handed players are skipped**, and the mission continues.
 - **Restart on loss, rotate Captain** — replay the same mission with the next Captain.
 - **Mission card overrides defaults** — a mission's back-of-card rules win for that mission.
-- **"=" / "≠" tokens** appear in certain advanced missions to impose relationship constraints
-  between wires; their exact use is defined by the relevant Mission card. *(Advanced/spoiler
+- **"=" / "≠" tokens** are placed by the **Label =** and **Label ≠** equipment cards (unlock 12
+  and 1): mark two **adjacent** wires in a hand as the **same** ("=") or **different** ("≠")
+  value — a permanent public deduction clue. Some advanced missions also use them directly per
+  the Mission card. *(Advanced/spoiler
   content; not detailed in the base rules.)*
 
 ---
@@ -596,7 +618,8 @@ recorded** (Info + Validation tokens). From these:
 - **Captain** — the starting player for the mission (rotates left each mission); marked by the
   Captain Character card.
 - **Hand** — all wires a player controls. **Two tile stands in front of one player = one hand.**
-- **Duo cut** — cut one of your wires + one matching teammate wire by naming its value.
+- **Dual cut** — cut one of your wires + one matching teammate wire by naming its value.
+  (Official rulebook spelling: **"Duo cut."**)
 - **Solo cut** — cut the last 2 or 4 of a value entirely from your own hand.
 - **Reveal your red wires** — safely reveal an all-red remaining hand.
 - **Info token** — records the true value of a wrongly-guessed wire.
@@ -645,8 +668,8 @@ recorded** (Info + Validation tokens). From these:
 
 *Document compiled July 2026. Anchored on the official Cocktail Games rulebook (extracted in
 full) and cross-referenced against the official FAQ, publisher/award pages, and multiple
-independent rules explainers. Where the base rulebook leaves a detail implicit — notably the
-exact number→effect mapping of equipment cards, the precise detonator track length per player
-count, and the use of the "="/"≠" tokens in advanced missions — the text flags the uncertainty
-rather than inventing specifics; those details are best confirmed from the physical cards and
-higher-numbered mission boxes.*
+independent rules explainers. The equipment cards (§9) are enumerated with their exact names,
+effects, and unlock numbers from the physical cards. Where the base rulebook still leaves a
+detail implicit — notably the precise detonator track length per player count — the text flags
+the uncertainty rather than inventing specifics; those details are best confirmed from the
+physical components and higher-numbered mission boxes.*
