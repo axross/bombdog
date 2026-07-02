@@ -108,8 +108,8 @@ describe("<PlayerSetup>", () => {
 		});
 		await user.click(input);
 
-		// onMouseUp preventDefault keeps the focus-time selection instead of
-		// letting the click collapse it to a caret.
+		// clicking focuses the input, and onFocus selects the whole value, so the
+		// next keystroke replaces it.
 		expect(input.selectionStart).toBe(0);
 		expect(input.selectionEnd).toBe("Player 1".length);
 	});

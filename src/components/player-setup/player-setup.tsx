@@ -144,10 +144,6 @@ export function PlayerSetup(): JSX.Element {
 							// select the whole name on focus so typing replaces it
 							// outright — players rarely tweak the default, they retype it.
 							onFocus={(e) => e.target.select()}
-							// a plain click would fire focus (select-all) then reposition
-							// the caret on mouseup, wiping the selection; suppress that so
-							// mouse users keep the select-all too, not just tab users.
-							onMouseUp={(e) => e.preventDefault()}
 							aria-label={`Name of player ${i + 1}`}
 							maxLength={24}
 						/>

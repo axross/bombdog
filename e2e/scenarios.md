@@ -29,6 +29,7 @@ carries its `@scenario:<id>` tag. The reporter
 | setup.max-players | Configure the five-player maximum | setup | should |
 | setup.custom-names | Custom player names reach the composer's controls | setup | should |
 | setup.choose-captain | A chosen Captain takes the first turn | setup | should |
+| setup.name-select-on-focus | Focusing a seat name selects its whole value for quick replacement | setup | should |
 | log.dual-cut.success | Log a successful dual cut | logging | must |
 | log.dual-cut.fail-reveal | A failed dual cut records the revealed wire | logging | must |
 | log.dual-cut.fail-yellow | A failed dual cut revealing the yellow wire is recorded | logging | may |
