@@ -74,6 +74,7 @@ export interface Player {
 	name: string;
 }
 
+/** The fields shared by every move, whatever its action type. */
 interface BaseMove {
 	/** Stable unique id. */
 	id: string;
@@ -130,6 +131,10 @@ export interface EquipmentMove extends BaseMove {
 	note?: string;
 }
 
+/**
+ * Any logged move: the discriminated union over the four action types, tagged
+ * by `type`. This is what the log stores and renders.
+ */
 export type Move = DualCutMove | SoloCutMove | DetectorMove | EquipmentMove;
 
 /**

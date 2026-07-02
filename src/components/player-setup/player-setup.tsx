@@ -64,6 +64,10 @@ export function PlayerSetup(): JSX.Element {
 		setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
 	};
 
+	/**
+	 * Build the roster from the entered names (blank names fall back to
+	 * "Player N") and hand it to the store to open the tracker.
+	 */
 	const handleStart = () => {
 		const players: Player[] = names.slice(0, count).map((name, i) => ({
 			id: makeId(),
