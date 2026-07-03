@@ -4,7 +4,7 @@ One-time setup for **this** repository, performed by the operator (`@axross`). S
 
 ## 1. Create the Labels
 
-Create the `loop:*` labels the state machine uses (via the GitHub UI or `gh`). Colors follow a three-way convention: **yellow** (`fbca04`) for states waiting on a human response, **red** (`d73a4a`) for the blocked state, and **blue** (`1d76db`) for every agent-active state:
+Create the `loop:*` labels the state machine uses (via the GitHub UI or `gh`). Colors follow a convention: **yellow** (`fbca04`) for states waiting on a human response, **green** (`0e8a16`) for the review-ready done state, **red** (`d73a4a`) for the blocked state, and **blue** (`1d76db`) for every agent-active state:
 
 ```bash
 for l in \
@@ -13,7 +13,7 @@ for l in \
   "loop:plan-review|fbca04|Plan written; awaiting approval" \
   "loop:ready-to-build|1d76db|Approved; implementation may start" \
   "loop:in-review|1d76db|Draft PR open; review loop active" \
-  "loop:done|fbca04|PR review-ready; handed back" \
+  "loop:done|0e8a16|PR review-ready; handed back" \
   "loop:active|1d76db|Concurrency lock; a session is working this" \
   "loop:blocked|d73a4a|Needs human intervention" ; do
   IFS='|' read -r name color desc <<< "$l"
