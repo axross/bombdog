@@ -1,7 +1,7 @@
 name: Merge Checks
 
-# The app's own CI: lint and unit tests that gate merges to main. Distinct from
-# .github/workflows/loop-dispatch.yaml, which only bridges Loop Engineering events.
+# The app's own CI: lint and unit tests that gate merges to main. This is the CI
+# the `/address` command's tail polls after a push (see .agents/skills/address).
 
 on:
   pull_request:

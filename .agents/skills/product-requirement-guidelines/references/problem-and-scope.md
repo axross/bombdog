@@ -30,7 +30,7 @@ Assumptions and open questions are easy to conflate but serve different readers.
 **Guidelines:**
 
 - MUST state assumptions and constraints the plan relies on, distinct from open questions.
-- MUST NOT embed an unresolved product, scope, or platform decision silently as an assumption; ask it instead (per the owning workflow's ask-and-yield step, e.g. [Loop Engineering's plan phase](../../loop-engineering/references/plan-phase.md)).
+- MUST NOT embed an unresolved product, scope, or platform decision silently as an assumption; ask it instead (per the owning workflow's ask-and-yield step, e.g. [the `/address` plan phase](../../address/references/phases.md)).
 - SHOULD flag an assumption the reader is likely to disagree with rather than build around it unstated.
 
 ## Right-Sizing Scope
