@@ -6,7 +6,9 @@ Steps 1-4 are done once; step 5 is per-issue.
 The loop runs as three roles, each under its own GitHub App identity and its own
 routine: **planner**, **coder**, and **reviewer**. Separate identities mean every
 comment and review carries `user.type == 'Bot'`, so the bridge tells humans from
-bots generically and routes hand-offs by label — no per-bot login list is needed.
+bots generically and routes hand-offs by label. Each App's bot login is also
+recorded in a `LOOP_*_BOT_LOGIN` variable and excluded explicitly, as a
+belt-and-suspenders complement to the `user.type` check.
 
 ## 1. Create the Labels
 
@@ -55,9 +57,11 @@ Notes:
 - **Issues: Read & write** is what lets a role apply labels and post comments (PR
   labels are issue labels) and, for the planner, edit the issue title/body.
 - Subscribe the Apps to no webhooks; the Actions bridge drives triggers.
-- A GitHub App acts as `<app-slug>[bot]` (e.g. `review-gengar[bot]`). You do **not**
-  need to record these logins anywhere — the bridge distinguishes bots from humans
-  by `user.type`, not by login.
+- A GitHub App acts as `<app-slug>[bot]`, where `<app-slug>` is the slug in the
+  App's public URL `https://github.com/apps/<app-slug>`. Record each role's full
+  bot login **including the `[bot]` suffix** for the variables in step 4 (e.g.
+  `plan-gengar[bot]`, `code-gengar[bot]`, `review-gengar[bot]`). Confirm each
+  against a real comment once the App has acted (`user.type` reads `Bot`).
 
 ## 3. Create the Three Routines
 
@@ -117,7 +121,12 @@ triggers go through the GitHub Actions bridge.
    - planner: `CLAUDE_LOOP_PLAN_URL`, `CLAUDE_LOOP_PLAN_TOKEN`
    - coder: `CLAUDE_LOOP_CODE_URL`, `CLAUDE_LOOP_CODE_TOKEN`
    - reviewer: `CLAUDE_LOOP_REVIEW_URL`, `CLAUDE_LOOP_REVIEW_TOKEN`
-3. `.github/workflows/loop-dispatch.yaml` (already committed) fires the right
+3. Add the three App bot logins as repository **variables** (from step 2), so the
+   bridge can exclude the loop Apps by login as well as by `user.type`:
+   - `LOOP_PLAN_BOT_LOGIN` = `plan-gengar[bot]`
+   - `LOOP_CODE_BOT_LOGIN` = `code-gengar[bot]`
+   - `LOOP_REVIEW_BOT_LOGIN` = `review-gengar[bot]`
+4. `.github/workflows/loop-dispatch.yaml` (already committed) fires the right
    routine per event: issue label/comment → planner; `loop:ready-to-build`,
    `loop:changes-requested`, and human PR reviews/comments → coder;
    `loop:review-requested` and `check_suite.completed` → reviewer. Comments and

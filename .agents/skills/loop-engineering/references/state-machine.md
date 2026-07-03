@@ -92,8 +92,10 @@ Scheduled polls, event triggers, and manual runs can fire on the same target con
 Each role runs under its own GitHub App, so its comments and reviews arrive with
 `user.type == 'Bot'` and a distinct `[bot]` login. The bridge uses this to tell
 humans (`user.type != 'Bot'`) from agents and routes hand-offs by label, so
-**routing no longer depends on parsing a comment body**. The `<!-- loop-agent -->`
-marker is retained only as a human-facing convenience and for heartbeat detection.
+**routing no longer depends on parsing a comment body**. The three
+`LOOP_*_BOT_LOGIN` variables also name the loop Apps so the bridge can exclude them
+by login in addition to `user.type`. The `<!-- loop-agent -->` marker is retained
+only as a human-facing convenience and for heartbeat detection.
 
 **Guidelines:**
 
