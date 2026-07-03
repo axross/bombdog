@@ -4,18 +4,18 @@ One-time setup for **this** repository, performed by the operator (`@axross`). S
 
 ## 1. Create the Labels
 
-Create the `loop:*` labels the state machine uses (via the GitHub UI or `gh`):
+Create the `loop:*` labels the state machine uses (via the GitHub UI or `gh`). Colors follow a three-way convention: **yellow** (`fbca04`) for states waiting on a human response, **red** (`d73a4a`) for the blocked state, and **blue** (`1d76db`) for every agent-active state:
 
 ```bash
 for l in \
-  "loop:plan|0e8a16|Queued for or in planning" \
+  "loop:plan|1d76db|Queued for or in planning" \
   "loop:awaiting-answer|fbca04|Paused on a human answer" \
-  "loop:plan-review|1d76db|Plan written; awaiting approval" \
-  "loop:ready-to-build|5319e7|Approved; implementation may start" \
-  "loop:in-review|d93f0b|Draft PR open; review loop active" \
-  "loop:done|c2e0c6|PR review-ready; handed back" \
-  "loop:active|ededed|Concurrency lock; a session is working this" \
-  "loop:blocked|b60205|Needs human intervention" ; do
+  "loop:plan-review|fbca04|Plan written; awaiting approval" \
+  "loop:ready-to-build|1d76db|Approved; implementation may start" \
+  "loop:in-review|1d76db|Draft PR open; review loop active" \
+  "loop:done|fbca04|PR review-ready; handed back" \
+  "loop:active|1d76db|Concurrency lock; a session is working this" \
+  "loop:blocked|d73a4a|Needs human intervention" ; do
   IFS='|' read -r name color desc <<< "$l"
   gh label create "$name" --color "$color" --description "$desc" --force
 done
