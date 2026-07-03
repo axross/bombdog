@@ -45,7 +45,8 @@ Defer to [Development Guidelines › verification](../../development-guidelines/
 The coder is woken to address review by a hand-off, never by its own output:
 
 - the reviewer applied `loop:changes-requested` to the pull request, or
-- a human submitted a review or comment on the pull request.
+- a human submitted a review or comment on the pull request, or
+- a human submitted a review or comment on the pull request even after the issue already carries `loop:done` — the pull request stays open for exactly this kind of follow-up (see "Address Review After Done" below).
 
 **Guidelines:**
 
@@ -55,5 +56,14 @@ The coder is woken to address review by a hand-off, never by its own output:
 - MUST re-run the relevant verification after each batch of fixes and keep the pull request body's evidence current.
 - MUST, when the batch is addressed, hand back to the reviewer by applying `loop:review-requested` and removing `loop:changes-requested`, then release the lock and exit. The reviewer re-reviews and owns the decision to complete or hand back again.
 - MUST NOT flip the pull request to ready or set `loop:done`; the reviewer owns both, so a coder can never leave a pull request "done but draft."
+
+### Address Review After Done
+
+**Guidelines:**
+
+- MUST, when woken while the issue carries `loop:done`, answer the human directly with a marked reply before deciding whether any code change follows; MUST NOT reply with only a rationale for inaction.
+- MUST NOT unilaterally decide an ambiguous comment is out of scope and redirect the human to file a new issue; when it is unclear whether the human wants a change made now, ask (a marked comment mentioning `@axross`) rather than deciding on their behalf.
+- MUST, once a change is confirmed or unambiguously requested, reopen the loop: replace `loop:done` with `loop:in-review` on the issue, convert the pull request back to draft if the reviewer had flipped it to ready, push the fix, and hand off to the reviewer by applying `loop:review-requested` — a fresh round (see [review-phase.md](./review-phase.md)'s Termination Guard).
+- MUST NOT, even when reopening, set `loop:done` or flip the pull request to ready itself; those remain the reviewer's alone, matching the existing role boundary.
 
 The round counter, the 4-round termination guard, and the draft→ready / `loop:done` completion live with the reviewer; see [review-phase.md](./review-phase.md).

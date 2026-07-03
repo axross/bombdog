@@ -82,6 +82,7 @@ The reviewer owns the round counter, since it is the arbiter of convergence.
 - MUST maintain a single pinned tracking comment — the standard loop header (badged
   `🔍 **Loop Engineering — Review**`) — on the pull request with a round counter,
   incrementing it each review round.
+- MUST treat a `loop:review-requested` that follows a [state-machine.md](./state-machine.md) post-done reopening as round 1 of a fresh cycle — start a new pinned tracking comment and reset the round counter, rather than counting against rounds already spent before the prior completion.
 - MUST stop the loop and set `loop:blocked` with an `@axross` escalation, removing
   the hand-off labels, if the review has not converged after **4** rounds,
   summarizing what still fails.
