@@ -9,13 +9,13 @@ How to read and write GitHub from a Claude Code cloud session in this repository
 
 ## The Sanctioned Channel
 
-In a cloud session, GitHub access is proxy-mediated as the connected operator (`@axross`); a session cannot act as a distinct bot identity.
+These rules govern GitHub access **from inside a Claude Code cloud session**, where access is proxy-mediated as the connected operator (`@axross`); an in-session write cannot act as a distinct bot identity. A GitHub Actions job — such as the review workflow — is a separate execution context: it uses the Actions token and posts under its own bot login (see [Agent-vs-Human Comments](#agent-vs-human-comments)), so these `mcp__github__*` rules do not apply to it.
 
 **Guidelines:**
 
-- MUST make every GitHub read and write through the built-in `mcp__github__*` tools; they are the only working channel.
-- MUST NOT call `api.github.com` directly via `gh` or `curl` — the proxy gates it and it fails with "GitHub access is not enabled for this session".
-- MUST treat every write as acting as the operator; there is no separate agent identity to attribute output to.
+- MUST make every in-session GitHub read and write through the built-in `mcp__github__*` tools; they are the only working channel.
+- MUST NOT call `api.github.com` directly via `gh` or `curl` from a session — the proxy gates it and it fails with "GitHub access is not enabled for this session".
+- MUST treat every in-session write as acting as the operator; there is no separate agent identity to attribute session output to.
 
 ## Agent-vs-Human Comments
 
@@ -43,7 +43,7 @@ Once a pull request exists for an issue, the issue and the pull request are **di
 - MUST open a pull request in **draft** while work is in progress, include `Closes #<n>` to link its issue, and leave merging to a human.
 - MUST NOT push to `main`; work on a `claude/`-prefixed branch, the cloud session's push-allowed convention.
 - SHOULD, when rewriting an issue body, preserve the original description verbatim in a collapsed `<details>` section rather than discarding it.
-- MUST post any pull-request review as a **COMMENT**-type review — never APPROVE or REQUEST_CHANGES. GitHub rejects those two events (422) from a pull request's own author, and reviews here can share the operator identity, so COMMENT is the only universally valid review event.
+- MUST post any pull-request review as a **COMMENT**-type review — never APPROVE or REQUEST_CHANGES. Reviews here are advisory and must not gate merges, and GitHub outright rejects (422) APPROVE / REQUEST_CHANGES whenever the reviewing identity is the pull request's own author — so COMMENT is the only universally safe review event.
 
 ## Untrusted Content
 
