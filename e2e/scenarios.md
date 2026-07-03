@@ -33,6 +33,7 @@ carries its `@scenario:<id>` tag. The reporter
 | log.dual-cut.success | Log a successful dual cut | logging | must |
 | log.dual-cut.fail-reveal | A failed dual cut records the revealed wire | logging | must |
 | log.dual-cut.fail-yellow | A failed dual cut revealing the yellow wire is recorded | logging | may |
+| log.dual-cut.self-target | Log a dual cut whose target is the acting player, chosen from the ⋯ overflow menu | logging | may |
 | log.solo-cut | Log a solo cut (no target, no outcome) | logging | must |
 | log.unknown-wire | Log a cut against a "?" (unknown) wire value | logging | should |
 | log.double-detector | Log a double detector (blue wires only) | logging | should |

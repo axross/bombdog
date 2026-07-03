@@ -215,6 +215,31 @@ describe("<MoveForm>", () => {
 		);
 	});
 
+	it("folds the acting player's self-target into the ⋯ overflow menu", async () => {
+		const user = userEvent.setup();
+		const onFieldsChange = vi.fn();
+		// actor is Alice ("a"), so Alice is the self-target.
+		render(<Harness onFieldsChangeSpy={onFieldsChange} />);
+
+		const target = screen.getByRole("radiogroup", { name: "Target" });
+		// the other players stay one-tap segmented radios...
+		expect(within(target).getByText("Bob")).toBeInTheDocument();
+		expect(within(target).getByText("Carol")).toBeInTheDocument();
+		// ...but the actor is not a top-level radio; it lives in the menu.
+		expect(
+			screen.queryByRole("radio", { name: "Alice (self)" }),
+		).not.toBeInTheDocument();
+
+		await user.click(screen.getByRole("button", { name: "Other targets" }));
+		await user.click(
+			screen.getByRole("menuitemradio", { name: "Alice (self)" }),
+		);
+
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ targetId: "a" }),
+		);
+	});
+
 	it("choosing Success reports the outcome via onFieldsChange", async () => {
 		const user = userEvent.setup();
 		const onFieldsChange = vi.fn();

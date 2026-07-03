@@ -138,15 +138,29 @@ export async function setActor(page: Page, playerName: string): Promise<void> {
 }
 
 /**
- * Pick a target player from the segmented control (a single tap).
+ * Pick a target player. Non-self players are one tap on the segmented control;
+ * the acting player (self-target) is folded into the trailing ⋯ overflow menu,
+ * so when there is no segmented button for the name, open the menu and choose
+ * its `"<name> (self)"` item instead.
  */
 export async function pickTarget(
 	page: Page,
 	playerName: string,
 ): Promise<void> {
-	await composer(page)
-		.getByTestId("target")
-		.getByRole("radio", { name: playerName, exact: true })
+	const target = composer(page).getByTestId("target");
+	const segmented = target.getByRole("radio", {
+		name: playerName,
+		exact: true,
+	});
+	if ((await segmented.count()) > 0) {
+		await segmented.click();
+		return;
+	}
+
+	// self-target: reached through the ⋯ overflow menu (portaled to the body).
+	await target.getByRole("button", { name: "Other targets" }).click();
+	await page
+		.getByRole("menuitemradio", { name: `${playerName} (self)`, exact: true })
 		.click();
 }
 
