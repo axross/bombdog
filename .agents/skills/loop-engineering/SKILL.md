@@ -1,13 +1,13 @@
 ---
 name: loop-engineering
-description: Apply this skill when operating the autonomous issue-to-pull-request "Loop Engineering" workflow in this repository - running the `/loop` dispatcher, reacting to a GitHub issue or pull request event from a routine or the Actions bridge, deciding which phase (plan, implementation, review) a target is in, moving the `loop:*` label state machine forward, or setting up the three claude.ai routines, their GitHub App identities, API triggers, and dispatch workflow. Covers the stateless-worker model, the planner/coder/reviewer split, GitHub-as-state-machine conventions, label hand-offs, concurrency locking, the reviewer's termination guard, and one-time operator setup.
+description: Apply this skill when operating the autonomous issue-to-pull-request "Loop Engineering" workflow in this repository - running the `/loop` dispatcher, reacting to a GitHub issue or pull request event from a routine or the Actions bridge, deciding which phase (plan, implementation, review) a target is in, moving the `loop:*` label state machine forward, or setting up the three claude.ai routines, API triggers, and dispatch workflow. Covers the stateless-worker model, the planner/coder/reviewer split, GitHub-as-state-machine conventions, the bot-identity marker, label hand-offs, concurrency locking, the reviewer's termination guard, and one-time operator setup.
 ---
 
 # Loop Engineering
 
 Loop Engineering runs feature development as an autonomous loop: a GitHub issue is planned, refined, implemented, opened as a pull request, reviewed, and driven to review-ready with minimal human input. It is operated by short-lived cloud sessions triggered by GitHub events.
 
-The work is split across three roles — **planner**, **coder**, and **reviewer** — each running as its own routine that posts its issue/PR comments and reviews through its own App `[bot]` identity (`GH_TOKEN` via `gh`), so the bridge can route by `user.type`. Git commits and pushes stay on the operator identity. The reviewer, and only it, decides a pull request is done. See [references/state-machine.md](./references/state-machine.md) for the roles, [references/operator-setup.md](./references/operator-setup.md) for the App-token setup and its residual-risk caveat, and [references/multi-agent-loop-proposal.md](./references/multi-agent-loop-proposal.md) for the design.
+The work is split across three roles — **planner**, **coder**, and **reviewer** — each running as its own routine with a dedicated prompt. All three act as the operator's GitHub identity via the built-in `mcp__github__*` tools (a cloud routine cannot act as a distinct bot in-session), so the bridge tells agent output from human input by the `<!-- loop-agent -->` marker and routes hand-offs by label. The reviewer, and only it, decides a pull request is done. See [references/state-machine.md](./references/state-machine.md) for the roles, [references/operator-setup.md](./references/operator-setup.md) for the routines and bridge, and [references/multi-agent-loop-proposal.md](./references/multi-agent-loop-proposal.md) for the design and the environment constraint that shaped it.
 
 ## The Stateless-Worker Model
 
@@ -56,13 +56,13 @@ See [references/review-phase.md](./references/review-phase.md) for:
 
 See [references/operator-setup.md](./references/operator-setup.md) for:
 
-- creating the `loop:*` labels, the three GitHub App identities (planner/coder/reviewer with their Contents permission ceilings), and the three routines with their API triggers and secrets
-- wiring the `.github/workflows/loop-dispatch.yaml` bridge (issue events + PR label / review / CI events, routed by event + label + `user.type`)
+- creating the `loop:*` labels and the three claude.ai routines (planner/coder/reviewer) with their dedicated prompts, API triggers, and secrets
+- wiring the `.github/workflows/loop-dispatch.yaml` bridge (issue events + PR label / review / CI events, routed by event + label + the `<!-- loop-agent -->` marker) and installing the Claude GitHub App for PR webhooks
 - the per-routine prompts, network/branch-push settings, and the daily-run and usage caveats
 
 ## Repo-Specific Values
 
-This repository's own repo-specific values are: the operator handle `@axross`, the three GitHub App identities (`plan-gengar` / `code-gengar` / `review-gengar`), the Node/npm verification commands in [references/implementation-phase.md](./references/implementation-phase.md), and the sibling-skill links to this project's `.agents/skills/`. Everything else — the `loop:*` labels, the `<!-- loop-agent -->` marker, the `/loop` dispatcher logic, and `.github/workflows/loop-dispatch.yaml` — is repo-agnostic.
+This repository's own repo-specific values are: the operator handle `@axross`, the Node/npm verification commands in [references/implementation-phase.md](./references/implementation-phase.md), and the sibling-skill links to this project's `.agents/skills/`. Everything else — the `loop:*` labels, the `<!-- loop-agent -->` marker, the `/loop` dispatcher logic, and `.github/workflows/loop-dispatch.yaml` — is repo-agnostic.
 
 ## Relationship to Project Skills
 
