@@ -66,6 +66,7 @@ Review is **not** done by you. It runs as a separate Claude Code session on a Gi
 
 - When the independent review's comments land, read them (their author is the review bot, not you and not a human) together with `merge-checks` CI status.
 - Address and resolve each blocking finding (Important / Critical / Major) and every unmet acceptance criterion, pushing fixes to the same branch and re-running the relevant verification after each batch.
+- For every review comment a commit resolves, reply on that comment's thread with a marked comment (the `<!-- address-agent -->` marker line, then a line beginning **`Resolved in <short-hash>`** — the 7-character hash of the commit that fixed it — followed by a one-sentence summary of what changed), then resolve the thread. When one commit resolves several comments, reference that same hash on each. This ties each resolution to the exact commit for the reviewer and for `/address continue`.
 - Re-request review by posting `@claude review` again after a batch of fixes, and repeat up to the 4-round cap (see [Termination Guard](#termination-guard)).
 - Escalate — a marked comment mentioning `@axross`, then end the turn — when a finding or human comment is ambiguous or needs a product or architecture decision, rather than guessing.
 - Gate the draft→ready flip on a **clean independent review** (no blocking findings) plus green CI — never on your own assessment of your code. On convergence, flip the pull request to ready for review and @mention `@axross`. Merging remains the human's decision.
