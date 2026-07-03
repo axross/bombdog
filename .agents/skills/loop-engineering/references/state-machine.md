@@ -2,24 +2,22 @@
 
 The loop stores all state in GitHub. Labels are the phase pointer, the issue/PR body holds the plan and the diff, and comments hold the conversation. This reference defines the roles, the labels, the transitions, the lock, and the identity model.
 
-## Roles and Identities
+## Roles
 
-The loop is split across three roles, each running as its own routine under its own
-GitHub App identity, so `user` on every event attributes the action:
+The loop is split across three roles, each running as its own routine with a
+dedicated prompt:
 
-| Role | Owns | Identity (example) | Writes code? | Sets `loop:done`? |
-| ---- | ---- | ------------------ | ------------ | ----------------- |
-| **Planner** | Plan phase on the issue | `plan-gengar[bot]` | No | No |
-| **Coder** | Build + address review on the PR | `code-gengar[bot]` | Yes | No |
-| **Reviewer** | Review, verify, gate on the PR | `review-gengar[bot]` | No | Yes |
+| Role | Owns | Writes code? | Sets `loop:done`? |
+| ---- | ---- | ------------ | ----------------- |
+| **Planner** | Plan phase on the issue | No | No |
+| **Coder** | Build + address review on the PR | Yes | No |
+| **Reviewer** | Review, verify, gate on the PR | No | Yes |
 
 Only the reviewer flips a pull request draft→ready and sets `loop:done`; the coder
-never self-certifies. Each role MUST post its issue/PR comments and reviews through
-its own App token (`GH_TOKEN` via `gh`) so they carry the role's `[bot]` identity
-and the bridge's `user.type` routing holds; the session's built-in GitHub tools post
-as the operator (type `User`) and would re-fire the loop. Git commits and pushes stay
-on the operator identity, which is expected. See [operator-setup.md](./operator-setup.md)
-for the App setup and the read-only residual-risk caveat.
+never self-certifies. All three routines act as the operator (`@axross`) via the
+built-in GitHub tools — a cloud routine cannot act as a distinct bot in-session — so
+the reviewer's read-only contract is enforced by its prompt and review phase, not by
+a platform permission. See [operator-setup.md](./operator-setup.md).
 
 ## Label Set
 
@@ -89,18 +87,18 @@ Scheduled polls, event triggers, and manual runs can fire on the same target con
 - MUST treat a stale `loop:active` (no heartbeat for 30+ minutes) as an abandoned session and reclaim it.
 - SHOULD post a short `<!-- loop-agent -->` heartbeat comment when starting long work so a duplicate session can detect the live lock.
 
-## Identity and the Bot Marker
+## The Bot-Identity Marker
 
-Each role runs under its own GitHub App, so its comments and reviews arrive with
-`user.type == 'Bot'` and a distinct `[bot]` login. The bridge uses this to tell
-humans (`user.type != 'Bot'`) from agents and routes hand-offs by label, so
-**routing no longer depends on parsing a comment body**. The three
-`LOOP_*_BOT_LOGIN` variables also name the loop Apps so the bridge can exclude them
-by login in addition to `user.type`. The `<!-- loop-agent -->` marker is retained
-only as a human-facing convenience and for heartbeat detection.
+All three routines act as the operator's GitHub identity, so agent comments and human
+comments share the same author. A cloud routine cannot post as a distinct bot
+in-session, so the `<!-- loop-agent -->` marker is the **only** reliable way to tell
+them apart, and it is what the dispatch bridge uses to avoid re-triggering on the
+loop's own comments. Cross-role hand-offs are driven by labels, which fire regardless
+of author.
 
 **Guidelines:**
 
-- MUST treat any comment or review with `user.type == 'Bot'` as agent output to ignore as a trigger, and anything else as human input.
 - MUST begin every comment a role posts (issue or PR) with an HTML marker line `<!-- loop-agent -->` on its own line, and prefix the visible body with a role badge (`🤖 **loop-plan**` / `🤖 **loop-code**` / `🤖 **loop-review**`) so a human reader can tell which role spoke.
+- MUST treat any comment or review carrying `<!-- loop-agent -->` as agent output to ignore as a trigger, and any comment without it as human input.
+- MUST make GitHub reads and writes through the built-in `mcp__github__*` tools; direct `gh`/`curl` calls to `api.github.com` are proxy-gated in cloud sessions.
 - MUST @mention the operator (`@axross`) in the visible body whenever the loop yields for a decision, approval, or blocker.

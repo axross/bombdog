@@ -2,28 +2,24 @@ name: Loop Engineering Dispatch
 
 # Bridges GitHub events into the three claude.ai loop routines. Cloud routines can
 # trigger natively on pull-request and release events but not on issues or issue
-# comments, and hand-offs must route by event + label + author rather than by
-# parsing comment markers, so every trigger goes through this bridge.
+# comments, so every trigger goes through this bridge, which also gates on the
+# <!-- loop-agent --> marker so the loop never fires on its own output.
 #
-# Each role runs under its own GitHub App identity (planner / coder / reviewer), so
-# their comments and reviews arrive with user.type == 'Bot'. Human input is anything
-# with user.type != 'Bot', which excludes every bot (including non-loop ones such as
-# the Vercel bot). The three LOOP_*_BOT_LOGIN variables additionally name the loop
-# Apps and are excluded explicitly, as belt-and-suspenders. Cross-role hand-offs are
-# driven by PR labels, which fire regardless of author.
+# All three routines act as the operator's GitHub identity (Claude Code routines
+# cannot act as a distinct bot in-session — GitHub access is proxy-mediated as the
+# connected user). So bot-vs-human is told apart by the <!-- loop-agent --> marker
+# every agent comment/review carries, not by author. Cross-role hand-offs are driven
+# by PR labels, which fire regardless of author.
 #
 # This workflow holds no product-specific values. Per-repo requirements are the
-# three routine secret pairs and the three bot-login variables below, and that the
-# loop:* label names match the state machine. The anthropic-beta header is
-# date-versioned; bump it per https://code.claude.com/docs/en/routines if the
-# routines API advances.
+# three routine secret pairs below and that the loop:* label names match the state
+# machine. The anthropic-beta header is date-versioned; bump it per
+# https://code.claude.com/docs/en/routines if the routines API advances.
 #
 # Repository secrets (one /fire endpoint + bearer token per routine):
 #   CLAUDE_LOOP_PLAN_URL   / CLAUDE_LOOP_PLAN_TOKEN     - planner routine
 #   CLAUDE_LOOP_CODE_URL   / CLAUDE_LOOP_CODE_TOKEN     - coder routine
 #   CLAUDE_LOOP_REVIEW_URL / CLAUDE_LOOP_REVIEW_TOKEN   - reviewer routine
-# Repository variables (each role's App bot login, e.g. review-gengar[bot]):
-#   LOOP_PLAN_BOT_LOGIN / LOOP_CODE_BOT_LOGIN / LOOP_REVIEW_BOT_LOGIN
 # See .agents/skills/loop-engineering/references/operator-setup.md for setup.
 
 on:
@@ -63,10 +59,7 @@ jobs:
         github.event_name == 'issue_comment' &&
         github.event.action == 'created' &&
         github.event.issue.pull_request == null &&
-        github.event.comment.user.type != 'Bot' &&
-        github.event.comment.user.login != vars.LOOP_PLAN_BOT_LOGIN &&
-        github.event.comment.user.login != vars.LOOP_CODE_BOT_LOGIN &&
-        github.event.comment.user.login != vars.LOOP_REVIEW_BOT_LOGIN &&
+        !contains(github.event.comment.body, '<!-- loop-agent -->') &&
         contains(join(github.event.issue.labels.*.name, ','), 'loop:')
       )
     steps:
@@ -115,18 +108,12 @@ jobs:
       ) || (
         github.event_name == 'pull_request_review' &&
         github.event.action == 'submitted' &&
-        github.event.review.user.type != 'Bot' &&
-        github.event.review.user.login != vars.LOOP_PLAN_BOT_LOGIN &&
-        github.event.review.user.login != vars.LOOP_CODE_BOT_LOGIN &&
-        github.event.review.user.login != vars.LOOP_REVIEW_BOT_LOGIN
+        !contains(github.event.review.body, '<!-- loop-agent -->')
       ) || (
         github.event_name == 'issue_comment' &&
         github.event.action == 'created' &&
         github.event.issue.pull_request != null &&
-        github.event.comment.user.type != 'Bot' &&
-        github.event.comment.user.login != vars.LOOP_PLAN_BOT_LOGIN &&
-        github.event.comment.user.login != vars.LOOP_CODE_BOT_LOGIN &&
-        github.event.comment.user.login != vars.LOOP_REVIEW_BOT_LOGIN &&
+        !contains(github.event.comment.body, '<!-- loop-agent -->') &&
         contains(join(github.event.issue.labels.*.name, ','), 'loop:')
       )
     steps:

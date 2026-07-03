@@ -1,14 +1,40 @@
 # Multi-Agent Loop — Design Proposal
 
-> **Status: approved; full three-identity model implemented on the feature
-> branch.** The planner / coder / reviewer split is decided (see
-> [Decisions](#decisions)) and all three roles now run as their own routine under
-> their own GitHub App (`plan-gengar` / `code-gengar` / `review-gengar`). The skill
-> and `loop-dispatch.yaml` implement all three roles on this branch, but are
-> **inert until merged to the default branch and the operator provisions** the
-> three Apps, routines, and secret pairs per [operator-setup.md](./operator-setup.md).
-> With separate identities the bridge routes by event + label + `user.type`; the
-> shared-identity marker below is superseded and kept only as a human-facing badge.
+> **Status: superseded in part — the three-role split ships; distinct App
+> identities do not.** The planner / coder / reviewer split, the PR-label hand-offs,
+> and the reviewer-owned `loop:done` are implemented and correct. The attempt to
+> give each role its own GitHub App `[bot]` identity was **found infeasible in
+> Claude Code routines** during testing (issues #25 and #35): a routine's GitHub
+> access is proxy-mediated as the connected operator, so a self-minted App token is
+> never honored by `api.github.com` and the only working write channel is the
+> built-in `mcp__github__*` tools, which act as the operator. See
+> [Environment constraint](#environment-constraint-why-distinct-identities-were-dropped).
+> The shipped model therefore reverts to a **single operator identity with
+> `<!-- loop-agent -->` marker routing** (the original, proven scheme); the App /
+> `GH_TOKEN` / `user.type` / `LOOP_*_BOT_LOGIN` machinery below is historical.
+> Current operator steps live in [operator-setup.md](./operator-setup.md).
+
+## Environment constraint (why distinct identities were dropped)
+
+Testing the loop on issues #25 and #35 surfaced a hard platform limit:
+
+- In a Claude Code cloud session, `GH_TOKEN` is a proxy sentinel, and all
+  `api.github.com` traffic is re-terminated and mediated by the Anthropic GitHub
+  proxy as the **connected operator identity**. `curl api.github.com/user` returns
+  `@axross` regardless of the bearer token supplied.
+- Repo-scoped REST over the raw path is gated ("GitHub access is not enabled for
+  this session"). The sanctioned write channel is the built-in `mcp__github__*`
+  tools, which also act as the operator.
+- Therefore a routine cannot post as `plan-gengar[bot]`; a self-minted App
+  installation token would not be honored. Distinct per-role identities — and the
+  `user.type`-based routing and platform-enforced read-only reviewer they enabled —
+  are unreachable for an in-session routine.
+
+Resolution: all three routines act as the operator via the `mcp__github__*` tools;
+bot-vs-human is told apart by the `<!-- loop-agent -->` marker; hand-offs stay on
+labels (identity-independent). Reviewer read-only becomes prompt-enforced. The
+stall fix (label hand-offs, reviewer-owned done) is unaffected — it never depended
+on identity.
 
 ## Why
 
@@ -236,18 +262,14 @@ Resolved with `@axross`:
 1. **Hand-off mechanism → PR labels.** Reliable, role-attributable webhooks; each
    role removes the label that woke it. (Rejected: sessions directly POSTing the
    next routine's `/fire`, which would embed routine tokens in sessions.)
-2. **Reviewer scope enforcement → token-scoped (with a caveat).** The reviewer
-   App token is granted no `contents:write`, so any write it makes cannot push or
-   merge. Caveat discovered during setup: a claude.ai routine also carries the
-   operator's write-capable identity via the session's built-in GitHub tools, so
-   the guarantee holds only while the reviewer writes exclusively through its
-   scoped `GH_TOKEN` (as its prompt requires) — strong, but not fully airtight.
-   Airtight enforcement would need the reviewer routine on a separate claude.ai
-   account with a read-only GitHub identity. See
-   [operator-setup.md](./operator-setup.md). (Rejected: prompt-only with no scoped
-   token at all.)
-3. **Identity → a separate GitHub bot per role.** Author login attributes every
-   comment; per-identity permissions enforce role scope. (Rejected: shared
-   identity with per-role comment markers.)
+2. ~~**Reviewer scope enforcement → token-scoped.**~~ **Superseded → prompt-enforced.**
+   The scoped-token plan required a per-role App identity, which routines cannot use
+   (see [Environment constraint](#environment-constraint-why-distinct-identities-were-dropped)).
+   The reviewer shares the operator's identity, so its read-only contract is enforced
+   by its prompt and the read-only review phase.
+3. ~~**Identity → a separate GitHub bot per role.**~~ **Superseded → single operator
+   identity with `<!-- loop-agent -->` marker routing.** Distinct in-session bot
+   identities are infeasible; the originally-rejected marker scheme is what the
+   platform actually supports and is what ships.
 4. **Review hand-off label name → `loop:review-requested`** (not
-   `loop:needs-review`).
+   `loop:needs-review`). (Unchanged.)
