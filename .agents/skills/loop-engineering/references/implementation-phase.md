@@ -35,10 +35,23 @@ Defer to [Development Guidelines › verification](../../development-guidelines/
 
 **Guidelines:**
 
-- MUST open the pull request in **draft** state with `Closes #<n>` in the body so merging closes the issue.
-- MUST structure the body from any repository pull-request template, summarizing the change, the verification evidence, and the acceptance criteria with their status.
-- MUST set `loop:in-review` on the issue, then post a marked comment on the issue linking the pull request.
-- MUST hand the pull request to the reviewer by applying `loop:review-requested` to it; this label change is the reliable webhook that wakes the reviewer, replacing any dependence on a bot-authored PR-open event or `subscribe_pr_activity`.
+- MUST open the pull request in **draft** state with `Closes #<n>` in the body
+  so merging closes the issue; record the number GitHub assigns the new pull
+  request — it is a different number from the issue's own, even though the
+  body says `Closes #<n>`.
+- MUST structure the body from any repository pull-request template,
+  summarizing the change, the verification evidence, and the acceptance
+  criteria with their status.
+- MUST set `loop:in-review` on the **issue** (`#<n>`, the number the routine
+  was dispatched for), then post a marked comment on the issue linking the
+  pull request.
+- MUST hand off to the reviewer by applying `loop:review-requested` to the
+  **pull request**, addressed by the pull request's own number from the first
+  bullet above, not the issue's number; this label change is the reliable
+  webhook that wakes the reviewer, replacing any dependence on a bot-authored
+  PR-open event or `subscribe_pr_activity`. See
+  [state-machine.md](./state-machine.md) § Issue vs. Pull Request Targets for
+  why these two writes must never be swapped.
 
 ## Address Review
 
