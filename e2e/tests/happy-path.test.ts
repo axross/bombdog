@@ -184,6 +184,27 @@ test.describe("logging each action type", () => {
 		);
 	});
 
+	test("dual cut — self-target via the ⋯ overflow menu", {
+		tag: [
+			"@scenario:log.dual-cut.self-target",
+			"@area:logging",
+			"@priority:may",
+		],
+	}, async ({ page }) => {
+		await startTracking(page);
+		// Player 1 (the Captain) acts and targets itself — a rare but legal move
+		// reached through the target row's ⋯ overflow menu.
+		await logDualCut(page, { target: "Player 1", wire: 9, outcome: "success" });
+
+		const row = moveRow(page, 1);
+		await expect(row).toContainText("Player 1");
+		await expect(row.getByTestId("badge")).toHaveAttribute(
+			"data-outcome",
+			"success",
+		);
+		await expect(row.getByRole("img", { name: "Wire 9" })).toBeVisible();
+	});
+
 	test("double detector — targeted, blue wires only", {
 		tag: ["@scenario:log.double-detector", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {

@@ -13,10 +13,21 @@
 			color: var(--text-muted);
 		}
 
-		.picker {
+		/* the segmented row and the trailing ⋯ affordance share one wrapping row
+		   so the menu button trails the last player button. */
+		.row {
 			display: flex;
 			flex-wrap: wrap;
+			align-items: flex-start;
 			gap: var(--space-2);
+		}
+
+		.picker {
+			display: flex;
+			flex: 1 1 auto;
+			flex-wrap: wrap;
+			gap: var(--space-2);
+			min-inline-size: 0;
 		}
 
 		.item {
@@ -40,6 +51,66 @@
 				color: var(--accent-contrast);
 				border-color: var(--accent);
 			}
+		}
+
+		/* the ⋯ trigger reuses the .item token set but is a fixed trailing button
+		   that never grows; its selected accent is keyed off data-active because
+		   Radix already owns data-state (open/closed) on the trigger. */
+		.menuTrigger {
+			display: inline-flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			color: var(--text-muted);
+
+			&[data-active="on"] {
+				background-color: var(--accent);
+				color: var(--accent-contrast);
+				border-color: var(--accent);
+			}
+		}
+	}
+
+	/* Radix DropdownMenu portals its content to <body>, so the menu lives in its
+	   own scope rather than under .field. */
+	@scope (.menu) {
+		:where(:scope) {
+			min-inline-size: 8rem;
+			padding: var(--space-1);
+			background-color: var(--surface-2);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			box-shadow: 0 10px 30px
+				color-mix(in oklch, var(--slate-12) 18%, transparent);
+			z-index: 50;
+		}
+
+		.menuItem {
+			display: flex;
+			align-items: center;
+			gap: var(--space-2);
+			min-block-size: 40px;
+			padding-inline: var(--space-2) var(--space-3);
+			border-radius: var(--radius-sm);
+			color: var(--text);
+			font-weight: 600;
+			font-size: 0.9rem;
+			user-select: none;
+			cursor: pointer;
+
+			&[data-highlighted] {
+				outline: none;
+				background-color: var(--accent);
+				color: var(--accent-contrast);
+			}
+		}
+
+		.menuIndicator {
+			display: inline-flex;
+			inline-size: 16px;
+			align-items: center;
+			justify-content: center;
+			color: currentcolor;
 		}
 	}
 }

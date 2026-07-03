@@ -78,15 +78,16 @@ function MoveFields({
 	fields: DraftFields;
 	onFieldsChange: (fields: DraftFields) => void;
 }): JSX.Element {
-	// targets list everyone, but the acting player is pushed last (self-target
-	// is legal yet rare) and flagged so it reads clearly.
-	const targetOptions: SelectOption[] = targetPlayerOrder(
-		players,
-		fields.actorId,
-	).map((p) => ({
-		value: p.id,
-		label: p.id === fields.actorId ? `${p.name} (self)` : p.name,
-	}));
+	// targets keep their play order (actor last), but self-targeting is legal
+	// yet rare, so the acting player is folded out of the one-tap segmented row
+	// into a trailing ⋯ overflow menu; every other player stays one tap.
+	const orderedTargets = targetPlayerOrder(players, fields.actorId);
+	const targetOptions: SelectOption[] = orderedTargets
+		.filter((p) => p.id !== fields.actorId)
+		.map((p) => ({ value: p.id, label: p.name }));
+	const selfTargetOptions: SelectOption[] = orderedTargets
+		.filter((p) => p.id === fields.actorId)
+		.map((p) => ({ value: p.id, label: `${p.name} (self)` }));
 	const update = (patch: Partial<DraftFields>) =>
 		onFieldsChange({ ...fields, ...patch });
 
@@ -116,9 +117,10 @@ function MoveFields({
 			)}
 
 			{needsTarget && (
-				// a segmented control (one tap). the acting player is intentionally
-				// included last: some mission rules allow a self-dual-cut. the Super
-				// Detector points at a player's whole stand, so the same picker fits.
+				// a segmented control (one tap). the acting player's self-target is
+				// folded into the ⋯ overflow menu since a self-dual-cut is rare; the
+				// Super Detector points at a player's whole stand, so the same picker
+				// (and its self entry) fits.
 				<PlayerPicker
 					label={
 						isDetector && detector.targetsWholeStand
@@ -128,6 +130,8 @@ function MoveFields({
 					value={fields.targetId}
 					onValueChange={(targetId) => update({ targetId })}
 					options={targetOptions}
+					menuOptions={selfTargetOptions}
+					menuLabel="Other targets"
 					data-testid="target"
 				/>
 			)}
