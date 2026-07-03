@@ -73,7 +73,7 @@ Review is **not** done by you. It runs as a separate Claude Code session on a Gi
 
 ## CI and Review Tail
 
-After you push and request review, two machine events run on their own: `merge-checks` CI ([`.github/workflows/merge-checks.yaml`](../../.github/workflows/merge-checks.yaml): lint + unit tests) and the independent review ([`claude-review.yaml`](../../.github/workflows/claude-review.yaml)). Poll for both — neither delivers a webhook you can subscribe to, so schedule a wake-up with `send_later` (the claude-code-remote MCP server), which delivers a message back into this same session and survives container reclaim.
+After you push and request review, two machine events run on their own: `merge-checks` CI ([`.github/workflows/merge-checks.yaml`](../../.github/workflows/merge-checks.yaml): lint + unit tests) and the independent review ([`claude-review.yaml`](../../.github/workflows/claude-review.yaml)). Poll for both — nothing wakes this session when they finish, so schedule a wake-up with `send_later` (the claude-code-remote MCP server), which delivers a message back into this same session and survives container reclaim.
 
 **Cadence.** The prompt cache has a ~5-minute TTL, so a wake-up under five minutes resumes cache-warm and cheap; one past it pays a full cache miss. `send_later` is minute-granular, so the closest warm value is four minutes — five is the worst choice, paying the cache miss without buying a longer wait.
 

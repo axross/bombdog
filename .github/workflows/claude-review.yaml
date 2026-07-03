@@ -20,11 +20,14 @@ on:
   issue_comment:
     types: [created]
 
-# Least privilege: the reviewer reads code and writes PR review comments only.
-# No contents:write (it never pushes) and no issues:write.
+# Least privilege for a reviewer: read code, write review output only. No
+# contents:write — it never pushes. pull-requests / issues / checks writes cover
+# inline review comments, the summary comment, and the check-run respectively.
 permissions:
   contents: read
   pull-requests: write
+  issues: write
+  checks: write
 
 concurrency:
   group: claude-review-${{ github.event.issue.number }}
