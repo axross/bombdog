@@ -28,6 +28,7 @@ A human reply on an `loop:awaiting-answer` issue re-triggers the loop.
 
 - MUST reconstruct the full state from the thread on resume, treating unmarked comments as the human's answers.
 - MUST continue investigating in place without re-applying `loop:plan`; re-applying it would re-fire the dispatch bridge and spawn a duplicate session. Keep `loop:awaiting-answer` while questions remain, and repeat the ask-and-yield cycle until nothing is unclear.
+- MUST apply the idempotency re-check in [state-machine.md](./state-machine.md) § Concurrency Lock before continuing investigation after a human reply: if a later marked comment already answers that reply, exit as a no-op instead of re-investigating and re-posting.
 
 ## Write the Plan and Refine the Issue
 
@@ -61,3 +62,4 @@ When everything is clear, the agent writes the plan into the issue and refines i
 - MUST set `loop:plan-review`, post a marked comment that @mentions `@axross` summarizing the plan and requesting approval, release the lock, and exit.
 - MUST NOT start implementation; the human moves the issue to `loop:ready-to-build` after reviewing the refined issue.
 - SHOULD treat post-approval change requests (an unmarked comment while in `loop:plan-review`) as a reason to revise the plan and re-request approval, not to build.
+- MUST apply the idempotency re-check in [state-machine.md](./state-machine.md) § Concurrency Lock before rewriting the issue body and posting a revision comment in response to an unmarked `loop:plan-review` comment: if a later marked comment already addresses that comment, exit as a no-op instead of revising and re-posting.

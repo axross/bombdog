@@ -119,7 +119,7 @@ Scheduled polls, event triggers, and manual runs can fire on the same target con
 - MUST add `loop:active` before mutating anything, then post a short `<!-- loop-agent -->` heartbeat comment as the very next action, before any investigation or other write, so a concurrent session always has a heartbeat to judge freshness against.
 - MUST treat a stale `loop:active` (heartbeat 30+ minutes old, or absent per the fallback above) as an abandoned session and reclaim it.
 - MUST remove `loop:active` before exiting, including on handled error paths.
-- MUST, immediately before posting a phase-completing comment or applying a state-changing label, re-read the current labels and latest comments; if the target state was already reached (the hand-off label this session is about to apply is already present, `loop:done` is already set, or a review-round comment for the same round already exists), treat this session as having lost the race and exit without posting or re-applying.
+- MUST, immediately before making any GitHub write in response to a specific trigger — a specific human comment, or the label application that started this session — re-read the full current thread and labels; if a `<!-- loop-agent -->`-marked comment already exists that was posted after the trigger and plausibly answers it, treat this session as having lost the race to a duplicate or overlapping dispatch and exit without posting or re-applying anything. This is the general rule; a hand-off label already present, `loop:done` already set, or a review-round comment for the same round already existing are illustrations of the same lost-the-race condition, not its full scope.
 
 ## The Bot-Identity Marker
 
