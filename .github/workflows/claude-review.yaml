@@ -34,6 +34,7 @@ permissions:
   pull-requests: write
   issues: write
   checks: write
+  id-token: write # claude-code-action mints the Claude App token via OIDC
 
 jobs:
   review:
