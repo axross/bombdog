@@ -118,7 +118,7 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 							aria-disabled={!active}
 							data-testid="filter-reset"
 						>
-							Reset
+							Clear
 						</button>
 						<Dialog.Close asChild>
 							<button
