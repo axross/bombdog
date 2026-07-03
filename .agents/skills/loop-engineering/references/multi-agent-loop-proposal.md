@@ -1,9 +1,13 @@
 # Multi-Agent Loop — Design Proposal
 
-> **Status: proposal, awaiting `@axross` approval.** This document specifies the
-> planner / coder / reviewer split. It is not yet wired into the active skill
-> index or the live routines. Nothing here changes behaviour until the operator
-> migrates per the [Migration Plan](#migration-plan).
+> **Status: approved; phase 1 implemented on the feature branch.** The
+> planner / coder / reviewer split is decided (see [Decisions](#decisions)).
+> Phase 1 — the reviewer routine, the two PR hand-off labels, and the bridge
+> rewrite — is written into the skill and `loop-dispatch.yaml` on this branch, but
+> is **inert until merged to the default branch and the operator provisions** the
+> reviewer bot identity, routines, secrets, and `LOOP_REVIEW_BOT_LOGIN` per
+> [operator-setup.md](./operator-setup.md). Phases 2-3 (splitting the planner and
+> coder into their own routines) are not yet implemented.
 
 ## Why
 
@@ -209,11 +213,12 @@ events.
 
 Phased, so the working single-routine loop keeps running until each piece lands:
 
-1. **Reviewer first (biggest win).** Add the reviewer routine + the two PR
-   hand-off labels + the `loop:review-requested` / `loop:changes-requested` /
-   `check_suite` bridge triggers. The existing routine keeps planning and coding;
-   only the self-review step is replaced by the reviewer hand-off. This alone
-   fixes the #36/#37 stall.
+1. **Reviewer first (biggest win) — implemented on this branch.** Adds the
+   reviewer routine + the two PR hand-off labels + the `loop:review-requested` /
+   `loop:changes-requested` / `check_suite` bridge triggers. The existing routine
+   keeps planning and coding; the self-review step is replaced by the reviewer
+   hand-off. This alone fixes the #36/#37 stall. Remaining operator work:
+   provision the reviewer bot + routines + secrets, then merge.
 2. **Split the coder out** of the existing routine (dedicated build prompt, drop
    its authority to set `loop:done`).
 3. **Split the planner out** (smallest win — plan is already a distinct phase;

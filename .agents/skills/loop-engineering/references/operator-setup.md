@@ -1,10 +1,20 @@
 # Operator Setup
 
-One-time setup for **this** repository, performed by the operator (`@axross`). Steps 1-3 are done once; step 4 is per-issue.
+One-time setup for **this** repository, performed by the operator (`@axross`).
+Steps 1-4 are done once; step 5 is per-issue.
+
+This reflects the phased rollout (see
+[multi-agent-loop-proposal.md](./multi-agent-loop-proposal.md)): a **plan+build
+routine** (planner + coder, under the operator's identity) and a separate
+**reviewer routine** with its own read-only bot identity. Splitting the planner
+and coder into their own routines is a later phase and is not set up here.
 
 ## 1. Create the Labels
 
-Create the `loop:*` labels the state machine uses (via the GitHub UI or `gh`). Colors follow a convention: **yellow** (`fbca04`) for states waiting on a human response, **green** (`0e8a16`) for the review-ready done state, **red** (`d73a4a`) for the blocked state, and **blue** (`1d76db`) for every agent-active state:
+Create the `loop:*` labels the state machine uses (via the GitHub UI or `gh`).
+Colors follow a convention: **yellow** (`fbca04`) for states waiting on a human,
+**green** (`0e8a16`) for the review-ready done state, **red** (`d73a4a`) for the
+blocked state, and **blue** (`1d76db`) for every agent-active state:
 
 ```bash
 for l in \
@@ -12,7 +22,9 @@ for l in \
   "loop:awaiting-answer|fbca04|Paused on a human answer" \
   "loop:plan-review|fbca04|Plan written; awaiting approval" \
   "loop:ready-to-build|1d76db|Approved; implementation may start" \
-  "loop:in-review|1d76db|Draft PR open; review loop active" \
+  "loop:in-review|1d76db|Draft PR open; coder<->reviewer loop active" \
+  "loop:review-requested|1d76db|PR handed to the reviewer" \
+  "loop:changes-requested|fbca04|Reviewer left findings; coder to address" \
   "loop:done|0e8a16|PR review-ready; handed back" \
   "loop:active|1d76db|Concurrency lock; a session is working this" \
   "loop:blocked|d73a4a|Needs human intervention" ; do
@@ -21,52 +33,112 @@ for l in \
 done
 ```
 
-The human applies `loop:plan` to enroll an issue and `loop:ready-to-build` to approve a plan. The agent owns every other `loop:*` label.
+The human applies `loop:plan` to enroll an issue and `loop:ready-to-build` to
+approve a plan. The agents own every other `loop:*` label;
+`loop:review-requested` / `loop:changes-requested` are PR labels the coder and
+reviewer swap to hand off.
 
-## 2. Create the Routine
+## 2. Create the Reviewer Bot Identity
 
-Create a routine at [claude.ai/code/routines](https://claude.ai/code/routines):
+The reviewer must be independent of the coder and unable to change code, so it
+runs under its own GitHub identity with **no write access to code**.
 
-- **Repositories**: this repository. Leave branch pushes at the default (`claude/`-prefixed only) unless a phase needs otherwise.
-- **Environment**: the project environment with the `SessionStart` hook (so `npm install` and the toolchain are ready). **Trusted** network access is sufficient unless planning must reach a non-allowlisted host.
-- **Connectors**: keep the GitHub connector; remove any the loop does not need.
-- **Model**: pick the model the loop should run on.
-- **Prompt** (the standing instruction; the per-event context is appended as `text`):
+- Create a dedicated **machine user** (or a GitHub App) for the reviewer, e.g.
+  `bombdog-loop-review`, separate from `@axross`.
+- Grant it the repository permissions it needs and no more: **read** contents,
+  **write** on pull requests and issues (to post reviews, comments, and labels),
+  and **no `contents:write`** (it must not be able to push or merge). With a
+  machine user, add it as a collaborator with a role that excludes push, or scope
+  its token to `pull_requests:write`, `issues:write`, and `contents:read` only.
+- Record its login for the bridge (step 4): this is the `LOOP_REVIEW_BOT_LOGIN`
+  variable.
+
+## 3. Create the Routines
+
+Create two routines at [claude.ai/code/routines](https://claude.ai/code/routines).
+Both load the `loop-engineering` skill and run `/loop`; the bridge tells each which
+role it is and which target to act on.
+
+**Plan+build routine** (planner + coder):
+
+- **Repositories**: this repository. Branch pushes: `claude/`-prefixed (the coder
+  pushes here). **GitHub connector**: the operator's identity.
+- **Prompt**:
 
   ```text
-  You are the Loop Engineering dispatcher for this repository. Load the
-  loop-engineering skill and run the /loop command. The triggering event
-  context follows this prompt: it names a GitHub issue or pull request and the
-  event that fired. Read the target's current loop:* label and full comment
+  You are the Loop Engineering plan+build worker for this repository. Load the
+  loop-engineering skill and run the /loop command. The triggering event context
+  follows this prompt: it names a GitHub issue or pull request, the event that
+  fired, and your role. Read the target's current loop:* label and full comment
   thread, then advance the state machine by exactly one step per the skill, and
-  exit. Do not skip the concurrency-lock and bot-identity-marker rules.
+  exit. Never set loop:done or flip a PR to ready — that is the reviewer's role.
+  Do not skip the concurrency-lock and bot-identity-marker rules.
   ```
 
-## 3. Add the Triggers and the Bridge
+**Reviewer routine**:
 
-Cloud routines can trigger natively on **pull request** and **release** events, but **not** on issues or issue comments. The issue half of the loop is therefore driven by a GitHub Actions bridge that calls the routine's API trigger; the pull-request half uses Auto-fix.
+- **Repositories**: this repository, **read-only** — no branch pushes. **GitHub
+  connector**: the reviewer bot identity from step 2.
+- **Model / network**: read + comment only; no build/push is expected.
+- **Prompt**:
 
-**Issue events (bridge):**
+  ```text
+  You are the Loop Engineering reviewer for this repository. Load the
+  loop-engineering skill and run the /loop command as the reviewer role, following
+  references/review-phase.md. The triggering event names a pull request. You are
+  read-only: never edit files, push, or merge. Re-read the diff, the unresolved
+  threads, the linked issue's acceptance criteria, and CI; post findings as your
+  own review comments and apply loop:changes-requested, or — on a clean round with
+  green CI — flip the PR to ready, set loop:done, and @mention @axross. Respect the
+  4-round termination guard. Advance by one step and exit.
+  ```
 
-1. On the routine, add an **API** trigger and generate a token. Copy the `/fire` URL and the token immediately (the token is shown once).
-2. Add them as repository secrets: `CLAUDE_LOOP_ROUTINE_URL` and `CLAUDE_LOOP_ROUTINE_TOKEN`.
-3. `.github/workflows/loop-dispatch.yaml` (already committed) POSTs to `/fire` on the relevant `issues` and `issue_comment` events. It skips the bot's own `<!-- loop-agent -->` comments and pull-request comments.
+## 4. Add the Triggers and the Bridge
 
-**Pull request events (Auto-fix):**
+Cloud routines can trigger natively on pull-request and release events but not on
+issues or issue comments, and hand-offs must route by event + label + author login
+rather than by parsing comment markers. Both halves therefore go through the
+GitHub Actions bridge, which calls each routine's API trigger.
 
-- Install the [Claude GitHub App](https://github.com/apps/claude) on the repository (required for Auto-fix webhooks).
-- When a loop pull request opens, enable **Auto-fix** on it (CI status bar in the web session, `/autofix-pr` from the terminal, or "watch this PR" from mobile) so review comments and CI failures re-enter the loop. Auto-fix does not react to base-branch merge conflicts; resolve those by asking the session to rebase.
+1. On **each** routine, add an **API** trigger and generate a token; copy the
+   `/fire` URL and token immediately (the token is shown once).
+2. Add them as repository secrets:
+   - plan+build: `CLAUDE_LOOP_ROUTINE_URL`, `CLAUDE_LOOP_ROUTINE_TOKEN`
+   - reviewer: `CLAUDE_LOOP_REVIEW_URL`, `CLAUDE_LOOP_REVIEW_TOKEN`
+3. Add the repository **variable** `LOOP_REVIEW_BOT_LOGIN` = the reviewer bot's
+   login, so the bridge can tell the reviewer's comments/reviews from a human's.
+4. `.github/workflows/loop-dispatch.yaml` (already committed) fires the right
+   routine per event: issue label/comment and `loop:changes-requested` /
+   human PR review → plan+build; `loop:review-requested` and
+   `check_suite.completed` → reviewer. It skips loop-bot authors and marked
+   comments.
 
-## 4. Run the Loop
+## 5. Run the Loop
 
-- Enroll an issue by applying `loop:plan`. The bridge fires the routine; the plan phase runs.
-- Answer the agent's questions by commenting on the issue (an unmarked human comment); the bridge resumes the loop.
-- Approve the refined plan by applying `loop:ready-to-build`; the implementation phase runs and opens the draft pull request.
-- Review the pull request; the watch loop addresses comments and CI, then flips it to review-ready and @mentions you.
+- Enroll an issue by applying `loop:plan`. The bridge fires plan+build; the plan
+  phase runs.
+- Answer the agent's questions by commenting on the issue (an unmarked human
+  comment); the bridge resumes the loop.
+- Approve the refined plan by applying `loop:ready-to-build`; the coder builds,
+  opens the draft pull request, and applies `loop:review-requested`.
+- The reviewer reviews: it either leaves findings and applies
+  `loop:changes-requested` (the coder addresses and re-requests review) or, on a
+  clean round with green CI, flips the PR to ready and sets `loop:done`, mentioning
+  you. Merging stays your call.
 
 ## Caveats
 
-- **Shared identity**: routine actions appear as the operator's GitHub user, so bot and human comments share an author. The `<!-- loop-agent -->` marker is the only disambiguator; the bridge and the agent both depend on it.
-- **Caps and cost**: routines have a daily run cap and draw metered usage; GitHub webhook triggers have per-account hourly caps. The implementation phase's round limit exists partly to bound this.
-- **Latency**: the bridge is real-time. If you instead add a **schedule** trigger as a fallback, its minimum interval is one hour.
-- **Green status is not success**: a green run only means the session did not error. Open the run to confirm the phase actually advanced.
+- **Reviewer independence is enforced, not requested**: the reviewer bot has no
+  `contents:write`, so a prompt injection in a PR comment or CI log cannot make it
+  push a change — the platform rejects it.
+- **Shared identity (plan+build)**: the plan+build routine still acts as the
+  operator's user, so its comments and the human's share an author. The
+  `<!-- loop-agent -->` marker disambiguates them; the reviewer, on its own
+  identity, is told apart by login.
+- **Caps and cost**: routines have a daily run cap and draw metered usage; GitHub
+  webhook triggers have per-account hourly caps. The reviewer's 4-round guard
+  bounds the coder↔reviewer loop.
+- **Latency**: the bridge is real-time. A **schedule** trigger, if added as a
+  fallback, has a one-hour minimum interval.
+- **Green status is not success**: a green run only means the session did not
+  error. Open the run to confirm the phase actually advanced.
