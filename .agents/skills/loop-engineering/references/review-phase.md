@@ -68,8 +68,9 @@ is behavioral — enforced here, not by a platform permission.
   then release the lock and exit. The label change wakes the coder.
 - MUST, on a clean round with green CI and every acceptance criterion met, flip
   the pull request from draft to ready for review, set `loop:done` on the issue
-  (replacing `loop:in-review`), remove both hand-off labels, and post a marked
-  comment that @mentions `@axross` with a short outcome summary.
+  (replacing `loop:in-review`), remove both hand-off labels, release the
+  `loop:active` lock on the pull request, and post a marked comment that
+  @mentions `@axross` with a short outcome summary.
 - MUST NOT merge the pull request; merging remains the human's decision.
 
 ## Termination Guard
