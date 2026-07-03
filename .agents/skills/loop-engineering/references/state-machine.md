@@ -108,14 +108,16 @@ loop:done                                                   (terminal; further c
 
 ## Concurrency Lock
 
-Scheduled polls, event triggers, and manual runs can fire on the same target concurrently. The `loop:active` label is a best-effort mutex.
+Scheduled polls, event triggers, and manual runs can fire on the same target concurrently. The `loop:active` label is a best-effort mutex — pairing it with an immediate heartbeat and a pre-write idempotency check keeps a race window from producing duplicate comments or duplicate state transitions.
 
 **Guidelines:**
 
-- MUST, on entry, check for `loop:active`; if present and its most recent `<!-- loop-agent -->` heartbeat comment is under 30 minutes old, exit immediately without acting.
-- MUST add `loop:active` before mutating anything and remove it before exiting, including on handled error paths.
-- MUST treat a stale `loop:active` (no heartbeat for 30+ minutes) as an abandoned session and reclaim it.
-- SHOULD post a short `<!-- loop-agent -->` heartbeat comment when starting long work so a duplicate session can detect the live lock.
+- MUST, on entry, check for `loop:active`; if present with a `<!-- loop-agent -->` heartbeat comment under 30 minutes old, exit immediately without acting.
+- MUST, if `loop:active` is present with no heartbeat comment yet, treat it as a fresh, in-progress acquisition and exit without reclaiming — unless the issue/PR's `updated_at` (or the label's own applied-at time, when available) shows the lock itself is 30+ minutes old, in which case treat it as an abandoned acquisition and reclaim it.
+- MUST add `loop:active` before mutating anything, then post a short `<!-- loop-agent -->` heartbeat comment as the very next action, before any investigation or other write, so a concurrent session always has a heartbeat to judge freshness against.
+- MUST treat a stale `loop:active` (heartbeat 30+ minutes old, or absent per the fallback above) as an abandoned session and reclaim it.
+- MUST remove `loop:active` before exiting, including on handled error paths.
+- MUST, immediately before posting a phase-completing comment or applying a state-changing label, re-read the current labels and latest comments; if the target state was already reached (the hand-off label this session is about to apply is already present, `loop:done` is already set, or a review-round comment for the same round already exists), treat this session as having lost the race and exit without posting or re-applying.
 
 ## The Bot-Identity Marker
 
