@@ -118,6 +118,8 @@ test.describe("logging each action type", () => {
 			"success",
 		);
 		await expect(row.getByRole("img", { name: "Wire 9" })).toBeVisible();
+		// a successful cut carries the green outcome accent on its left edge.
+		await expect(row).toHaveAttribute("data-accent", "success");
 	});
 
 	test("dual cut — fail records the actual wire", {

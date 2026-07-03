@@ -126,6 +126,25 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 }
 
 /**
+ * The outcome category driving a row's thin left-edge accent, derived purely
+ * from the already-recorded move (no new state is stored). Cuts read green when
+ * they succeed and red when they fail; a solo cut is always a safe (successful)
+ * cut, and free-text equipment is a neutral, non-outcome action. Detectors
+ * resolve like an extended dual cut, so they follow the same success/fail split.
+ */
+function rowAccent(move: Move): "success" | "fail" | "neutral" {
+	switch (move.type) {
+		case "dual-cut":
+		case "detector":
+			return move.outcome === "success" ? "success" : "fail";
+		case "solo-cut":
+			return "success";
+		case "equipment":
+			return "neutral";
+	}
+}
+
+/**
  * A single row in the history: sequence number, actor (and target, for moves
  * that have one), the action label, its detail, and an edit control.
  */
@@ -140,7 +159,12 @@ function MoveRow({
 }): JSX.Element {
 	const hasTarget = move.type === "dual-cut" || move.type === "detector";
 	return (
-		<div className={css.row} data-testid="move" data-seq={move.seq}>
+		<div
+			className={css.row}
+			data-testid="move"
+			data-seq={move.seq}
+			data-accent={rowAccent(move)}
+		>
 			<span className={css.seq}>#{move.seq}</span>
 			<div className={css.content}>
 				<div className={css.headline}>

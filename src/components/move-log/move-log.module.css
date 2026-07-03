@@ -40,6 +40,28 @@
 			border-radius: var(--radius);
 		}
 
+		/*
+		 * A thin outcome-coloured accent on the row's left (inline-start) edge, so
+		 * a turn's result is scannable without reading the badge. Only the left
+		 * border thickens and recolours; the other three stay the neutral --border.
+		 * Colour is a redundant cue — the textual outcome badge remains the primary
+		 * signal — and uses semantic tokens so light/dark themes flip automatically.
+		 */
+		.row[data-accent="success"] {
+			border-inline-start-width: 3px;
+			border-inline-start-color: var(--success);
+		}
+
+		.row[data-accent="fail"] {
+			border-inline-start-width: 3px;
+			border-inline-start-color: var(--danger);
+		}
+
+		.row[data-accent="neutral"] {
+			border-inline-start-width: 3px;
+			border-inline-start-color: var(--border-strong);
+		}
+
 		.seq {
 			font-family: var(--font-mono);
 			font-size: 0.8rem;

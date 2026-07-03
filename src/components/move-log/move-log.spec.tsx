@@ -58,6 +58,10 @@ describe("<MoveLog>", () => {
 		expect(screen.getByText("Radar")).toBeInTheDocument();
 		expect(screen.getByText(/success/)).toBeInTheDocument();
 		expect(screen.getByLabelText("Wire 9")).toBeInTheDocument();
+		// a successful dual cut takes the green (success) left-edge accent.
+		expect(
+			screen.getByTestId("move-log").querySelector('[data-seq="1"]'),
+		).toHaveAttribute("data-accent", "success");
 	});
 
 	it("exposes an edit control per move", () => {
@@ -147,6 +151,18 @@ describe("<MoveLog>", () => {
 		expect(screen.getByLabelText("Wire 11")).toBeInTheDocument();
 		// equipment notes are appended after an em dash.
 		expect(screen.getByText(/seat 3 is empty/)).toBeInTheDocument();
+
+		// each row carries an outcome-coloured accent category on its left edge:
+		// green (success) for the always-safe solo cut and the successful X or Y
+		// Ray, red (fail) for the failed detector and failed dual cut, and neutral
+		// (gray) for the non-detector equipment move. Located via data-seq.
+		const accentBySeq = (seq: number) =>
+			screen.getByTestId("move-log").querySelector(`[data-seq="${seq}"]`);
+		expect(accentBySeq(1)).toHaveAttribute("data-accent", "success"); // solo cut
+		expect(accentBySeq(2)).toHaveAttribute("data-accent", "fail"); // detector fail
+		expect(accentBySeq(3)).toHaveAttribute("data-accent", "fail"); // dual-cut fail
+		expect(accentBySeq(4)).toHaveAttribute("data-accent", "neutral"); // equipment
+		expect(accentBySeq(5)).toHaveAttribute("data-accent", "success"); // detector success
 	});
 
 	it('renders a "?" chip for a wire cut with an unknown value', () => {
