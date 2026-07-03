@@ -85,60 +85,78 @@ through it, while leaving git commits/pushes on the default identity:
 1. Give each routine its **own environment**. Add the App's **App ID** and
    **private key (PEM)** as environment secrets (`APP_ID`, `APP_PRIVATE_KEY`). The
    installation ID is derived below, so it does not need to be stored.
-2. In the environment's **setup script**, mint a fresh installation access token
-   (they expire ~1h, so mint per session), export it as `GH_TOKEN`, and install
-   `gh` (not pre-installed):
+2. In the environment's **setup script**, install only the tools the hook needs.
+   Keep it repo-agnostic so the environment is **reusable across repositories** —
+   the setup script is cached and reused, and must **not** mint a token here (an
+   installation token expires in ~1h and would go stale in the cache):
 
    ```bash
-   set -euo pipefail
    apt-get update && apt-get install -y gh jq openssl
-   REPO="axross/bombdog"   # owner/repo this App is installed on
+   ```
 
-   # 1. Build a short-lived App JWT (RS256, <=10 min lifetime).
+3. Mint the token **per session** in a committed `SessionStart` hook. A hook runs
+   every session (the cached setup script does not), and it **derives the repo from
+   the clone**, so nothing is hardcoded and the same environment works for any
+   repository. It no-ops outside cloud or when the App creds are absent, so it is
+   harmless in your own interactive and local sessions.
+
+   `.claude/hooks/loop-app-token.sh`:
+
+   ```bash
+   #!/usr/bin/env bash
+   set -euo pipefail
+   [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0                  # cloud sessions only
+   [ -n "${APP_ID:-}" ] && [ -n "${APP_PRIVATE_KEY:-}" ] || exit 0   # a loop routine only
+
+   # Derive owner/repo from the origin remote's last two path segments. Works for the
+   # cloud git proxy URL (http://local_proxy@host/git/OWNER/REPO) and for github.com.
+   REPO="$(git remote get-url origin | sed -E 's#\.git$##' | awk -F/ '{print $(NF-1)"/"$NF}')"
+
+   # Build a short-lived App JWT (RS256, <=10 min), then mint an installation token.
    key_file="$(mktemp)"; trap 'rm -f "$key_file"' EXIT
    printf '%s\n' "$APP_PRIVATE_KEY" > "$key_file"
    b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
    now="$(date +%s)"
-   jwt_header="$(printf '%s' '{"alg":"RS256","typ":"JWT"}' | b64url)"
-   jwt_claims="$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((now - 60))" "$((now + 540))" "$APP_ID" | b64url)"
-   jwt_sig="$(printf '%s' "${jwt_header}.${jwt_claims}" | openssl dgst -sha256 -sign "$key_file" -binary | b64url)"
-   jwt="${jwt_header}.${jwt_claims}.${jwt_sig}"
-
-   # Reusable curl wrapper: fail on HTTP >=400 (but print the body), stay quiet otherwise.
-   gh_api() {
-     curl --fail-with-body -sS \
-       -H "Authorization: Bearer ${jwt}" \
-       -H "Accept: application/vnd.github+json" \
-       -H "X-GitHub-Api-Version: 2022-11-28" \
-       "$@"
-   }
-
-   # 2. Resolve the installation for this repo.
+   header="$(printf '%s' '{"alg":"RS256","typ":"JWT"}' | b64url)"
+   claims="$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((now - 60))" "$((now + 540))" "$APP_ID" | b64url)"
+   sig="$(printf '%s' "${header}.${claims}" | openssl dgst -sha256 -sign "$key_file" -binary | b64url)"
+   jwt="${header}.${claims}.${sig}"
+   gh_api() { curl --fail-with-body -sS -H "Authorization: Bearer ${jwt}" \
+     -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "$@"; }
    install_id="$(gh_api "https://api.github.com/repos/${REPO}/installation" | jq -er '.id')"
+   token="$(gh_api -X POST "https://api.github.com/app/installations/${install_id}/access_tokens" | jq -er '.token')"
 
-   # 3. Mint an installation access token (~1h TTL).
-   GH_TOKEN="$(gh_api -X POST \
-     "https://api.github.com/app/installations/${install_id}/access_tokens" | jq -er '.token')"
-   export GH_TOKEN   # gh reads this; use it for comments/reviews/labels (App identity)
-
-   # Note: do NOT route git through this token — commits/pushes stay on the default
-   # (@axross) identity, which is intended. GH_TOKEN is only for gh API writes.
+   # Persist GH_TOKEN for the session's subsequent Bash commands (gh reads it).
+   if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+     printf 'GH_TOKEN=%s\n' "$token" >> "$CLAUDE_ENV_FILE"
+   fi
    ```
 
-   `curl` practices used above: `--fail-with-body` turns HTTP 4xx/5xx into a
-   non-zero exit while still printing GitHub's JSON error, `-sS` silences the
-   progress meter but keeps real errors, the explicit `Accept` and
-   `X-GitHub-Api-Version` headers pin the API version, and `jq -e` exits non-zero
-   if the field is missing so `set -euo pipefail` aborts instead of exporting an
-   empty token.
+   Register it as a `SessionStart` hook. This repo already registers
+   `session-start.sh`, so **append** a second entry to the existing array rather
+   than replacing `.claude/settings.json`:
 
-   Persistence and TTL: a `GH_TOKEN` exported inside the setup script may not carry
-   into the session's later shells, and the token lasts only ~1h. Persist it where
-   `gh` will read it — e.g. append `export GH_TOKEN=...` to the shell profile the
-   session sources — and re-mint (re-run the block) if a run outlives the token.
-   Keep `GH_TOKEN` out of logs and the repository.
+   ```json
+   {
+     "hooks": {
+       "SessionStart": [
+         { "hooks": [{ "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh" }] },
+         { "hooks": [{ "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/loop-app-token.sh" }] }
+       ]
+     }
+   }
+   ```
 
-3. **Post every issue/PR comment and review — plus label and draft→ready writes —
+   `curl` practices: `--fail-with-body` turns HTTP 4xx/5xx into a non-zero exit
+   while printing GitHub's JSON error, `-sS` keeps real errors but drops the
+   progress meter, the pinned `Accept` / `X-GitHub-Api-Version` headers fix the API
+   version, and `jq -e` exits non-zero on a missing field so `set -euo pipefail`
+   aborts instead of writing an empty token. Writing to `$CLAUDE_ENV_FILE` is the
+   supported way to hand `GH_TOKEN` to later Bash commands; the ~1h token covers a
+   normal run. Keep `GH_TOKEN` out of logs and the repository. Do **not** route git
+   through this token — commits/pushes stay on the default `@axross` identity.
+
+4. **Post every issue/PR comment and review — plus label and draft→ready writes —
    through `gh` using `GH_TOKEN`.** The session's *built-in* GitHub tools
    authenticate as `@axross` through the proxy, so a comment made with them posts as
    you (type `User`) and would break the bridge's bot/human routing (it would look
