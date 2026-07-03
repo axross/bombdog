@@ -1,0 +1,57 @@
+@layer components {
+	@scope (.startingInfo) {
+		:where(:scope) {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-2) var(--space-3);
+			padding: var(--space-2) var(--space-4);
+			background-color: var(--surface-2);
+			border-block-end: 1px solid var(--border);
+		}
+
+		.label {
+			font-size: 0.75rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			color: var(--text-muted);
+		}
+
+		.list {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-2) var(--space-3);
+			list-style: none;
+		}
+
+		.item {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-2);
+		}
+
+		.name {
+			font-size: 0.9rem;
+			font-weight: 600;
+		}
+
+		/* Blue wire chip — info tokens indicate blue values only, so the chip is
+		   always the blue variant, mirroring the move-log wire chips. */
+		.chip {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-inline-size: 26px;
+			block-size: 26px;
+			padding-inline: var(--space-2);
+			font-family: var(--font-mono);
+			font-weight: 700;
+			font-size: 0.85rem;
+			border-radius: var(--radius-sm);
+			color: var(--wire-blue-contrast);
+			background-color: var(--wire-blue);
+		}
+	}
+}

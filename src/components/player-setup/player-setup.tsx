@@ -3,8 +3,15 @@
 import { Bomb } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import { type JSX, useState } from "react";
+import { WirePad } from "@/components/wire-pad/wire-pad";
 import { useTrackerStore } from "@/lib/tracker-store";
-import { MAX_PLAYERS, MIN_PLAYERS, type Player } from "@/lib/types";
+import {
+	type BlueWireValue,
+	MAX_PLAYERS,
+	MIN_PLAYERS,
+	type Player,
+	type WireValueOrUnknown,
+} from "@/lib/types";
 import css from "./player-setup.module.css";
 
 function defaultNames(): string[] {
@@ -56,6 +63,15 @@ export function PlayerSetup(): JSX.Element {
 			: 0,
 	);
 
+	// starting info tokens: whether the phase is skipped (some missions disallow
+	// it), and the blue wire each seat marked. kept per seat index (ids don't
+	// exist until Start) and sized to MAX_PLAYERS so raising the count keeps prior
+	// picks, mirroring `names`.
+	const [skipInfoTokens, setSkipInfoTokens] = useState(false);
+	const [infoTokenBySeat, setInfoTokenBySeat] = useState<
+		(BlueWireValue | null)[]
+	>(() => Array.from({ length: MAX_PLAYERS }, () => null));
+
 	const changeCount = (next: number) => {
 		const clamped = Math.min(MAX_PLAYERS, Math.max(MIN_PLAYERS, next));
 		setCount(clamped);
@@ -66,16 +82,33 @@ export function PlayerSetup(): JSX.Element {
 		setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
 	};
 
+	const setInfoToken = (index: number, value: WireValueOrUnknown) => {
+		// the pad is blue-only with no "?" option, so only blue values ever arrive;
+		// the guard also narrows the stored type to BlueWireValue.
+		if (value === "yellow" || value === "unknown") return;
+		setInfoTokenBySeat((prev) => prev.map((w, i) => (i === index ? value : w)));
+	};
+
 	/**
 	 * Build the roster from the entered names (blank names fall back to
-	 * "Player N") and hand it to the store to open the tracker.
+	 * "Player N"), collect the starting info tokens (unless the phase is skipped),
+	 * and hand both to the store to open the tracker.
 	 */
 	const handleStart = () => {
 		const players: Player[] = names.slice(0, count).map((name, i) => ({
 			id: makeId(),
 			name: name.trim() || `Player ${i + 1}`,
 		}));
-		configurePlayers(players, captainIndex);
+		const infoTokens: Record<string, BlueWireValue> = {};
+		if (!skipInfoTokens) {
+			// map each seat's pick onto the freshly-generated player id; unset seats
+			// simply contribute no token (selection is optional and non-blocking).
+			players.forEach((player, i) => {
+				const wire = infoTokenBySeat[i];
+				if (wire != null) infoTokens[player.id] = wire;
+			});
+		}
+		configurePlayers(players, captainIndex, infoTokens);
 	};
 
 	return (
@@ -102,7 +135,11 @@ export function PlayerSetup(): JSX.Element {
 					>
 						−
 					</button>
-					<span className={css.count} aria-live="polite">
+					<span
+						className={css.count}
+						aria-live="polite"
+						data-testid="player-count"
+					>
 						{count}
 					</span>
 					<button
@@ -153,6 +190,48 @@ export function PlayerSetup(): JSX.Element {
 					</div>
 				))}
 			</RadioGroup.Root>
+
+			<section className={css.infoTokens} aria-label="Starting info tokens">
+				<div className={css.infoHeader}>
+					<span className={css.infoTitle}>Starting info tokens</span>
+					<label className={css.skip}>
+						<input
+							type="checkbox"
+							checked={skipInfoTokens}
+							onChange={(e) => setSkipInfoTokens(e.target.checked)}
+							data-testid="skip-info-tokens"
+						/>
+						Skip starting info tokens
+					</label>
+				</div>
+
+				{!skipInfoTokens && (
+					<>
+						<p className={css.infoHint}>
+							Tap the wire each player marked with their info token.
+						</p>
+						<div className={css.infoList}>
+							{Array.from({ length: count }, (_, i) => (
+								<WirePad
+									// seats are positional; the seat index is the stable identity
+									// here (names/tokens are held per seat), so an index key is
+									// correct.
+									// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
+									key={i}
+									label={
+										captainIndex === i ? `${names[i]} (Captain)` : names[i]
+									}
+									value={infoTokenBySeat[i] ?? null}
+									onValueChange={(value) => setInfoToken(i, value)}
+									blueOnly
+									className={css.infoPad}
+									data-testid={`info-token-${i}`}
+								/>
+							))}
+						</div>
+					</>
+				)}
+			</section>
 
 			<button
 				type="button"

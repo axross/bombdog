@@ -230,6 +230,16 @@ export interface TrackerState {
 	 */
 	captainIndex: number;
 	moves: Move[];
+	/**
+	 * Starting info tokens, keyed by player id: the blue wire value each player
+	 * marked with their info token at game start, revealing it publicly. Info
+	 * tokens indicate blue values only (1–12), so the value is a
+	 * {@link BlueWireValue}. A missing key means that player placed no token; an
+	 * empty record means the whole starting-info-token phase was skipped (some
+	 * missions disallow it). This is starting state, not a {@link Move} — it never
+	 * enters the turn log.
+	 */
+	infoTokens: Record<string, BlueWireValue>;
 }
 
 /**

@@ -74,6 +74,47 @@ export async function startTrackingWith(
 }
 
 /**
+ * Select seat `seatIndex`'s starting info token — a blue wire (1–12) — on the
+ * setup screen, before the game starts. Each seat's pad is scoped by its
+ * `info-token-<seat>` test id so the shared `wire-<n>` buttons stay unambiguous.
+ */
+export async function placeInfoToken(
+	page: Page,
+	seatIndex: number,
+	wire: number,
+): Promise<void> {
+	await page
+		.getByTestId("setup")
+		.getByTestId(`info-token-${seatIndex}`)
+		.getByTestId(`wire-${wire}`)
+		.click();
+}
+
+/**
+ * Tick the "Skip starting info tokens" checkbox on the setup screen.
+ */
+export async function skipInfoTokens(page: Page): Promise<void> {
+	await page.getByTestId("skip-info-tokens").check();
+}
+
+/**
+ * Click Start on the setup screen and wait for the tracker to open. Unlike
+ * {@link startTracking} it does not navigate first, so a test can drive the
+ * setup screen (roster, Captain, info tokens) before starting.
+ */
+export async function startFromSetup(page: Page): Promise<void> {
+	await page.getByTestId("setup").getByTestId("start").click();
+	await expect(composer(page)).toBeVisible();
+}
+
+/**
+ * The tracker's pinned starting-info strip (absent when no tokens were placed).
+ */
+export function startingInfo(page: Page): Locator {
+	return page.getByTestId("starting-info");
+}
+
+/**
  * The bottom-half move composer.
  */
 export function composer(page: Page): Locator {

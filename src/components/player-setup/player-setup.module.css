@@ -139,6 +139,58 @@
 			color: var(--accent);
 		}
 
+		.infoTokens {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		.infoHeader {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			justify-content: space-between;
+			gap: var(--space-2);
+		}
+
+		.infoTitle {
+			font-weight: 600;
+		}
+
+		.skip {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-2);
+			color: var(--text-muted);
+			font-size: 0.9rem;
+			cursor: pointer;
+		}
+
+		.skip input {
+			inline-size: 18px;
+			block-size: 18px;
+			accent-color: var(--accent);
+			cursor: pointer;
+		}
+
+		.infoHint {
+			color: var(--text-muted);
+			font-size: 0.9rem;
+		}
+
+		.infoList {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		.infoPad {
+			padding: var(--space-3);
+			background-color: var(--surface-2);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+		}
+
 		.start {
 			margin-block-start: auto;
 			min-block-size: 52px;
