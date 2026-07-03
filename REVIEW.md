@@ -37,6 +37,6 @@ Report at most five Nits per review; summarize any beyond that as a count.
 
 ## Reporting
 
-Post findings as a single **COMMENT**-type pull-request review — never APPROVE or
-REQUEST_CHANGES, and never as loose top-level conversation comments. Open the
-review summary with a one-line tally (e.g. `1 important, 2 nits`).
+Post all findings as a single pull-request review — inline comments anchored to
+the diff, plus a summary — never as loose top-level conversation comments. Open
+the review summary with a one-line tally (e.g. `1 important, 2 nits`).
