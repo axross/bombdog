@@ -13,8 +13,7 @@ name: Loop Engineering Dispatch
 # Requires two repository secrets from the routine's API trigger:
 #   CLAUDE_LOOP_ROUTINE_URL   - the routine's /fire endpoint URL
 #   CLAUDE_LOOP_ROUTINE_TOKEN - the routine's bearer token
-# See .agents/skills/loop-engineering/references/operator-setup.md, and
-# references/takeover.md to replicate the whole system in a new repository.
+# See .agents/skills/loop-engineering/references/operator-setup.md for setup.
 
 on:
   issues:

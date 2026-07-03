@@ -50,13 +50,7 @@ See [references/operator-setup.md](./references/operator-setup.md) for:
 - wiring the `.github/workflows/loop-dispatch.yaml` bridge and enabling Auto-fix for the PR watch
 - the routine prompt, network/branch-push settings, and the daily-run and usage caveats
 
-## Portability and Takeover
-
-See [references/takeover.md](./references/takeover.md) for:
-
-- replicating this system in another repository as a self-contained runbook
-- the substitution matrix of repo-specific touchpoints (operator handle, verification commands, sibling-skill links, agent-index registration)
-- adapting the verification and review steps to a non-Node stack
+## Repo-Specific Values
 
 This repository's own repo-specific values are: the operator handle `@axross`, the Node/npm verification commands in [references/implementation-phase.md](./references/implementation-phase.md), and the sibling-skill links to this project's `.agents/skills/`. Everything else — the `loop:*` labels, the `<!-- loop-agent -->` marker, the `/loop` dispatcher logic, and `.github/workflows/loop-dispatch.yaml` — is repo-agnostic.
 
