@@ -49,24 +49,28 @@ A clean rule removes most routing ambiguity:
 - **The PR thread is the Coder/Reviewer domain.** Every unmarked human comment or
   review on a loop PR routes to the Coder.
 
-## Identity: role-aware markers
+## Identity: a separate bot per role
 
-All three routines act as `@axross` (shared identity), so the marker must
-distinguish **role**, not just bot-vs-human. Layer a role attribute onto the
-existing base marker so the current bridge filter keeps working unchanged:
+**Decision:** each routine acts as its own GitHub identity — a dedicated machine
+user or GitHub App per role (e.g. `bombdog-loop-plan`, `bombdog-loop-code`,
+`bombdog-loop-review`), distinct from the human `@axross`. Author login alone
+then tells human, planner, coder, and reviewer apart, so the shared-identity
+ambiguity that originally forced the `<!-- loop-agent -->` marker disappears.
 
-```
-<!-- loop-agent role=plan -->
-<!-- loop-agent role=code -->
-<!-- loop-agent role=review -->
-```
-
-- The existing `contains(body, '<!-- loop-agent -->')` check still matches all
-  three, so the issue bridge keeps ignoring every agent comment on issues.
-- The `role=` attribute lets the PR-side logic tell a reviewer's finding from the
-  coder's own reply — but note **triggering does not depend on parsing markers**
-  (see next section); markers are for humans and for a session reconstructing who
-  said what.
+- **Routing keys on author login**, not on a parsed comment marker: the bridge
+  ignores a role's own comments and routes cross-role hand-offs by comparing
+  `comment.user.login` to the known bot logins. A shared identity can no longer
+  misroute a hand-off.
+- **The marker becomes a human-facing badge**, kept for readability and as a
+  belt-and-suspenders signal: each role still prefixes its comments with
+  `🤖 **loop-<role>**` and an HTML `<!-- loop-<role> -->` line.
+- **Per-identity permissions enforce role scope at the platform level** — the
+  planner and reviewer bots are granted **no `contents:write`**, so they
+  physically cannot push, while only the coder bot can push to `claude/`
+  branches. This is the lever that resolves the read-only-reviewer question (see
+  [Operator setup](#operator-setup-deltas)) — enforcement by capability, not by
+  prompt compliance, and therefore robust to model error and to prompt injection
+  from untrusted PR content (comments, CI logs, the diff).
 
 ## Hand-off: labels, not comments
 
@@ -80,7 +84,7 @@ throughout):
 
 | PR label | Applied by | Wakes | Meaning |
 | -------- | ---------- | ----- | ------- |
-| `loop:needs-review` | Coder | Reviewer | New/updated diff ready to review |
+| `loop:review-requested` | Coder | Reviewer | New/updated diff ready to review |
 | `loop:changes-requested` | Reviewer | Coder | Findings posted; fixes needed |
 
 The reviewer, on a clean round with green CI, applies neither — it flips the PR
@@ -102,7 +106,7 @@ today except ownership):
 | `loop:blocked` | Needs human | Any role |
 | `loop:active` | Concurrency lock (per target, heartbeat) | Any role (transient) |
 
-PR-level hand-off signal (new, PR only): `loop:needs-review`,
+PR-level hand-off signal (new, PR only): `loop:review-requested`,
 `loop:changes-requested` — see above.
 
 ## Transitions
@@ -115,19 +119,19 @@ Planner --plan complete--> loop:plan-review (@axross)
 loop:plan-review --human approves--> loop:ready-to-build --fires--> Coder
 
 Coder --opens draft PR--> issue:loop:in-review
-                          + PR:loop:needs-review --fires--> Reviewer   ← deterministic first kick
+                          + PR:loop:review-requested --fires--> Reviewer   ← deterministic first kick
 
 Reviewer round:
-  findings?  --yes--> post marked review comments (role=review)
-                      + PR:loop:changes-requested (drop needs-review) --fires--> Coder
+  findings?  --yes--> post review comments (as reviewer bot)
+                      + PR:loop:changes-requested (drop review-requested) --fires--> Coder
              --no--> flip PR draft→ready, issue:loop:done,
                      drop hand-off labels, @axross summary            ← ONLY the reviewer does this
 
 Coder round:
-  address findings, push to claude/ branch, reply on threads (role=code)
-  --> PR:loop:needs-review (drop changes-requested) --fires--> Reviewer
+  address findings, push to claude/ branch, reply on threads (as coder bot)
+  --> PR:loop:review-requested (drop changes-requested) --fires--> Reviewer
 
-Human review on the PR (unmarked) --fires--> Coder (same as changes-requested)
+Human review on the PR (author not a loop bot) --fires--> Coder (same as changes-requested)
 CI check_suite.completed on the PR --fires--> Reviewer (re-verify)
 
 Any active phase, genuinely stuck --> loop:blocked (@axross), drop hand-off labels
@@ -139,8 +143,8 @@ loop:done  (terminal; further activity is a no-op unless a human reopens)
 The ping-pong has no natural stop, and now spans two routines, so the counter
 must live in GitHub. **The reviewer owns it** — it is the arbiter.
 
-- The reviewer maintains a single pinned `<!-- loop-agent role=review -->`
-  tracking comment on the PR with a round counter, incremented each review round.
+- The reviewer maintains a single pinned `<!-- loop-review -->` tracking comment
+  on the PR with a round counter, incremented each review round.
 - After **4** review rounds without convergence, the reviewer sets `loop:blocked`,
   @mentions `@axross` with what still fails, and removes the hand-off labels so
   the ping-pong halts.
@@ -157,21 +161,23 @@ one of three routine `/fire` endpoints. Three `(URL, token)` secret pairs:
 | ----- | --------- | ----- |
 | `issues.labeled` | `loop:plan` | Planner |
 | `issues.labeled` | `loop:ready-to-build` | Coder |
-| `issue_comment.created` (issue, not PR) | unmarked human, issue has a `loop:` label | Planner |
-| `pull_request.labeled` | `loop:needs-review` | Reviewer |
+| `issue_comment.created` (issue, not PR) | author is not a loop bot; issue has a `loop:` label | Planner |
+| `pull_request.labeled` | `loop:review-requested` | Reviewer |
 | `pull_request.labeled` | `loop:changes-requested` | Coder |
-| `pull_request_review.submitted` | unmarked human | Coder |
-| `issue_comment.created` (on a PR) | unmarked human | Coder |
+| `pull_request_review.submitted` | author is not a loop bot | Coder |
+| `issue_comment.created` (on a PR) | author is not a loop bot | Coder |
 | `check_suite.completed` | head branch is a loop PR | Reviewer |
 
-Routing is by **event + label name**, never by parsing a comment marker, so a
-shared bot identity cannot misroute a hand-off. Concurrency groups key on issue
-number for issue events and PR number for PR events.
+Routing is by **event + label name + author login** (each role is a distinct
+bot), never by parsing a comment marker. "Author is not a loop bot" is checked
+against the three known bot logins, so any other author is treated as human.
+Concurrency groups key on issue number for issue events and PR number for PR
+events.
 
 ## Why this fixes the stall
 
 - **Every advance is a reliable webhook.** Draft-PR-open is replaced by the coder
-  *applying `loop:needs-review`*; CI-green is replaced by `check_suite.completed`.
+  *applying `loop:review-requested`*; CI-green is replaced by `check_suite.completed`.
   Neither depends on a bot comment or a non-event.
 - **Review is independently triggered.** The reviewer is a different session with a
   review-only prompt; its `loop:changes-requested` label wakes the coder, so
@@ -185,17 +191,26 @@ number for issue events and PR number for PR events.
   investigate/plan/yield; coder: build/verify/address, no `loop:done`; reviewer:
   review/verify/gate, read-and-comment only, owns the round counter and the done
   flip).
-- Three API-trigger secret pairs (above).
-- Extend `loop-dispatch.yaml` with the PR triggers and per-routine URL selection.
-- The reviewer routine SHOULD run with reduced tool/network scope (no code push)
-  to enforce the read-only contract at the platform level, not just by prompt.
+- **A separate GitHub identity per role** (machine user or GitHub App), each
+  connected to its own routine, with permissions scoped to the role:
+  - **Coder bot** — `contents:write` (push to `claude/` branches), PR write,
+    issues/PR comments, labels.
+  - **Reviewer bot** — read + PR reviews/comments + labels, **no
+    `contents:write`** (cannot push). This makes the read-only contract a
+    platform guarantee, resolving decision 2.
+  - **Planner bot** — read + issue write/comments + labels, **no
+    `contents:write`**.
+- Three API-trigger secret pairs (`CLAUDE_LOOP_PLAN_*`, `CLAUDE_LOOP_CODE_*`,
+  `CLAUDE_LOOP_REVIEW_*`).
+- Extend `loop-dispatch.yaml` with the PR triggers, per-routine URL selection,
+  and the known-bot-login list used to distinguish human authors from each role.
 
 ## Migration plan
 
 Phased, so the working single-routine loop keeps running until each piece lands:
 
 1. **Reviewer first (biggest win).** Add the reviewer routine + the two PR
-   hand-off labels + the `loop:needs-review` / `loop:changes-requested` /
+   hand-off labels + the `loop:review-requested` / `loop:changes-requested` /
    `check_suite` bridge triggers. The existing routine keeps planning and coding;
    only the self-review step is replaced by the reviewer hand-off. This alone
    fixes the #36/#37 stall.
@@ -204,13 +219,18 @@ Phased, so the working single-routine loop keeps running until each piece lands:
 3. **Split the planner out** (smallest win — plan is already a distinct phase;
    separate mostly for prompt clarity).
 
-## Open decisions for `@axross`
+## Decisions
 
-1. **Hand-off mechanism:** PR labels (this proposal — reliable webhooks) vs. each
-   session directly POSTing the next routine's `/fire` (fewer labels, but embeds
-   routine tokens in sessions). Labels are recommended.
-2. **Reviewer scope enforcement:** prompt-only vs. a genuinely read-only routine
-   token/tool set. Recommended to enforce read-only at the platform level.
-3. **Marker scheme:** `role=` attribute on the existing marker (this proposal,
-   backward-compatible) vs. distinct per-role markers vs. distinct GitHub bot
-   identities per role (cleanest attribution, most setup).
+Resolved with `@axross`:
+
+1. **Hand-off mechanism → PR labels.** Reliable, role-attributable webhooks; each
+   role removes the label that woke it. (Rejected: sessions directly POSTing the
+   next routine's `/fire`, which would embed routine tokens in sessions.)
+2. **Reviewer scope enforcement → platform-level (pending final confirmation).**
+   The reviewer bot is granted no `contents:write`, so it cannot push regardless
+   of prompt compliance or injection. Made cheap by decision 3. *Confirm to lock.*
+3. **Identity → a separate GitHub bot per role.** Author login attributes every
+   comment; per-identity permissions enforce role scope. (Rejected: shared
+   identity with per-role comment markers.)
+4. **Review hand-off label name → `loop:review-requested`** (not
+   `loop:needs-review`).
