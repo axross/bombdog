@@ -43,6 +43,36 @@ so transitions are idempotent:
 | `loop:review-requested` | New or updated diff ready to review. | Coder | Reviewer |
 | `loop:changes-requested` | Findings posted; fixes needed. | Reviewer | Coder |
 
+## Issue vs. Pull Request Targets
+
+Once the coder opens a pull request, an issue's plan lives at one numeric target
+(its own issue number) and its pull request lives at a **different** numeric
+target (the pull request's own number, assigned when it is created) — even
+though the PR body says `Closes #<n>`. Every `mcp__github__issue_write`
+call that mutates labels takes a single numeric target and replaces that
+target's entire label list, so sending the right label to the wrong number is a
+silent, undetected mistake, not a rejected call.
+
+**Guidelines:**
+
+- MUST send every issue-level label (`loop:plan`, `loop:awaiting-answer`,
+  `loop:plan-review`, `loop:ready-to-build`, `loop:in-review`, `loop:done`) to
+  the issue's own number, never to the pull request's number.
+- MUST send every PR-level hand-off label (`loop:review-requested`,
+  `loop:changes-requested`) to the pull request's own number, never to the
+  issue's number.
+- MUST state, immediately before each label-mutating call, which object is
+  being written (issue #N or pull request #M) and confirm that number against
+  the guideline above; a call about to apply a PR-level label to the issue
+  number (or vice versa) is the mistake this section exists to catch.
+- MUST re-read the target's current labels with a fresh `issue_read` /
+  `pull_request_read` call immediately before building the array passed to
+  `issue_write`'s `labels` field, and compute that array as the fresh current
+  labels minus the label(s) being removed plus the label(s) being added; MUST
+  NOT reuse a label snapshot read earlier in the session or read for a
+  different target, since the field replaces the whole list and a stale or
+  wrong-target snapshot silently drops labels.
+
 ## Transitions
 
 ```

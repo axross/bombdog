@@ -64,12 +64,18 @@ is behavioral — enforced here, not by a platform permission.
 **Guidelines:**
 
 - MUST, when any Critical/Major/Minor finding or unmet criterion remains, apply
-  `loop:changes-requested` to the pull request and remove `loop:review-requested`,
-  then release the lock and exit. The label change wakes the coder.
+  `loop:changes-requested` to the **pull request** and remove
+  `loop:review-requested` from the **pull request**, then release the lock and
+  exit. The label change wakes the coder.
 - MUST, on a clean round with green CI and every acceptance criterion met, flip
-  the pull request from draft to ready for review, set `loop:done` on the issue
-  (replacing `loop:in-review`), remove both hand-off labels, and post a marked
-  comment that @mentions `@axross` with a short outcome summary.
+  the pull request from draft to ready for review, set `loop:done` on the
+  **issue** (replacing `loop:in-review` on the issue), remove both hand-off
+  labels from and release the `loop:active` lock on the **pull request** (a
+  different number from the issue), and post a marked comment that @mentions
+  `@axross` with a short outcome summary. See
+  [state-machine.md](./state-machine.md) § Issue vs. Pull Request Targets — the
+  issue and the pull request are two different numeric targets updated in the
+  same step; do not conflate them.
 - MUST NOT merge the pull request; merging remains the human's decision.
 
 ## Termination Guard
