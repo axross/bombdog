@@ -74,10 +74,13 @@ tells each which role it is and which target to act on.
 ### Making a routine act as its App identity
 
 A routine has no "act as App" setting — by default it authenticates as your
-connected GitHub user (`@axross`), so its comments and commits are attributed to
-you. To make a routine act as its `[bot]` App instead, inject the App's
-installation token into that routine's **environment** and route every GitHub
-**write** through it:
+connected GitHub user (`@axross`). Commits and pushes staying `@axross` is fine and
+expected. But **issue and pull-request comments and reviews must carry the role's
+own `[bot]` identity**: the bridge tells bots from humans by `user.type`, so a
+comment posted as `@axross` (type `User`) would look like human input and re-fire
+the loop. So inject the App's installation token into that routine's **environment**
+and make the role's **GitHub API writes** (comments, reviews, labels, draft→ready)
+through it, while leaving git commits/pushes on the default identity:
 
 1. Give each routine its **own environment**. Add the App's **App ID** and
    **private key (PEM)** as environment secrets (`APP_ID`, `APP_PRIVATE_KEY`). The
@@ -116,10 +119,10 @@ installation token into that routine's **environment** and route every GitHub
    # 3. Mint an installation access token (~1h TTL).
    GH_TOKEN="$(gh_api -X POST \
      "https://api.github.com/app/installations/${install_id}/access_tokens" | jq -er '.token')"
-   export GH_TOKEN
+   export GH_TOKEN   # gh reads this; use it for comments/reviews/labels (App identity)
 
-   # 4. Route gh and git through the App identity.
-   git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+   # Note: do NOT route git through this token — commits/pushes stay on the default
+   # (@axross) identity, which is intended. GH_TOKEN is only for gh API writes.
    ```
 
    `curl` practices used above: `--fail-with-body` turns HTTP 4xx/5xx into a
@@ -131,30 +134,32 @@ installation token into that routine's **environment** and route every GitHub
 
    Persistence and TTL: a `GH_TOKEN` exported inside the setup script may not carry
    into the session's later shells, and the token lasts only ~1h. Persist it where
-   `gh` and `git` will read it — e.g. append `export GH_TOKEN=...` to the shell
-   profile the session sources, or write it into the git credential store the
-   `insteadOf` rule points at — and re-mint (re-run the block) if a run outlives the
-   token. Keep `GH_TOKEN` out of logs and the repository.
+   `gh` will read it — e.g. append `export GH_TOKEN=...` to the shell profile the
+   session sources — and re-mint (re-run the block) if a run outlives the token.
+   Keep `GH_TOKEN` out of logs and the repository.
 
-3. **Every GitHub write MUST go through `gh`/`git` using `GH_TOKEN`** — comments,
-   labels, reviews, the draft→ready flip, and pushes. The session's *built-in*
-   GitHub tools authenticate as `@axross` through the proxy, so a write made with
-   them posts as you (type `User`) and would break the bridge's bot/human routing.
+3. **Post every issue/PR comment and review — plus label and draft→ready writes —
+   through `gh` using `GH_TOKEN`.** The session's *built-in* GitHub tools
+   authenticate as `@axross` through the proxy, so a comment made with them posts as
+   you (type `User`) and would break the bridge's bot/human routing (it would look
+   like human input and re-fire the loop). **Git commits and pushes use the default
+   identity** and are correctly attributed to `@axross`.
 
-**Residual-risk caveat (important):** the cloud session still carries your
-`@axross` identity via those built-in tools, and `@axross` can push. So the
-planner/reviewer read-only contract is enforced by *using only their scoped
-`GH_TOKEN` and not the built-in write tools* — strong, but not an airtight
-platform guarantee. A session that ignored the rule could still push via the
-ambient identity. Fully airtight per-role enforcement would require each routine
-on a separate claude.ai account whose own GitHub identity is read-only, which is
-not worth the overhead here.
+**Residual-risk caveat:** commits/pushes are intentionally `@axross`. For the
+*read-only* roles (planner, reviewer), the App token bounds the API writes made
+with it, but the session still carries `@axross`'s write-capable identity via the
+built-in tools — so "the reviewer never changes code" rests on its prompt
+(read-only, no built-in write tools), not on an airtight platform block. Fully
+airtight enforcement would require each routine on a separate claude.ai account
+with a read-only GitHub identity, which is not worth the overhead here.
 
 Per-role environment intent:
 
-- **Planner** — planner App token (`GH_TOKEN`); repository read-only.
-- **Coder** — coder App token; `claude/`-prefixed pushes via `GH_TOKEN`.
-- **Reviewer** — reviewer App token; read-only. Its Contents:Read token cannot
+- **Planner** — planner App token (`GH_TOKEN`) for issue comments; no pushes.
+- **Coder** — coder App token for PR/issue comments and reviews; commits and
+  `claude/` pushes use the default `@axross` identity.
+- **Reviewer** — reviewer App token for review comments, labels, and the
+  draft→ready flip; no pushes. Its Contents:Read token cannot
   push or merge; see the caveat above for the ambient-identity residual risk.
 
 Prompts (the standing instruction; the per-event context is appended as `text`):
@@ -166,8 +171,8 @@ skill and run the /loop command as the planner role, following references/plan-p
 The triggering event names a GitHub issue. Investigate, ask blocking questions and
 yield, or write the comprehensive plan and stop at the approval gate. Advance the
 plan phase by one step and exit; if the issue is not in a plan phase, exit as a no-op.
-Make every GitHub write (comments, labels, issue edits) with gh/git using $GH_TOKEN,
-your App identity — never the built-in GitHub tools, which post as the operator.
+Post issue comments and edits with gh using $GH_TOKEN (your App identity) — never the
+built-in GitHub tools, which post as the operator and would re-fire the loop.
 ```
 
 ```text
@@ -177,8 +182,9 @@ skill and run the /loop command as the coder role, following references/implemen
 Build from the approved plan on claude/issue-<n>, verify, open the draft PR, and hand
 off to the reviewer with loop:review-requested; on review hand-back, address comments
 and re-request review. Advance by one step and exit. Never set loop:done or flip a PR
-to ready — that is the reviewer's role. Make every GitHub write and push with gh/git
-using $GH_TOKEN, your App identity — never the built-in GitHub tools.
+to ready — that is the reviewer's role. Post PR/issue comments and reviews with gh
+using $GH_TOKEN (your App identity) so they carry the bot identity; git commits and
+pushes use the default identity. Never post comments with the built-in GitHub tools.
 ```
 
 ```text
@@ -189,9 +195,9 @@ You are read-only: never edit files, push, or merge. Re-read the diff, the unres
 threads, the linked issue's acceptance criteria, and CI; post findings as your own
 review comments and apply loop:changes-requested, or — on a clean round with green CI —
 flip the PR to ready, set loop:done, and @mention @axross. Respect the 4-round
-termination guard. Advance by one step and exit. Make every GitHub write with gh
-using $GH_TOKEN, your read-only App identity — never the built-in GitHub tools (they
-carry the operator's write-capable identity).
+termination guard. Advance by one step and exit. Post review comments, labels, and
+the draft→ready flip with gh using $GH_TOKEN, your read-only App identity — never the
+built-in GitHub tools (they carry the operator's write-capable identity).
 ```
 
 ## 4. Add the Triggers and the Bridge

@@ -14,12 +14,12 @@ GitHub App identity, so `user` on every event attributes the action:
 | **Reviewer** | Review, verify, gate on the PR | `review-gengar[bot]` | No | Yes |
 
 Only the reviewer flips a pull request draft→ready and sets `loop:done`; the coder
-never self-certifies. The planner and reviewer App tokens are granted no
-`contents:write`, so any write they make through their token cannot push or merge;
-each role must make its GitHub writes through its own App token (`GH_TOKEN` via
-`gh`/`git`), not the session's built-in GitHub tools, which carry the operator's
-write-capable identity. See [operator-setup.md](./operator-setup.md) for the App
-permissions and the residual-risk caveat.
+never self-certifies. Each role MUST post its issue/PR comments and reviews through
+its own App token (`GH_TOKEN` via `gh`) so they carry the role's `[bot]` identity
+and the bridge's `user.type` routing holds; the session's built-in GitHub tools post
+as the operator (type `User`) and would re-fire the loop. Git commits and pushes stay
+on the operator identity, which is expected. See [operator-setup.md](./operator-setup.md)
+for the App setup and the read-only residual-risk caveat.
 
 ## Label Set
 

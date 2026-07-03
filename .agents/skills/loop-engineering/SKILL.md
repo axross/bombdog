@@ -7,7 +7,7 @@ description: Apply this skill when operating the autonomous issue-to-pull-reques
 
 Loop Engineering runs feature development as an autonomous loop: a GitHub issue is planned, refined, implemented, opened as a pull request, reviewed, and driven to review-ready with minimal human input. It is operated by short-lived cloud sessions triggered by GitHub events.
 
-The work is split across three roles — **planner**, **coder**, and **reviewer** — each running as its own routine that writes to GitHub through its own App token (`GH_TOKEN` via `gh`). The planner and reviewer tokens are `contents:read`, so their writes cannot push or merge; only the coder's token can change code. The reviewer, and only it, decides a pull request is done. See [references/state-machine.md](./references/state-machine.md) for the roles, [references/operator-setup.md](./references/operator-setup.md) for the App-token setup and its residual-risk caveat, and [references/multi-agent-loop-proposal.md](./references/multi-agent-loop-proposal.md) for the design.
+The work is split across three roles — **planner**, **coder**, and **reviewer** — each running as its own routine that posts its issue/PR comments and reviews through its own App `[bot]` identity (`GH_TOKEN` via `gh`), so the bridge can route by `user.type`. Git commits and pushes stay on the operator identity. The reviewer, and only it, decides a pull request is done. See [references/state-machine.md](./references/state-machine.md) for the roles, [references/operator-setup.md](./references/operator-setup.md) for the App-token setup and its residual-risk caveat, and [references/multi-agent-loop-proposal.md](./references/multi-agent-loop-proposal.md) for the design.
 
 ## The Stateless-Worker Model
 
