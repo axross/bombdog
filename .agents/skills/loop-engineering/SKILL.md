@@ -1,6 +1,6 @@
 ---
 name: loop-engineering
-description: Apply this skill when operating the autonomous issue-to-pull-request "Loop Engineering" workflow in this repository - running the `/loop` dispatcher, reacting to a GitHub issue or pull request event from a routine or the Actions bridge, deciding which phase (plan, implementation, PR review loop) an issue is in, moving the `loop:*` label state machine forward, or setting up the claude.ai routine, API trigger, and dispatch workflow. Covers the stateless-worker model, GitHub-as-state-machine conventions, the bot-identity marker, concurrency locking, the plan/implementation phases, the self-review termination guard, and one-time operator setup.
+description: Apply this skill when operating the autonomous issue-to-pull-request "Loop Engineering" workflow in this repository - running the `/loop` dispatcher, reacting to a GitHub issue or pull request event from a routine or the Actions bridge, deciding which phase (plan, implementation, review) a target is in, moving the `loop:*` label state machine forward, or setting up the three claude.ai routines, their GitHub App identities, API triggers, and dispatch workflow. Covers the stateless-worker model, the planner/coder/reviewer split, GitHub-as-state-machine conventions, label hand-offs, concurrency locking, the reviewer's termination guard, and one-time operator setup.
 ---
 
 # Loop Engineering

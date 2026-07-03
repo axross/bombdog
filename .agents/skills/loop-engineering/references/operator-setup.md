@@ -3,11 +3,11 @@
 One-time setup for **this** repository, performed by the operator (`@axross`).
 Steps 1-4 are done once; step 5 is per-issue.
 
-The loop runs as three roles, each under its own GitHub App identity and its own
-routine: **planner**, **coder**, and **reviewer**. Separate identities mean every
-comment and review carries `user.type == 'Bot'`, so the bridge tells humans from
-bots generically and routes hand-offs by label. Each App's bot login is also
-recorded in a `LOOP_*_BOT_LOGIN` variable and excluded explicitly, as a
+The loop runs as three roles, each with its own routine and GitHub App identity:
+**planner**, **coder**, and **reviewer**. When a routine posts through its App
+(step 3), its comments and reviews carry `user.type == 'Bot'`, so the bridge tells
+them from human input generically and routes hand-offs by label. The App bot logins
+are also recorded as `LOOP_*_BOT_LOGIN` variables and excluded explicitly, as a
 belt-and-suspenders complement to the `user.type` check.
 
 ## 1. Create the Labels
@@ -45,12 +45,12 @@ Register one GitHub App per role at **Settings → Developer settings → GitHub
 install each on this repository, and grant only the permissions its role needs. The
 **Contents** permission is the lever: an App installation token scoped to
 Contents:Read cannot push or merge, so any GitHub write the routine makes **with
-that token** is bounded by the App's permissions (see the identity note in step 3,
-including its residual-risk caveat).
+that token** is bounded by the App's permissions (see step 3, and the residual-risk
+caveat under [Caveats](#caveats)).
 
 | App (example slug) | Contents | Pull requests | Issues | Checks | Can push/merge? |
 | ------------------ | -------- | ------------- | ------ | ------ | --------------- |
-| planner (`plan-gengar`) | Read | Read | **Read & write** | Read | No |
+| planner (`plan-gengar`) | Read | — | **Read & write** | — | No |
 | coder (`code-gengar`) | **Read & write** | **Read & write** | **Read & write** | Read | Yes (`claude/` branches) |
 | reviewer (`review-gengar`) | Read | **Read & write** | **Read & write** | Read | No |
 
@@ -71,20 +71,19 @@ Create three routines at [claude.ai/code/routines](https://claude.ai/code/routin
 one per App. Each loads the `loop-engineering` skill and runs `/loop`; the bridge
 tells each which role it is and which target to act on.
 
-### Making a routine act as its App identity
+### Bind each routine to its App identity
 
-A routine has no "act as App" setting — by default it authenticates as your
-connected GitHub user (`@axross`). Commits and pushes staying `@axross` is fine and
-expected. But **issue and pull-request comments and reviews must carry the role's
-own `[bot]` identity**: the bridge tells bots from humans by `user.type`, so a
-comment posted as `@axross` (type `User`) would look like human input and re-fire
-the loop. So inject the App's installation token into that routine's **environment**
-and make the role's **GitHub API writes** (comments, reviews, labels, draft→ready)
-through it, while leaving git commits/pushes on the default identity:
+A routine has no "act as App" setting — it authenticates as your connected GitHub
+user (`@axross`). Commits and pushes staying `@axross` is fine and expected. But a
+role's **issue/PR comments and reviews must carry its own `[bot]` identity**: the
+bridge tells bots from humans by `user.type`, so a comment posted as `@axross` (type
+`User`) would look like human input and re-fire the loop. Bind the identity by
+injecting the App's installation token into the routine's environment and making the
+role's GitHub API writes with it:
 
 1. Give each routine its **own environment**. Add the App's **App ID** and
    **private key (PEM)** as environment secrets (`APP_ID`, `APP_PRIVATE_KEY`). The
-   installation ID is derived below, so it does not need to be stored.
+   installation ID is derived at runtime by the hook, so it is not stored.
 2. In the environment's **setup script**, install only the tools the hook needs.
    Keep it repo-agnostic so the environment is **reusable across repositories** —
    the setup script is cached and reused, and must **not** mint a token here (an
@@ -94,47 +93,23 @@ through it, while leaving git commits/pushes on the default identity:
    apt-get update && apt-get install -y gh jq openssl
    ```
 
-3. Mint the token **per session** in a committed `SessionStart` hook. A hook runs
-   every session (the cached setup script does not), and it **derives the repo from
-   the clone**, so nothing is hardcoded and the same environment works for any
-   repository. It no-ops outside cloud or when the App creds are absent, so it is
-   harmless in your own interactive and local sessions.
-
-   `.claude/hooks/loop-app-token.sh`:
-
-   ```bash
-   #!/usr/bin/env bash
-   set -euo pipefail
-   [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0                  # cloud sessions only
-   [ -n "${APP_ID:-}" ] && [ -n "${APP_PRIVATE_KEY:-}" ] || exit 0   # a loop routine only
-
-   # Derive owner/repo from the origin remote's last two path segments. Works for the
-   # cloud git proxy URL (http://local_proxy@host/git/OWNER/REPO) and for github.com.
-   REPO="$(git remote get-url origin | sed -E 's#\.git$##' | awk -F/ '{print $(NF-1)"/"$NF}')"
-
-   # Build a short-lived App JWT (RS256, <=10 min), then mint an installation token.
-   key_file="$(mktemp)"; trap 'rm -f "$key_file"' EXIT
-   printf '%s\n' "$APP_PRIVATE_KEY" > "$key_file"
-   b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
-   now="$(date +%s)"
-   header="$(printf '%s' '{"alg":"RS256","typ":"JWT"}' | b64url)"
-   claims="$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((now - 60))" "$((now + 540))" "$APP_ID" | b64url)"
-   sig="$(printf '%s' "${header}.${claims}" | openssl dgst -sha256 -sign "$key_file" -binary | b64url)"
-   jwt="${header}.${claims}.${sig}"
-   gh_api() { curl --fail-with-body -sS -H "Authorization: Bearer ${jwt}" \
-     -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "$@"; }
-   install_id="$(gh_api "https://api.github.com/repos/${REPO}/installation" | jq -er '.id')"
-   token="$(gh_api -X POST "https://api.github.com/app/installations/${install_id}/access_tokens" | jq -er '.token')"
-
-   # Persist GH_TOKEN for the session's subsequent Bash commands (gh reads it).
-   if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
-     printf 'GH_TOKEN=%s\n' "$token" >> "$CLAUDE_ENV_FILE"
-   fi
-   ```
+3. Mint the token **per session** in a committed `SessionStart` hook — a hook runs
+   every session (the cached setup script does not) and derives the repo from the
+   clone, so nothing is hardcoded and the environment stays reusable. It no-ops
+   outside cloud or without App creds, so it is harmless in interactive/local
+   sessions. This repo ships the hook at
+   [`.claude/hooks/loop-app-token.sh`](../../../../.claude/hooks/loop-app-token.sh):
+   it builds a short-lived App JWT (RS256) with `openssl`, exchanges it for an
+   installation token (`GET /repos/{repo}/installation` →
+   `POST /app/installations/{id}/access_tokens`) via a `curl` wrapper using
+   `--fail-with-body`, `-sS`, and pinned `Accept` / `X-GitHub-Api-Version` headers,
+   and writes `GH_TOKEN` to `$CLAUDE_ENV_FILE` (the supported way to hand env vars to
+   later Bash commands) so `gh` picks it up. The ~1h token covers a normal run; it
+   never routes git through the token, so commits/pushes stay on `@axross`.
 
    Register it as a `SessionStart` hook. This repo already registers
-   `session-start.sh`, so **append** a second entry to the existing array rather
-   than replacing `.claude/settings.json`:
+   `session-start.sh`, so **append** a second entry rather than replacing
+   `.claude/settings.json`:
 
    ```json
    {
@@ -147,38 +122,12 @@ through it, while leaving git commits/pushes on the default identity:
    }
    ```
 
-   `curl` practices: `--fail-with-body` turns HTTP 4xx/5xx into a non-zero exit
-   while printing GitHub's JSON error, `-sS` keeps real errors but drops the
-   progress meter, the pinned `Accept` / `X-GitHub-Api-Version` headers fix the API
-   version, and `jq -e` exits non-zero on a missing field so `set -euo pipefail`
-   aborts instead of writing an empty token. Writing to `$CLAUDE_ENV_FILE` is the
-   supported way to hand `GH_TOKEN` to later Bash commands; the ~1h token covers a
-   normal run. Keep `GH_TOKEN` out of logs and the repository. Do **not** route git
-   through this token — commits/pushes stay on the default `@axross` identity.
-
-4. **Post every issue/PR comment and review — plus label and draft→ready writes —
-   through `gh` using `GH_TOKEN`.** The session's *built-in* GitHub tools
-   authenticate as `@axross` through the proxy, so a comment made with them posts as
-   you (type `User`) and would break the bridge's bot/human routing (it would look
-   like human input and re-fire the loop). **Git commits and pushes use the default
-   identity** and are correctly attributed to `@axross`.
-
-**Residual-risk caveat:** commits/pushes are intentionally `@axross`. For the
-*read-only* roles (planner, reviewer), the App token bounds the API writes made
-with it, but the session still carries `@axross`'s write-capable identity via the
-built-in tools — so "the reviewer never changes code" rests on its prompt
-(read-only, no built-in write tools), not on an airtight platform block. Fully
-airtight enforcement would require each routine on a separate claude.ai account
-with a read-only GitHub identity, which is not worth the overhead here.
-
-Per-role environment intent:
-
-- **Planner** — planner App token (`GH_TOKEN`) for issue comments; no pushes.
-- **Coder** — coder App token for PR/issue comments and reviews; commits and
-  `claude/` pushes use the default `@axross` identity.
-- **Reviewer** — reviewer App token for review comments, labels, and the
-  draft→ready flip; no pushes. Its Contents:Read token cannot
-  push or merge; see the caveat above for the ambient-identity residual risk.
+Each role's prompt (below) then makes **all** GitHub API writes — comments, reviews,
+labels, the draft→ready flip — with `gh` using `$GH_TOKEN`, never the session's
+built-in GitHub tools (which post as `@axross`, type `User`, and would re-fire the
+loop). Git commits and pushes stay on the default identity. This scopes the
+read-only roles' writes to their App token; for the residual-risk caveat, see
+[Caveats](#caveats).
 
 Prompts (the standing instruction; the per-event context is appended as `text`):
 
@@ -255,12 +204,13 @@ triggers go through the GitHub Actions bridge.
 
 ## Caveats
 
-- **Role scope is token-bounded, with a residual caveat**: the planner and reviewer
-  App tokens have Contents:Read, so any write made through their `GH_TOKEN` cannot
-  push or merge. But the routine also carries the operator's write-capable identity
-  via the built-in GitHub tools, so the read-only contract holds only while each
-  role writes exclusively through its scoped `GH_TOKEN` (as its prompt requires).
-  See step 3's residual-risk caveat.
+- **Role scope is token-bounded, not airtight**: the planner and reviewer App tokens
+  have Contents:Read, so any write through their `GH_TOKEN` cannot push or merge. But
+  the routine still carries `@axross`'s write-capable identity via the built-in GitHub
+  tools, so the read-only contract holds only while each role writes exclusively
+  through its scoped `GH_TOKEN` (its prompt requires this). Fully airtight enforcement
+  would put each routine on a separate claude.ai account with a read-only GitHub
+  identity — not worth the overhead here.
 - **Caps and cost**: routines have a daily run cap and draw metered usage; GitHub
   webhook triggers have per-account hourly caps. The reviewer's 4-round guard
   bounds the coder↔reviewer loop. `check_suite.completed` fires the reviewer for

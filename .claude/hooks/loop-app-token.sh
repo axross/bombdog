@@ -9,6 +9,8 @@ set -euo pipefail
 [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0                  # cloud sessions only
 [ -n "${APP_ID:-}" ] && [ -n "${APP_PRIVATE_KEY:-}" ] || exit 0   # a loop routine only
 
+cd "${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+
 # Derive owner/repo from the origin remote's last two path segments. Works for the
 # cloud git proxy URL (http://local_proxy@host/git/OWNER/REPO) and for github.com.
 REPO="$(git remote get-url origin | sed -E 's#\.git$##' | awk -F/ '{print $(NF-1)"/"$NF}')"
