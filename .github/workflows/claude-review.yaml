@@ -78,6 +78,6 @@ jobs:
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.issue.number }}"
           claude_args: >-
-            --append-system-prompt "Apply this repository's review standards from .agents/skills/code-review-guideline/SKILL.md, and post findings as a COMMENT-type pull-request review — never APPROVE or REQUEST_CHANGES."
+            --append-system-prompt "Read REVIEW.md at the repository root and follow it as the highest-priority, review-only instructions for this review."
             --disallowedTools "WebFetch,WebSearch"
             --max-turns 30

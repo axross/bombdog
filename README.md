@@ -98,6 +98,8 @@ Two Claude Code slash commands (in [`.claude/commands/`](./.claude/commands)) dr
 
 [`.github/workflows/claude-review.yaml`](./.github/workflows/claude-review.yaml) runs an **independent** review — a separate Claude Code session on a GitHub runner, under a bot identity distinct from the author — whenever a trusted user comments **`@claude review`** on a pull request. It runs the official `code-review` plugin — the same practice `/review` runs locally — and posts findings as a single **COMMENT**-type GitHub review (inline comments anchored to the diff, plus a summary). It never approves or requests changes — GitHub rejects those from a pull request's own author — and never leaves loose conversation comments.
 
+Review **policy** — severity calibration, skip rules, repo-specific checks, and reporting format — lives in [`REVIEW.md`](./REVIEW.md) at the repository root. It's the same portable, review-only file that managed [Code Review](https://code.claude.com/docs/en/code-review) reads natively; the self-hosted workflow and `/review` bootstrap it via a system prompt, and the review methodology stays in [`code-review-guideline`](./.agents/skills/code-review-guideline/SKILL.md).
+
 Conventions the agents follow:
 
 - Findings are posted as a GitHub review, tagged by severity with `file:line` evidence and a concrete fix.
