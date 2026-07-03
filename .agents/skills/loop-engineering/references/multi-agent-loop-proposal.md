@@ -69,13 +69,15 @@ ambiguity that originally forced the `<!-- loop-agent -->` marker disappears.
 - **The marker becomes a human-facing badge**, kept for readability and as a
   belt-and-suspenders signal: each role still prefixes its comments with
   `🤖 **loop-<role>**` and an HTML `<!-- loop-<role> -->` line.
-- **Per-identity permissions enforce role scope at the platform level** — the
-  planner and reviewer bots are granted **no `contents:write`**, so they
-  physically cannot push, while only the coder bot can push to `claude/`
-  branches. This is the lever that resolves the read-only-reviewer question (see
-  [Operator setup](#operator-setup-deltas)) — enforcement by capability, not by
-  prompt compliance, and therefore robust to model error and to prompt injection
-  from untrusted PR content (comments, CI logs, the diff).
+- **Per-identity permissions scope each role's writes** — the planner and reviewer
+  App tokens are granted **no `contents:write`**, so any write made through their
+  token cannot push, while only the coder token can push to `claude/` branches.
+  This is the lever that resolves the read-only-reviewer question (see
+  [Operator setup](#operator-setup-deltas)). Caveat (found during setup): a
+  claude.ai routine still carries the operator's write-capable identity via the
+  session's built-in GitHub tools, so the guarantee holds only while each role
+  writes exclusively through its scoped `GH_TOKEN`; it is strong but not fully
+  airtight. See decision 2.
 
 ## Hand-off: labels, not comments
 
@@ -234,10 +236,16 @@ Resolved with `@axross`:
 1. **Hand-off mechanism → PR labels.** Reliable, role-attributable webhooks; each
    role removes the label that woke it. (Rejected: sessions directly POSTing the
    next routine's `/fire`, which would embed routine tokens in sessions.)
-2. **Reviewer scope enforcement → platform-level.** The reviewer bot is granted
-   no `contents:write`, so it cannot push regardless of prompt compliance or
-   injection from untrusted PR content. Made cheap by decision 3. (Rejected:
-   prompt-only "please don't edit code".)
+2. **Reviewer scope enforcement → token-scoped (with a caveat).** The reviewer
+   App token is granted no `contents:write`, so any write it makes cannot push or
+   merge. Caveat discovered during setup: a claude.ai routine also carries the
+   operator's write-capable identity via the session's built-in GitHub tools, so
+   the guarantee holds only while the reviewer writes exclusively through its
+   scoped `GH_TOKEN` (as its prompt requires) — strong, but not fully airtight.
+   Airtight enforcement would need the reviewer routine on a separate claude.ai
+   account with a read-only GitHub identity. See
+   [operator-setup.md](./operator-setup.md). (Rejected: prompt-only with no scoped
+   token at all.)
 3. **Identity → a separate GitHub bot per role.** Author login attributes every
    comment; per-identity permissions enforce role scope. (Rejected: shared
    identity with per-role comment markers.)

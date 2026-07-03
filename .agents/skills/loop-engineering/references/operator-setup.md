@@ -43,8 +43,10 @@ reviewer swap to hand off.
 
 Register one GitHub App per role at **Settings → Developer settings → GitHub Apps**,
 install each on this repository, and grant only the permissions its role needs. The
-**Contents** permission is the lever: read-only makes pushing and merging
-impossible at the platform, so only the coder can change code.
+**Contents** permission is the lever: an App installation token scoped to
+Contents:Read cannot push or merge, so any GitHub write the routine makes **with
+that token** is bounded by the App's permissions (see the identity note in step 3,
+including its residual-risk caveat).
 
 | App (example slug) | Contents | Pull requests | Issues | Checks | Can push/merge? |
 | ------------------ | -------- | ------------- | ------ | ------ | --------------- |
@@ -67,15 +69,52 @@ Notes:
 
 Create three routines at [claude.ai/code/routines](https://claude.ai/code/routines),
 one per App. Each loads the `loop-engineering` skill and runs `/loop`; the bridge
-tells each which role it is and which target to act on. **Connect each routine to
-its own App identity** (or a token minted from that App installation) so its writes
-are bounded by that App's permissions.
+tells each which role it is and which target to act on.
 
-- **Planner** — connector: planner App; repository read-only (no pushes).
-- **Coder** — connector: coder App; branch pushes `claude/`-prefixed.
-- **Reviewer** — connector: reviewer App; repository read-only (no pushes). Its
-  Contents:Read ceiling means it cannot push or merge even if a prompt injection
-  in PR content told it to.
+### Making a routine act as its App identity
+
+A routine has no "act as App" setting — by default it authenticates as your
+connected GitHub user (`@axross`), so its comments and commits are attributed to
+you. To make a routine act as its `[bot]` App instead, inject the App's
+installation token into that routine's **environment** and route every GitHub
+**write** through it:
+
+1. Give each routine its **own environment**. Add the App's **App ID**, **private
+   key**, and **installation ID** as environment secrets.
+2. In the environment's **setup script**, mint a fresh installation access token
+   (installation tokens expire ~1h, so mint per session), export it as `GH_TOKEN`,
+   and install `gh` (not pre-installed). Sketch:
+
+   ```bash
+   apt-get update && apt-get install -y gh jq openssl
+   # Build a short-lived App JWT from APP_ID + APP_PRIVATE_KEY (RS256), then:
+   #   GET  /repos/${REPO}/installation           -> installation id
+   #   POST /app/installations/${id}/access_tokens -> installation token
+   # Export the result so gh and git use the App identity:
+   export GH_TOKEN="<minted installation token>"
+   git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+   ```
+
+3. **Every GitHub write MUST go through `gh`/`git` using `GH_TOKEN`** — comments,
+   labels, reviews, the draft→ready flip, and pushes. The session's *built-in*
+   GitHub tools authenticate as `@axross` through the proxy, so a write made with
+   them posts as you (type `User`) and would break the bridge's bot/human routing.
+
+**Residual-risk caveat (important):** the cloud session still carries your
+`@axross` identity via those built-in tools, and `@axross` can push. So the
+planner/reviewer read-only contract is enforced by *using only their scoped
+`GH_TOKEN` and not the built-in write tools* — strong, but not an airtight
+platform guarantee. A session that ignored the rule could still push via the
+ambient identity. Fully airtight per-role enforcement would require each routine
+on a separate claude.ai account whose own GitHub identity is read-only, which is
+not worth the overhead here.
+
+Per-role environment intent:
+
+- **Planner** — planner App token (`GH_TOKEN`); repository read-only.
+- **Coder** — coder App token; `claude/`-prefixed pushes via `GH_TOKEN`.
+- **Reviewer** — reviewer App token; read-only. Its Contents:Read token cannot
+  push or merge; see the caveat above for the ambient-identity residual risk.
 
 Prompts (the standing instruction; the per-event context is appended as `text`):
 
@@ -86,6 +125,8 @@ skill and run the /loop command as the planner role, following references/plan-p
 The triggering event names a GitHub issue. Investigate, ask blocking questions and
 yield, or write the comprehensive plan and stop at the approval gate. Advance the
 plan phase by one step and exit; if the issue is not in a plan phase, exit as a no-op.
+Make every GitHub write (comments, labels, issue edits) with gh/git using $GH_TOKEN,
+your App identity — never the built-in GitHub tools, which post as the operator.
 ```
 
 ```text
@@ -95,7 +136,8 @@ skill and run the /loop command as the coder role, following references/implemen
 Build from the approved plan on claude/issue-<n>, verify, open the draft PR, and hand
 off to the reviewer with loop:review-requested; on review hand-back, address comments
 and re-request review. Advance by one step and exit. Never set loop:done or flip a PR
-to ready — that is the reviewer's role.
+to ready — that is the reviewer's role. Make every GitHub write and push with gh/git
+using $GH_TOKEN, your App identity — never the built-in GitHub tools.
 ```
 
 ```text
@@ -106,7 +148,9 @@ You are read-only: never edit files, push, or merge. Re-read the diff, the unres
 threads, the linked issue's acceptance criteria, and CI; post findings as your own
 review comments and apply loop:changes-requested, or — on a clean round with green CI —
 flip the PR to ready, set loop:done, and @mention @axross. Respect the 4-round
-termination guard. Advance by one step and exit.
+termination guard. Advance by one step and exit. Make every GitHub write with gh
+using $GH_TOKEN, your read-only App identity — never the built-in GitHub tools (they
+carry the operator's write-capable identity).
 ```
 
 ## 4. Add the Triggers and the Bridge
@@ -146,9 +190,12 @@ triggers go through the GitHub Actions bridge.
 
 ## Caveats
 
-- **Role scope is enforced, not requested**: the planner and reviewer Apps have
-  Contents:Read, so a prompt injection in a PR comment or CI log cannot make them
-  push or merge — the platform rejects it. Only the coder App can change code.
+- **Role scope is token-bounded, with a residual caveat**: the planner and reviewer
+  App tokens have Contents:Read, so any write made through their `GH_TOKEN` cannot
+  push or merge. But the routine also carries the operator's write-capable identity
+  via the built-in GitHub tools, so the read-only contract holds only while each
+  role writes exclusively through its scoped `GH_TOKEN` (as its prompt requires).
+  See step 3's residual-risk caveat.
 - **Caps and cost**: routines have a daily run cap and draw metered usage; GitHub
   webhook triggers have per-account hourly caps. The reviewer's 4-round guard
   bounds the coder↔reviewer loop. `check_suite.completed` fires the reviewer for
