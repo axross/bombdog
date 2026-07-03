@@ -79,21 +79,62 @@ you. To make a routine act as its `[bot]` App instead, inject the App's
 installation token into that routine's **environment** and route every GitHub
 **write** through it:
 
-1. Give each routine its **own environment**. Add the App's **App ID**, **private
-   key**, and **installation ID** as environment secrets.
+1. Give each routine its **own environment**. Add the App's **App ID** and
+   **private key (PEM)** as environment secrets (`APP_ID`, `APP_PRIVATE_KEY`). The
+   installation ID is derived below, so it does not need to be stored.
 2. In the environment's **setup script**, mint a fresh installation access token
-   (installation tokens expire ~1h, so mint per session), export it as `GH_TOKEN`,
-   and install `gh` (not pre-installed). Sketch:
+   (they expire ~1h, so mint per session), export it as `GH_TOKEN`, and install
+   `gh` (not pre-installed):
 
    ```bash
+   set -euo pipefail
    apt-get update && apt-get install -y gh jq openssl
-   # Build a short-lived App JWT from APP_ID + APP_PRIVATE_KEY (RS256), then:
-   #   GET  /repos/${REPO}/installation           -> installation id
-   #   POST /app/installations/${id}/access_tokens -> installation token
-   # Export the result so gh and git use the App identity:
-   export GH_TOKEN="<minted installation token>"
+   REPO="axross/bombdog"   # owner/repo this App is installed on
+
+   # 1. Build a short-lived App JWT (RS256, <=10 min lifetime).
+   key_file="$(mktemp)"; trap 'rm -f "$key_file"' EXIT
+   printf '%s\n' "$APP_PRIVATE_KEY" > "$key_file"
+   b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
+   now="$(date +%s)"
+   jwt_header="$(printf '%s' '{"alg":"RS256","typ":"JWT"}' | b64url)"
+   jwt_claims="$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((now - 60))" "$((now + 540))" "$APP_ID" | b64url)"
+   jwt_sig="$(printf '%s' "${jwt_header}.${jwt_claims}" | openssl dgst -sha256 -sign "$key_file" -binary | b64url)"
+   jwt="${jwt_header}.${jwt_claims}.${jwt_sig}"
+
+   # Reusable curl wrapper: fail on HTTP >=400 (but print the body), stay quiet otherwise.
+   gh_api() {
+     curl --fail-with-body -sS \
+       -H "Authorization: Bearer ${jwt}" \
+       -H "Accept: application/vnd.github+json" \
+       -H "X-GitHub-Api-Version: 2022-11-28" \
+       "$@"
+   }
+
+   # 2. Resolve the installation for this repo.
+   install_id="$(gh_api "https://api.github.com/repos/${REPO}/installation" | jq -er '.id')"
+
+   # 3. Mint an installation access token (~1h TTL).
+   GH_TOKEN="$(gh_api -X POST \
+     "https://api.github.com/app/installations/${install_id}/access_tokens" | jq -er '.token')"
+   export GH_TOKEN
+
+   # 4. Route gh and git through the App identity.
    git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
    ```
+
+   `curl` practices used above: `--fail-with-body` turns HTTP 4xx/5xx into a
+   non-zero exit while still printing GitHub's JSON error, `-sS` silences the
+   progress meter but keeps real errors, the explicit `Accept` and
+   `X-GitHub-Api-Version` headers pin the API version, and `jq -e` exits non-zero
+   if the field is missing so `set -euo pipefail` aborts instead of exporting an
+   empty token.
+
+   Persistence and TTL: a `GH_TOKEN` exported inside the setup script may not carry
+   into the session's later shells, and the token lasts only ~1h. Persist it where
+   `gh` and `git` will read it — e.g. append `export GH_TOKEN=...` to the shell
+   profile the session sources, or write it into the git credential store the
+   `insteadOf` rule points at — and re-mint (re-run the block) if a run outlives the
+   token. Keep `GH_TOKEN` out of logs and the repository.
 
 3. **Every GitHub write MUST go through `gh`/`git` using `GH_TOKEN`** — comments,
    labels, reviews, the draft→ready flip, and pushes. The session's *built-in*
