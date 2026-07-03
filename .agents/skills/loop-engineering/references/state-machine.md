@@ -98,7 +98,30 @@ of author.
 
 **Guidelines:**
 
-- MUST begin every comment a role posts (issue or PR) with an HTML marker line `<!-- loop-agent -->` on its own line, and prefix the visible body with a role badge (`🤖 **loop-plan**` / `🤖 **loop-code**` / `🤖 **loop-review**`) so a human reader can tell which role spoke.
+- MUST begin every comment a role posts (issue or PR) with the standard header defined below — the hidden marker line, then the visible badge.
 - MUST treat any comment or review carrying `<!-- loop-agent -->` as agent output to ignore as a trigger, and any comment without it as human input.
 - MUST make GitHub reads and writes through the built-in `mcp__github__*` tools; direct `gh`/`curl` calls to `api.github.com` are proxy-gated in cloud sessions.
 - MUST @mention the operator (`@axross`) in the visible body whenever the loop yields for a decision, approval, or blocker.
+
+### Comment Header Convention
+
+Every comment a role posts MUST start with exactly these two lines, followed by a blank line and the body:
+
+```markdown
+<!-- loop-agent -->
+> {emoji} **Loop Engineering — {Role}** · <sub>Claude Code · [session ↗]({session-url})</sub>
+```
+
+- **Line 1** is the hidden marker the dispatch bridge reads; it MUST be present and exact, or the bridge will treat the comment as human input and re-fire the loop.
+- **Line 2** is the human-facing badge. `{emoji}`/`{Role}` name the speaking role: **🧭 Plan**, **🔨 Code**, **🔍 Review**.
+- `{session-url}` is this run's transcript: `https://claude.ai/code/` followed by the value of `CLAUDE_CODE_REMOTE_SESSION_ID` with its `cse_` prefix replaced by `session_`. Omit the ` · [session ↗](…)` segment when the id is unavailable (e.g. a local run).
+- MUST NOT hardcode a model name — the routine's model is configurable. `Claude Code` (the tool) is the fixed attribution.
+
+Example (reviewer, yielding a finding):
+
+```markdown
+<!-- loop-agent -->
+> 🔍 **Loop Engineering — Review** · <sub>Claude Code · [session ↗](https://claude.ai/code/session_01ABC)</sub>
+
+@axross Major: `move-composer.tsx:42` — the sheet never restores focus after a keep-open log.
+```

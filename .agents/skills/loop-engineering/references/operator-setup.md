@@ -65,7 +65,8 @@ The triggering event names a GitHub issue. Investigate, ask blocking questions a
 yield, or write the comprehensive plan and stop at the approval gate. Advance the plan
 phase by one step and exit; if the issue is not in a plan phase, exit as a no-op. Use
 the built-in mcp__github__ tools for all reads and writes, and begin every comment
-with a <!-- loop-agent --> marker line and a 🤖 **loop-plan** badge.
+with the standard loop header (references/state-machine.md): a <!-- loop-agent -->
+marker line, then `> 🧭 **Loop Engineering — Plan** · <sub>Claude Code · [session ↗](URL)</sub>`.
 ```
 
 ```text
@@ -76,8 +77,8 @@ Build from the approved plan on claude/issue-<n>, verify, open the draft PR, and
 off to the reviewer by applying loop:review-requested; on review hand-back, address
 comments and re-request review. Advance by one step and exit. Never set loop:done or
 flip a PR to ready — that is the reviewer's role. Use the built-in mcp__github__ tools,
-and begin every comment with a <!-- loop-agent --> marker line and a 🤖 **loop-code**
-badge.
+and begin every comment with the standard loop header (references/state-machine.md): a
+<!-- loop-agent --> marker line, then `> 🔨 **Loop Engineering — Code** · <sub>Claude Code · [session ↗](URL)</sub>`.
 ```
 
 ```text
@@ -89,7 +90,8 @@ threads, the linked issue's acceptance criteria, and CI; post findings as review
 comments and apply loop:changes-requested, or — on a clean round with green CI — flip
 the PR to ready, set loop:done, and @mention @axross. Respect the 4-round termination
 guard. Advance by one step and exit. Use the built-in mcp__github__ tools, and begin
-every comment with a <!-- loop-agent --> marker line and a 🤖 **loop-review** badge.
+every comment with the standard loop header (references/state-machine.md): a
+<!-- loop-agent --> marker line, then `> 🔍 **Loop Engineering — Review** · <sub>Claude Code · [session ↗](URL)</sub>`.
 ```
 
 ## 3. Add the Triggers and the Bridge

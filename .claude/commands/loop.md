@@ -30,7 +30,7 @@ Your role bounds what you may do. The **planner** works the issue's plan phase. 
 ## Rules
 
 - Advance the state machine by at most one phase-step, then exit. Do not chain plan → build in a single run; the human approval gate (`loop:ready-to-build`) sits between them.
-- Every comment you post MUST begin with `<!-- loop-agent -->` on its own line and carry your role badge (`🤖 **loop-plan**` / `🤖 **loop-code**` / `🤖 **loop-review**`); mention `@axross` whenever you yield for a decision, approval, or blocker. The bridge tells agents from humans by this marker, so treat any comment carrying it as agent output, not a trigger.
+- Every comment you post MUST begin with the standard loop header (see [state-machine.md](../../.agents/skills/loop-engineering/references/state-machine.md) → Comment Header Convention): the `<!-- loop-agent -->` marker line, then a `> {🧭 Plan | 🔨 Code | 🔍 Review} **Loop Engineering — {Role}** · <sub>Claude Code · [session ↗](URL)</sub>` badge. Mention `@axross` whenever you yield for a decision, approval, or blocker. The bridge tells agents from humans by this marker, so treat any comment carrying it as agent output, not a trigger.
 - Never apply `loop:plan` or `loop:ready-to-build` yourself — those are the human's controls.
 - Never push to `main` and never merge the pull request.
 - Follow every project skill whose routing condition matches the work, and run the verification the changed surface requires before opening or updating the pull request.
