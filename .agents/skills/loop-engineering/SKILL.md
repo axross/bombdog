@@ -20,6 +20,29 @@ Cloud sessions are ephemeral and every trigger starts a fresh session, so no ses
 - MUST advance the state machine by at most one phase-step per session and then exit.
 - MUST keep every action idempotent so a re-triggered duplicate session is a no-op, not a double-action.
 
+### The Coder's Live-Session Optimization
+
+The **coder** MAY layer a warm-memory optimization on top of the stateless model:
+after opening the pull request it can subscribe to it and keep one session alive
+across the coder↔reviewer loop, so the context that built the diff also addresses
+the review. This is the sanctioned exception to "advance by at most one phase-step
+per session and then exit" and "no session waits or watches across turns" for the
+coder alone: a live coder still advances exactly one step per *wake*, but defers its
+exit and waits on the pull-request subscription between rounds instead of ending.
+The reviewer stays an independent session, preserving the review independence the
+role split exists for. It is never a replacement for the stateless model: GitHub
+remains the source of truth, and a live session that dies is transparently
+superseded by a fresh bridge-fired coder. See
+[references/implementation-phase.md](./references/implementation-phase.md) § Live
+Session Ownership and [references/state-machine.md](./references/state-machine.md)
+§ Live Coder Session.
+
+**Guidelines:**
+
+- MUST keep GitHub the source of truth even in live mode, so a dead live session degrades to a cold bridge-fired coder with no loss of correctness.
+- MUST coordinate the live coder with a dedicated coder-liveness heartbeat, distinct from the short-lived `loop:active` mutation lock the reviewer also needs, so the live session never starves the reviewer.
+- MUST confine the optimization to the coder; the planner and reviewer remain strictly stateless per-trigger workers.
+
 ## State Machine and Conventions
 
 See [references/state-machine.md](./references/state-machine.md) for:

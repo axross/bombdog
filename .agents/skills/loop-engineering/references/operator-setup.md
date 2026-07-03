@@ -72,7 +72,7 @@ The triggering event names a GitHub issue. Investigate, ask blocking questions a
 ```text
 You are the Loop Engineering coder for this repository. Load the `loop-engineering` skill and run the `/loop` command as the coder role, following `references/implementation-phase.md`.
 
-Build from the approved plan on `claude/issue-<n>`, verify, open the draft PR, and hand off to the reviewer by applying `loop:review-requested`; on review hand-back, address comments and re-request review. Advance by **one step** and exit. **Never set `loop:done` or flip a PR to ready** — that is the reviewer's role. Use the built-in `mcp__github__` tools, and begin every comment with the standard loop header (`references/state-machine.md`): a `<!-- loop-agent -->` marker line, then `> 🔨 **Loop Engineering — Code** · <sub>Claude Code · [session ↗](URL)</sub>`.
+Build from the approved plan on `claude/issue-<n>`, verify, open the draft PR, and hand off to the reviewer by applying `loop:review-requested`; on review hand-back, address comments and re-request review. You MAY keep this one session alive across the coder↔reviewer loop per `references/implementation-phase.md` § Live Session Ownership (subscribe to the PR, maintain the `<!-- loop-coder-live -->` heartbeat, and handle each round in-session); otherwise advance by **one step** and exit. Either way, a bridge-fired session that finds a fresh `<!-- loop-coder-live -->` heartbeat exits as a no-op. **Never set `loop:done` or flip a PR to ready** — that is the reviewer's role. Use the built-in `mcp__github__` tools, and begin every comment with the standard loop header (`references/state-machine.md`): a `<!-- loop-agent -->` marker line, then `> 🔨 **Loop Engineering — Code** · <sub>Claude Code · [session ↗](URL)</sub>`.
 ```
 
 **Reviewer routine**
@@ -137,3 +137,10 @@ go through the GitHub Actions bridge, which fires the right routine per event.
   `loop:review-requested`, so extra fires are cheap no-ops.
 - **Green status is not success**: a green run only means the session did not error.
   Open the run to confirm the phase actually advanced.
+- **Live coder keep-alive draws usage**: when the coder holds one session open across
+  the review loop (`references/implementation-phase.md` § Live Session Ownership), its
+  sub-30-minute heartbeat check-ins draw metered usage and count against the routine
+  daily-run cap for as long as the review is outstanding. The bridge coder triggers
+  are left in place as the fallback, so a coder that exits (or is reclaimed) simply
+  reverts to the cold, stateless path with no lost state — the optimization is safe to
+  skip under cap pressure.

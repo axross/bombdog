@@ -49,13 +49,68 @@ Defer to [Development Guidelines › verification](../../development-guidelines/
   **pull request**, addressed by the pull request's own number from the first
   bullet above, not the issue's number; this label change is the reliable
   webhook that wakes the reviewer, replacing any dependence on a bot-authored
-  PR-open event or `subscribe_pr_activity`. See
-  [state-machine.md](./state-machine.md) § Issue vs. Pull Request Targets for
-  why these two writes must never be swapped.
+  PR-open event. See [state-machine.md](./state-machine.md) § Issue vs. Pull
+  Request Targets for why these two writes must never be swapped.
+
+## Live Session Ownership
+
+The coder MAY keep **one** session alive across the whole coder↔reviewer loop,
+so the same context that built the diff also addresses the review — a warm-memory
+optimization layered on top of the stateless-worker model, never a replacement
+for it. GitHub stays the source of truth: a live session that dies is transparently
+superseded by a fresh bridge-fired coder that reconstructs state from GitHub, so
+losing the warm session costs only re-reading, never correctness.
+
+There are two entry modes for a coder turn:
+
+- **Cold (the fallback and guaranteed floor):** the Actions bridge fires a fresh
+  coder on `loop:ready-to-build`, PR `loop:changes-requested`, or a human PR
+  review/comment. This is the original stateless behavior — it reconstructs
+  everything from GitHub and needs no live session.
+- **Live (the optimization):** after opening the draft pull request, the build
+  session subscribes to the pull request and stays alive, handling each review
+  round in the same session until the reviewer completes or blocks the loop.
+
+Live mode is coordinated by a **coder-liveness heartbeat**, distinct from the
+short-lived `loop:active` mutation lock (see
+[state-machine.md](./state-machine.md) § Live Coder Session). The heartbeat says
+"a live coder owns the next coder turn"; the lock stays the brief per-step mutex
+so the reviewer — which needs the same `loop:active` lock — is never starved.
+
+**Guidelines:**
+
+- MAY, after applying `loop:review-requested` for the first time, enter live mode:
+  call `subscribe_pr_activity` on the pull request and remain the session instead
+  of exiting.
+- MUST, in live mode, maintain a single pinned coder-liveness heartbeat comment on
+  the pull request — the standard loop header (badged `🔨 **Loop Engineering —
+  Code**`) plus a `<!-- loop-coder-live -->` marker line — and refresh its
+  timestamp on every wake and on a self-scheduled check-in strictly under 30
+  minutes apart, so a concurrent bridge-fired coder can judge liveness.
+- MUST, on entry to any coder turn, check the coder-liveness heartbeat: a
+  bridge-fired (cold) session whose pull request carries a `<!-- loop-coder-live -->`
+  heartbeat under 30 minutes old MUST exit as a no-op and let the live session
+  handle the round; a heartbeat 30+ minutes old or absent means the live session
+  died, so the cold session reclaims, proceeds, and MAY itself enter live mode.
+- MUST keep the `loop:active` mutation lock short-lived exactly as in the cold
+  model — acquire it only while building or pushing a batch of fixes and release it
+  immediately after — and MUST NOT hold it while waiting between rounds, because the
+  reviewer acquires the same lock to review.
+- MUST, in live mode, act only on reviewer or human review activity delivered by
+  the subscription; treat CI events and the loop's own output as no-ops, mirroring
+  "woken by a hand-off, never by its own output."
+- MUST leave live mode — mark the coder-liveness heartbeat released (edit it to
+  drop the `<!-- loop-coder-live -->` marker), call the paired unsubscribe, and
+  exit — when the reviewer sets `loop:done`, when any role sets `loop:blocked`, or
+  when the keep-alive budget is exhausted. Post-done human follow-up (see "Address
+  Review After Done") is then handled cold by the bridge, exactly as today.
 
 ## Address Review
 
-The coder is woken to address review by a hand-off, never by its own output:
+The coder is woken to address review by a hand-off, never by its own output. In
+the cold model each of these is a fresh bridge-fired session; in live mode the same
+events arrive over the subscription and are handled in the session that built the
+diff:
 
 - the reviewer applied `loop:changes-requested` to the pull request, or
 - a human submitted a review or comment on the pull request, or
@@ -67,7 +122,7 @@ The coder is woken to address review by a hand-off, never by its own output:
 - MUST address and resolve each actionable reviewer or human comment, pushing fixes to the same branch, then reply on the thread with a marked comment noting what changed.
 - MUST use `AskUserQuestion`-style escalation — a marked comment that @mentions `@axross` — when a comment is ambiguous or needs a product/architecture decision, rather than guessing.
 - MUST re-run the relevant verification after each batch of fixes and keep the pull request body's evidence current.
-- MUST, when the batch is addressed, hand back to the reviewer by applying `loop:review-requested` and removing `loop:changes-requested`, then release the lock and exit. The reviewer re-reviews and owns the decision to complete or hand back again.
+- MUST, when the batch is addressed, hand back to the reviewer by applying `loop:review-requested` and removing `loop:changes-requested`, then release the `loop:active` lock. In the cold model the session then exits; in live mode it refreshes the coder-liveness heartbeat and keeps waiting on the subscription instead of exiting. Either way the reviewer re-reviews and owns the decision to complete or hand back again.
 - MUST NOT flip the pull request to ready or set `loop:done`; the reviewer owns both, so a coder can never leave a pull request "done but draft."
 
 ### Address Review After Done

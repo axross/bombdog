@@ -121,6 +121,43 @@ Scheduled polls, event triggers, and manual runs can fire on the same target con
 - MUST remove `loop:active` before exiting, including on handled error paths.
 - MUST, immediately before posting a phase-completing comment or applying a state-changing label, re-read the current labels and latest comments; if the target state was already reached (the hand-off label this session is about to apply is already present, `loop:done` is already set, or a review-round comment for the same round already exists), treat this session as having lost the race and exit without posting or re-applying.
 
+## Live Coder Session
+
+The coder MAY hold **one** session open across the whole coder↔reviewer loop so
+the context that built the diff also addresses the review; see
+[implementation-phase.md](./implementation-phase.md) § Live Session Ownership for
+the full behavior. This is an optimization on top of the stateless model, not a
+replacement: a live session that dies is superseded by a fresh bridge-fired coder
+that reconstructs state from GitHub.
+
+Two signals coordinate it, and they are **not** the same thing:
+
+- **`loop:active`** — the short-lived mutation mutex, acquired only while a role is
+  actively building, pushing, or writing state, and released immediately after. The
+  reviewer needs this lock too, so the live coder MUST NOT hold it between rounds.
+- **The coder-liveness heartbeat** — a single pinned pull-request comment carrying
+  the standard loop header (badged `🔨 Code`) plus a `<!-- loop-coder-live -->`
+  marker line and a refreshed timestamp. It means "a live coder owns the next coder
+  turn," and only ever suppresses a redundant *coder* session; it never gates the
+  reviewer.
+
+**Guidelines:**
+
+- MUST, in live mode, refresh the coder-liveness heartbeat on every wake and on a
+  self-scheduled check-in strictly under 30 minutes apart, so a concurrent
+  bridge-fired coder can judge liveness from its age.
+- MUST, on entry to a bridge-fired (cold) coder turn, treat a `<!-- loop-coder-live -->`
+  heartbeat under 30 minutes old as a live owner and exit as a no-op; treat one
+  30+ minutes old, or absent, as a dead session and proceed, optionally entering
+  live mode.
+- MUST leave live mode — drop the `<!-- loop-coder-live -->` marker from the
+  heartbeat and unsubscribe — on `loop:done`, on `loop:blocked`, or when the
+  keep-alive budget is exhausted, so post-completion follow-up reverts cleanly to
+  the cold bridge path.
+- MUST NOT let the coder-liveness heartbeat gate any role but the coder; the
+  reviewer and planner ignore it entirely and continue to coordinate only through
+  `loop:active` and the hand-off labels.
+
 ## The Bot-Identity Marker
 
 All three routines act as the operator's GitHub identity, so agent comments and human

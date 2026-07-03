@@ -92,6 +92,12 @@ jobs:
   # ---- Coder ----------------------------------------------------------------
   # Fired by plan approval (loop:ready-to-build), the reviewer handing changes
   # back (PR loop:changes-requested), or a human review / PR comment.
+  #
+  # These triggers also serve as the fallback for the coder's optional live-session
+  # optimization (implementation-phase.md § Live Session Ownership): if a live coder
+  # is subscribed to the PR it handles the round itself, and this bridge-fired
+  # session no-ops on seeing a fresh <!-- loop-coder-live --> heartbeat; if that
+  # live session has died, this fire is what resumes the loop cold from GitHub state.
   build:
     name: Fire coder routine
     runs-on: ubuntu-latest
