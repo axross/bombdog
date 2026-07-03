@@ -5,7 +5,7 @@ description: Apply this skill when writing, refining, or reviewing a product req
 
 # Product Requirement Guidelines
 
-Apply this skill whenever drafting or reviewing the parts of a product requirement, feature spec, or issue description that describe **what** is needed and **how completion is verified** — not how it is built. It is general-purpose: any product requirement, feature specification, or GitHub issue description benefits from it, not only the `/address` plan phase's plan-writing step (see [phases.md](../address/references/phases.md)).
+Apply this skill whenever drafting or reviewing the parts of a product requirement, feature spec, or issue description that describe **what** is needed and **how completion is verified** — not how it is built. It is general-purpose: any product requirement, feature specification, or GitHub issue description benefits from it, not only the `/address` command's plan-writing step.
 
 This skill deliberately does not own everything a spec contains. It owns problem framing, scope boundaries, acceptance-criteria craft, and — when those sections are warranted — the spec-level framing of the UI design and system-design/architecture sections. It does not own the implementation mechanics behind them:
 

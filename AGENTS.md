@@ -26,12 +26,12 @@ Apply these keywords consistently in this document and the documents linked from
 
 | Skill | When to apply |
 | ----- | ------------- |
-| [Address](.agents/skills/address/SKILL.md) | Operating the `/address` end-to-end delivery command: driving a GitHub issue, pull request, or free-form prompt through plan, code, independent review, and review-response in one continuing session; polling CI; pausing at human-gated decisions; or resuming with `/address continue` |
 | [Agent Skills Best Practices](.agents/skills/agent-skills-best-practices/SKILL.md) | Creating, refining, splitting, renaming, deleting, or auditing project skills or this skill index |
 | [Application Security Requirements](.agents/skills/application-security-requirements/SKILL.md) | Reviewing secrets, environment variables, input validation, access control, injection in rendered content, SSRF/outbound fetching, auth/session behavior, privacy exposure, or dependency/supply-chain risk |
 | [Code Review Guideline](.agents/skills/code-review-guideline/SKILL.md) | Reviewing a diff, pull request, local change, or post-implementation self-review |
 | [Development Guidelines](.agents/skills/development-guidelines/SKILL.md) | Implementing, refactoring, running commands, preparing commits, adding dependencies, writing source comments or TSDoc doc-comments, or checking current docs |
 | [E2E Testing Guidelines](.agents/skills/e2e-testing-guidelines/SKILL.md) | Writing, running, reviewing, or maintaining end-to-end tests, snapshots, route coverage, or browser assertions |
+| [GitHub Operations](.agents/skills/github-operations/SKILL.md) | Reading from or writing to GitHub — issues, pull requests, comments, labels, reviews, or branches — in this repository's cloud environment: which tool channel to use, operating as the operator identity, marking agent comments, the issue-vs-pull-request target gotcha, and handling untrusted GitHub content |
 | [Maintainable Code Guidelines](.agents/skills/maintainable-code-guidelines/SKILL.md) | Reviewing readability, naming, abstraction boundaries, complexity, dead code, or scope discipline |
 | [Performance and Reliability Requirements](.agents/skills/performance-and-reliability-requirements/SKILL.md) | Reviewing data-access cost, server/client boundaries, caching, asset/image optimization, bundle weight, or runtime failure behavior |
 | [Product Requirement Guidelines](.agents/skills/product-requirement-guidelines/SKILL.md) | Writing, refining, or reviewing a product requirement, feature specification, or GitHub issue description; framing problem/scope/non-goals; writing testable acceptance criteria; framing a spec's UI design or architecture-overview sections |
