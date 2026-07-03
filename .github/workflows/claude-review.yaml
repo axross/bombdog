@@ -77,7 +77,17 @@ jobs:
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          # --allowedTools is REQUIRED: the action does not honor a plugin
+          # command's own `allowed-tools` frontmatter, so without this the plugin
+          # is denied the tools it needs and posts nothing. We check out the base
+          # ref (not the PR head), so the plugin reads the diff via `gh pr diff`
+          # and posts via `mcp__github_inline_comment__create_inline_comment` plus
+          # a `gh pr comment` summary — all of which must be allow-listed here.
+          # COMMENT-only (no APPROVE/REQUEST_CHANGES) is a CI-review choice made
+          # here, not portable review policy, so it lives in this prompt rather
+          # than in REVIEW.md.
           claude_args: >-
-            --append-system-prompt "Apply this repository's review standards from .agents/skills/code-review-guideline/SKILL.md, and post findings as a COMMENT-type pull-request review — never APPROVE or REQUEST_CHANGES."
+            --append-system-prompt "Read REVIEW.md at the repository root and follow it as the highest-priority, review-only instructions for this review. Post your findings as a single COMMENT-type pull-request review — do not APPROVE or REQUEST_CHANGES; this reviewer is advisory and does not gate merges."
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*)"
             --disallowedTools "WebFetch,WebSearch"
             --max-turns 30
