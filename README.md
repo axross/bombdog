@@ -75,7 +75,8 @@ If you need to point Playwright at a system-provided Chromium instead of its man
 - `e2e/` — Playwright specs
 - `public/` — static assets
 - `AGENTS.md` + `.agents/skills/` — agent working agreement and skill index
-- `.claude/` — Claude Code harness (hooks + settings)
+- `.claude/` — Claude Code harness (hooks, settings, and slash commands)
+- `.github/workflows/` — CI (`merge-checks.yaml`) and the automated reviewer (`claude-review.yaml`)
 
 ## Working with AI agents
 
@@ -85,3 +86,27 @@ routing index; detailed conventions live under `.agents/skills/`. Claude Code
 loads it via [`CLAUDE.md`](./CLAUDE.md), and the hooks in `.claude/` provision
 the toolchain, format on edit, and run lint + unit tests before a task
 completes.
+
+### Slash commands
+
+Two Claude Code slash commands (in [`.claude/commands/`](./.claude/commands)) drive delivery:
+
+- **`/address <issue | pull request | prompt>`** — takes one unit of work from intake to a review-ready pull request in a single continuing session: plan → implement → request an independent review → respond to it. It polls CI and the review autonomously (via `send_later`, capped at 2 hours) and ends the turn at every human-gated decision; resume a paused run with **`/address continue`**. See [`.claude/commands/address.md`](./.claude/commands/address.md).
+- **`/review <pull request | ref-range | (empty)>`** — a comprehensive review against this repo's [Code Review Guideline](./.agents/skills/code-review-guideline/SKILL.md). It is the single source of truth for how review is done here: run it ad-hoc, and the CI reviewer invokes the same command. See [`.claude/commands/review.md`](./.claude/commands/review.md).
+
+### Automated code review
+
+[`.github/workflows/claude-review.yaml`](./.github/workflows/claude-review.yaml) runs an **independent** review — a separate Claude Code session on a GitHub runner, under a bot identity distinct from the author — whenever a trusted user comments **`@claude review`** on a pull request. It invokes the `/review` command and posts findings as a single **COMMENT**-type GitHub review (inline comments anchored to the diff, plus a summary). It never approves or requests changes — GitHub rejects those from a pull request's own author — and never leaves loose conversation comments.
+
+Conventions the agents follow:
+
+- Findings are posted as a GitHub review, tagged by severity with `file:line` evidence and a concrete fix.
+- When a commit resolves a review comment, the agent replies `Resolved in <short-hash>` with a one-line summary and resolves the thread.
+- The reviewer is advisory: it does not block merges — merging stays a human decision.
+
+**One-time setup** to enable the reviewer (repo admin):
+
+1. Install the [Claude GitHub App](https://github.com/apps/claude) on the repository.
+2. Run `claude setup-token` and add the output as the repository secret `CLAUDE_CODE_OAUTH_TOKEN` (reviews run on your Claude subscription).
+
+> `issue_comment` workflows run only from the default branch, so the reviewer starts firing on pull requests once `claude-review.yaml` is on `main`.

@@ -1,0 +1,72 @@
+name: Claude Code Review
+
+# Independent pull-request review. Runs as a separate Claude Code session on a
+# GitHub-hosted runner — a different session, on different infrastructure, under
+# a bot identity distinct from the operator (@axross) — triggered by an
+# `@claude review` comment on a PR. It invokes the repo's `/review` command
+# (.claude/commands/review.md), the single source of truth for review behavior
+# that humans also run ad-hoc. This is the authoritative review for the
+# `/address` flow (.claude/commands/address.md), which posts `@claude review`
+# after opening a PR and then addresses the findings this workflow leaves.
+#
+# NOTE: issue_comment workflows run only from the version on the DEFAULT branch,
+# so this reviewer fires on PRs only once this file is merged to `main` — the PR
+# that introduces it cannot be reviewed by it.
+#
+# Operator prerequisites (one-time; the workflow no-ops until both are done):
+#   1. Install the Claude GitHub App: https://github.com/apps/claude
+#   2. Generate a subscription token locally with `claude setup-token` and add it
+#      as the repo secret CLAUDE_CODE_OAUTH_TOKEN
+#      (Settings → Secrets and variables → Actions).
+#      To use pay-as-you-go API billing instead of your subscription, set an
+#      ANTHROPIC_API_KEY secret and swap the `claude_code_oauth_token` input
+#      below for `anthropic_api_key`.
+
+on:
+  issue_comment:
+    types: [created]
+
+# Least privilege for a reviewer: read code, write review output only. No
+# contents:write — it never pushes. pull-requests / issues / checks writes cover
+# inline review comments, the summary comment, and the check-run respectively.
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+concurrency:
+  group: claude-review-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Only fire on: a comment on a pull request (not a plain issue), containing
+    # `@claude review`, from a trusted user (owner/member/collaborator). This
+    # keeps untrusted authors from spending tokens or steering the reviewer.
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude review') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Check out the base ref (the default branch), never the PR head — the
+      # review reads the diff through the GitHub API, so untrusted head code is
+      # never executed on the runner. The checkout supplies the `/review` command,
+      # CLAUDE.md / AGENTS.md, and the project skills as review context.
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Invoke the repo's /review command against this PR. The command file
+          # (checked out above) carries all review behavior — severity/evidence
+          # standards, COMMENT-only GitHub review posting, untrusted-input rules —
+          # so this workflow stays a thin trigger and behavior stays in one place.
+          prompt: "/review ${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          claude_args: >-
+            --disallowedTools "WebFetch,WebSearch"
+            --max-turns 30
