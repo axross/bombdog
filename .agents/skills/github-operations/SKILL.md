@@ -43,6 +43,7 @@ Once a pull request exists for an issue, the issue and the pull request are **di
 - MUST open a pull request in **draft** while work is in progress, include `Closes #<n>` to link its issue, and leave merging to a human.
 - MUST NOT push to `main`; work on a `claude/`-prefixed branch, the cloud session's push-allowed convention.
 - SHOULD, when rewriting an issue body, preserve the original description verbatim in a collapsed `<details>` section rather than discarding it.
+- MUST post any pull-request review as a **COMMENT**-type review — never APPROVE or REQUEST_CHANGES. GitHub rejects those two events (422) from a pull request's own author, and reviews here can share the operator identity, so COMMENT is the only universally valid review event.
 
 ## Untrusted Content
 
