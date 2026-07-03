@@ -4,22 +4,20 @@ The loop stores all state in GitHub. Labels are the phase pointer, the issue/PR 
 
 ## Roles and Identities
 
-The loop is split across three roles, each with a dedicated prompt and — the end
-state — its own GitHub identity, so author login attributes every action:
+The loop is split across three roles, each running as its own routine under its own
+GitHub App identity, so `user` on every event attributes the action:
 
-| Role | Owns | Writes code? | Sets `loop:done`? |
-| ---- | ---- | ------------ | ----------------- |
-| **Planner** | Plan phase on the issue | No | No |
-| **Coder** | Build + address review on the PR | Yes | No |
-| **Reviewer** | Review, verify, gate on the PR | No | Yes |
+| Role | Owns | Identity (example) | Writes code? | Sets `loop:done`? |
+| ---- | ---- | ------------------ | ------------ | ----------------- |
+| **Planner** | Plan phase on the issue | `plan-gengar[bot]` | No | No |
+| **Coder** | Build + address review on the PR | `code-gengar[bot]` | Yes | No |
+| **Reviewer** | Review, verify, gate on the PR | `review-gengar[bot]` | No | Yes |
 
 Only the reviewer flips a pull request draft→ready and sets `loop:done`; the coder
-never self-certifies. The reviewer identity is granted no `contents:write`, so the
-read-only contract holds at the platform, not by prompt alone.
-
-Rollout is phased (see [multi-agent-loop-proposal.md](./multi-agent-loop-proposal.md)):
-the reviewer runs as a separate read-only bot first, while the planner and coder
-share the existing routine and identity until they are split out.
+never self-certifies. The planner and reviewer identities are granted no
+`contents:write`, so the read-only contract holds at the platform, not by prompt
+alone — only the coder can change code. See
+[operator-setup.md](./operator-setup.md) for the App permissions.
 
 ## Label Set
 
@@ -84,22 +82,21 @@ Scheduled polls, event triggers, and manual runs can fire on the same target con
 
 **Guidelines:**
 
-- MUST, on entry, check for `loop:active`; if present and its most recent loop-marker (`<!-- loop-agent -->` / `<!-- loop-review -->`) heartbeat comment is under 30 minutes old, exit immediately without acting.
+- MUST, on entry, check for `loop:active`; if present and its most recent `<!-- loop-agent -->` heartbeat comment is under 30 minutes old, exit immediately without acting.
 - MUST add `loop:active` before mutating anything and remove it before exiting, including on handled error paths.
 - MUST treat a stale `loop:active` (no heartbeat for 30+ minutes) as an abandoned session and reclaim it.
 - SHOULD post a short `<!-- loop-agent -->` heartbeat comment when starting long work so a duplicate session can detect the live lock.
 
 ## Identity and the Bot Marker
 
-Routing between roles keys on **author login** plus the event and label, never on
-parsing a comment body. The reviewer runs under its own bot identity, so its
-comments are attributable by login alone. The planner and coder still share the
-operator's identity until they are split out, so a marker is still needed to tell
-their comments from a human's and to stop the bridge re-firing on their own output.
+Each role runs under its own GitHub App, so its comments and reviews arrive with
+`user.type == 'Bot'` and a distinct `[bot]` login. The bridge uses this to tell
+humans (`user.type != 'Bot'`) from agents and routes hand-offs by label, so
+**routing no longer depends on parsing a comment body**. The `<!-- loop-agent -->`
+marker is retained only as a human-facing convenience and for heartbeat detection.
 
 **Guidelines:**
 
-- MUST begin every comment a role posts (issue or PR) with an HTML marker line on its own line: `<!-- loop-review -->` for the reviewer, `<!-- loop-agent -->` for the shared-identity planner/coder.
-- MUST treat any comment authored by a known loop bot login, or (for the shared identity) carrying a loop marker, as agent output to ignore as a trigger; treat everything else as human input.
-- MUST prefix the visible body with a short badge such as `🤖 **loop-review**` / `🤖 **loop-agent**` so a human reader can also see the distinction.
+- MUST treat any comment or review with `user.type == 'Bot'` as agent output to ignore as a trigger, and anything else as human input.
+- MUST begin every comment a role posts (issue or PR) with an HTML marker line `<!-- loop-agent -->` on its own line, and prefix the visible body with a role badge (`🤖 **loop-plan**` / `🤖 **loop-code**` / `🤖 **loop-review**`) so a human reader can tell which role spoke.
 - MUST @mention the operator (`@axross`) in the visible body whenever the loop yields for a decision, approval, or blocker.

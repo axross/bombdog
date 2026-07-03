@@ -1,26 +1,24 @@
 name: Loop Engineering Dispatch
 
-# Bridges GitHub events into the claude.ai loop routines. Cloud routines can
+# Bridges GitHub events into the three claude.ai loop routines. Cloud routines can
 # trigger natively on pull-request and release events but not on issues or issue
-# comments, and even for pull requests this bridge is used so hand-offs route by
-# event + label + author login rather than by parsing comment markers.
+# comments, and hand-offs must route by event + label + author rather than by
+# parsing comment markers, so every trigger goes through this bridge.
 #
-# Two routines are wired in this phase:
-#   - the plan+build routine (planner + coder), fired for issue events and for
-#     PR events that hand work back to the coder;
-#   - the reviewer routine (read-only bot identity), fired when the coder requests
-#     review and when CI completes on a loop pull request.
+# Each role runs under its own GitHub App identity (planner / coder / reviewer), so
+# their comments and reviews arrive with user.type == 'Bot'. Human input is
+# therefore anything with user.type != 'Bot'; no per-bot login list is needed.
+# Cross-role hand-offs are driven by PR labels, which fire regardless of author.
 #
 # This workflow holds no product-specific values. Per-repo requirements are the
-# secrets and the reviewer bot login variable below, and that the loop:* label
-# names match the state machine. The anthropic-beta header is date-versioned; bump
-# it per https://code.claude.com/docs/en/routines if the routines API advances.
+# three routine secret pairs below and that the loop:* label names match the state
+# machine. The anthropic-beta header is date-versioned; bump it per
+# https://code.claude.com/docs/en/routines if the routines API advances.
 #
 # Repository secrets (one /fire endpoint + bearer token per routine):
-#   CLAUDE_LOOP_ROUTINE_URL   / CLAUDE_LOOP_ROUTINE_TOKEN   - plan+build routine
-#   CLAUDE_LOOP_REVIEW_URL    / CLAUDE_LOOP_REVIEW_TOKEN    - reviewer routine
-# Repository variable:
-#   LOOP_REVIEW_BOT_LOGIN     - the reviewer bot's GitHub login (author-login routing)
+#   CLAUDE_LOOP_PLAN_URL   / CLAUDE_LOOP_PLAN_TOKEN     - planner routine
+#   CLAUDE_LOOP_CODE_URL   / CLAUDE_LOOP_CODE_TOKEN     - coder routine
+#   CLAUDE_LOOP_REVIEW_URL / CLAUDE_LOOP_REVIEW_TOKEN   - reviewer routine
 # See .agents/skills/loop-engineering/references/operator-setup.md for setup.
 
 on:
@@ -44,66 +42,44 @@ concurrency:
 permissions: {}
 
 jobs:
-  # ---- Plan + build routine -------------------------------------------------
-  # Fired by:
-  #  - a human adding a loop trigger label (loop:plan / loop:ready-to-build),
-  #  - a human comment on a loop-managed issue (not a PR, not a loop bot),
-  #  - the reviewer handing changes back (PR labeled loop:changes-requested),
-  #  - a human review or PR comment (author is not a loop bot).
-  plan_build:
-    name: Fire plan+build routine
+  # ---- Planner --------------------------------------------------------------
+  # Fired by a human enrolling an issue (loop:plan) or a human comment on a
+  # loop-managed issue (plan-phase conversation lives on the issue).
+  plan:
+    name: Fire planner routine
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: >-
       (
         github.event_name == 'issues' &&
         github.event.action == 'labeled' &&
-        (github.event.label.name == 'loop:plan' || github.event.label.name == 'loop:ready-to-build')
+        github.event.label.name == 'loop:plan'
       ) || (
         github.event_name == 'issue_comment' &&
         github.event.action == 'created' &&
-        !contains(github.event.comment.body, '<!-- loop-agent -->') &&
-        !contains(github.event.comment.body, '<!-- loop-review -->') &&
-        github.event.comment.user.login != vars.LOOP_REVIEW_BOT_LOGIN &&
+        github.event.issue.pull_request == null &&
+        github.event.comment.user.type != 'Bot' &&
         contains(join(github.event.issue.labels.*.name, ','), 'loop:')
-      ) || (
-        github.event_name == 'pull_request' &&
-        github.event.action == 'labeled' &&
-        github.event.label.name == 'loop:changes-requested'
-      ) || (
-        github.event_name == 'pull_request_review' &&
-        github.event.action == 'submitted' &&
-        github.event.review.user.login != vars.LOOP_REVIEW_BOT_LOGIN &&
-        !contains(github.event.review.body, '<!-- loop-agent -->')
       )
     steps:
-      - name: POST to plan+build routine /fire endpoint
+      - name: POST to planner routine /fire endpoint
         env:
-          ROUTINE_URL: ${{ secrets.CLAUDE_LOOP_ROUTINE_URL }}
-          ROUTINE_TOKEN: ${{ secrets.CLAUDE_LOOP_ROUTINE_TOKEN }}
+          ROUTINE_URL: ${{ secrets.CLAUDE_LOOP_PLAN_URL }}
+          ROUTINE_TOKEN: ${{ secrets.CLAUDE_LOOP_PLAN_TOKEN }}
           EVENT: ${{ github.event_name }}.${{ github.event.action }}
           TRIGGER_LABEL: ${{ github.event.label.name }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          PR_NUMBER: ${{ github.event.pull_request.number || github.event.review.pull_request.number }}
+          NUMBER: ${{ github.event.issue.number }}
           SERVER_URL: ${{ github.server_url }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           if [ -z "${ROUTINE_URL:-}" ] || [ -z "${ROUTINE_TOKEN:-}" ]; then
-            echo "::error::CLAUDE_LOOP_ROUTINE_URL / CLAUDE_LOOP_ROUTINE_TOKEN are not set." >&2
+            echo "::error::CLAUDE_LOOP_PLAN_URL / CLAUDE_LOOP_PLAN_TOKEN are not set." >&2
             exit 1
           fi
-
-          TARGET="issue #${ISSUE_NUMBER}"
-          if [ -n "${PR_NUMBER:-}" ]; then
-            TARGET="pull request #${PR_NUMBER}"
-          fi
           TEXT="Loop Engineering event ${EVENT}"
-          if [ -n "${TRIGGER_LABEL:-}" ]; then
-            TEXT="${TEXT} (label: ${TRIGGER_LABEL})"
-          fi
-          TEXT="${TEXT}. Run the /loop dispatcher as the plan+build role for ${TARGET} in ${SERVER_URL}/${REPO}. Read the target's current loop:* label and full comment thread, then advance the state machine by exactly one step."
-
+          if [ -n "${TRIGGER_LABEL:-}" ]; then TEXT="${TEXT} (label: ${TRIGGER_LABEL})"; fi
+          TEXT="${TEXT}. Run the /loop dispatcher as the planner role for issue #${NUMBER} (${SERVER_URL}/${REPO}). Read the issue's current loop:* label and full comment thread, then advance the plan phase by exactly one step; if the issue is not in a plan phase, exit as a no-op."
           BODY="$(jq -nc --arg text "$TEXT" '{text: $text}')"
           curl --fail-with-body -sS -X POST "$ROUTINE_URL" \
             -H "Authorization: Bearer ${ROUTINE_TOKEN}" \
@@ -112,10 +88,63 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$BODY"
 
-  # ---- Reviewer routine -----------------------------------------------------
-  # Fired by:
-  #  - the coder requesting review (PR labeled loop:review-requested),
-  #  - CI finishing on a loop pull request (check_suite.completed).
+  # ---- Coder ----------------------------------------------------------------
+  # Fired by plan approval (loop:ready-to-build), the reviewer handing changes
+  # back (PR loop:changes-requested), or a human review / PR comment.
+  build:
+    name: Fire coder routine
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      (
+        github.event_name == 'issues' &&
+        github.event.action == 'labeled' &&
+        github.event.label.name == 'loop:ready-to-build'
+      ) || (
+        github.event_name == 'pull_request' &&
+        github.event.action == 'labeled' &&
+        github.event.label.name == 'loop:changes-requested'
+      ) || (
+        github.event_name == 'pull_request_review' &&
+        github.event.action == 'submitted' &&
+        github.event.review.user.type != 'Bot'
+      ) || (
+        github.event_name == 'issue_comment' &&
+        github.event.action == 'created' &&
+        github.event.issue.pull_request != null &&
+        github.event.comment.user.type != 'Bot' &&
+        contains(join(github.event.issue.labels.*.name, ','), 'loop:')
+      )
+    steps:
+      - name: POST to coder routine /fire endpoint
+        env:
+          ROUTINE_URL: ${{ secrets.CLAUDE_LOOP_CODE_URL }}
+          ROUTINE_TOKEN: ${{ secrets.CLAUDE_LOOP_CODE_TOKEN }}
+          EVENT: ${{ github.event_name }}.${{ github.event.action }}
+          TRIGGER_LABEL: ${{ github.event.label.name }}
+          NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          SERVER_URL: ${{ github.server_url }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ROUTINE_URL:-}" ] || [ -z "${ROUTINE_TOKEN:-}" ]; then
+            echo "::error::CLAUDE_LOOP_CODE_URL / CLAUDE_LOOP_CODE_TOKEN are not set." >&2
+            exit 1
+          fi
+          TEXT="Loop Engineering event ${EVENT}"
+          if [ -n "${TRIGGER_LABEL:-}" ]; then TEXT="${TEXT} (label: ${TRIGGER_LABEL})"; fi
+          TEXT="${TEXT}. Run the /loop dispatcher as the coder role for #${NUMBER} (${SERVER_URL}/${REPO}). On loop:ready-to-build build from the issue plan and open the draft PR; otherwise resolve the pull request and address review. Advance by exactly one step and hand off with a label. Never set loop:done or flip the PR to ready."
+          BODY="$(jq -nc --arg text "$TEXT" '{text: $text}')"
+          curl --fail-with-body -sS -X POST "$ROUTINE_URL" \
+            -H "Authorization: Bearer ${ROUTINE_TOKEN}" \
+            -H "anthropic-beta: experimental-cc-routine-2026-04-01" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            -d "$BODY"
+
+  # ---- Reviewer -------------------------------------------------------------
+  # Fired by the coder requesting review (PR loop:review-requested) or CI
+  # finishing on a loop pull request (check_suite.completed).
   review:
     name: Fire reviewer routine
     runs-on: ubuntu-latest
@@ -136,7 +165,7 @@ jobs:
           ROUTINE_URL: ${{ secrets.CLAUDE_LOOP_REVIEW_URL }}
           ROUTINE_TOKEN: ${{ secrets.CLAUDE_LOOP_REVIEW_TOKEN }}
           EVENT: ${{ github.event_name }}.${{ github.event.action }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          NUMBER: ${{ github.event.pull_request.number }}
           HEAD_BRANCH: ${{ github.event.check_suite.head_branch }}
           SERVER_URL: ${{ github.server_url }}
           REPO: ${{ github.repository }}
@@ -146,14 +175,12 @@ jobs:
             echo "::error::CLAUDE_LOOP_REVIEW_URL / CLAUDE_LOOP_REVIEW_TOKEN are not set." >&2
             exit 1
           fi
-
-          if [ -n "${PR_NUMBER:-}" ]; then
-            TARGET="pull request #${PR_NUMBER}"
+          if [ -n "${NUMBER:-}" ]; then
+            TARGET="pull request #${NUMBER}"
           else
             TARGET="the loop pull request on branch ${HEAD_BRANCH}"
           fi
-          TEXT="Loop Engineering event ${EVENT}. Run the /loop dispatcher as the reviewer role for ${TARGET} in ${SERVER_URL}/${REPO}. Only proceed if the pull request carries loop:review-requested and CI has completed; run the review phase and hand off or complete per the skill."
-
+          TEXT="Loop Engineering event ${EVENT}. Run the /loop dispatcher as the reviewer role for ${TARGET} (${SERVER_URL}/${REPO}). Only proceed if the pull request carries loop:review-requested and CI has completed; run the review phase and hand off or complete per the skill."
           BODY="$(jq -nc --arg text "$TEXT" '{text: $text}')"
           curl --fail-with-body -sS -X POST "$ROUTINE_URL" \
             -H "Authorization: Bearer ${ROUTINE_TOKEN}" \

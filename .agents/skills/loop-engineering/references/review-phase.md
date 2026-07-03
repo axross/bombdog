@@ -74,8 +74,9 @@ The reviewer owns the round counter, since it is the arbiter of convergence.
 
 **Guidelines:**
 
-- MUST maintain a single pinned `<!-- loop-review -->` tracking comment on the
-  pull request with a round counter, incrementing it each review round.
+- MUST maintain a single pinned `<!-- loop-agent -->` tracking comment (badged
+  `🤖 **loop-review**`) on the pull request with a round counter, incrementing it
+  each review round.
 - MUST stop the loop and set `loop:blocked` with an `@axross` escalation, removing
   the hand-off labels, if the review has not converged after **4** rounds,
   summarizing what still fails.

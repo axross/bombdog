@@ -1,13 +1,14 @@
 # Multi-Agent Loop — Design Proposal
 
-> **Status: approved; phase 1 implemented on the feature branch.** The
-> planner / coder / reviewer split is decided (see [Decisions](#decisions)).
-> Phase 1 — the reviewer routine, the two PR hand-off labels, and the bridge
-> rewrite — is written into the skill and `loop-dispatch.yaml` on this branch, but
-> is **inert until merged to the default branch and the operator provisions** the
-> reviewer bot identity, routines, secrets, and `LOOP_REVIEW_BOT_LOGIN` per
-> [operator-setup.md](./operator-setup.md). Phases 2-3 (splitting the planner and
-> coder into their own routines) are not yet implemented.
+> **Status: approved; full three-identity model implemented on the feature
+> branch.** The planner / coder / reviewer split is decided (see
+> [Decisions](#decisions)) and all three roles now run as their own routine under
+> their own GitHub App (`plan-gengar` / `code-gengar` / `review-gengar`). The skill
+> and `loop-dispatch.yaml` implement all three roles on this branch, but are
+> **inert until merged to the default branch and the operator provisions** the
+> three Apps, routines, and secret pairs per [operator-setup.md](./operator-setup.md).
+> With separate identities the bridge routes by event + label + `user.type`; the
+> shared-identity marker below is superseded and kept only as a human-facing badge.
 
 ## Why
 
@@ -147,8 +148,9 @@ loop:done  (terminal; further activity is a no-op unless a human reopens)
 The ping-pong has no natural stop, and now spans two routines, so the counter
 must live in GitHub. **The reviewer owns it** — it is the arbiter.
 
-- The reviewer maintains a single pinned `<!-- loop-review -->` tracking comment
-  on the PR with a round counter, incremented each review round.
+- The reviewer maintains a single pinned `<!-- loop-agent -->` tracking comment
+  (badged `🤖 **loop-review**`) on the PR with a round counter, incremented each
+  review round.
 - After **4** review rounds without convergence, the reviewer sets `loop:blocked`,
   @mentions `@axross` with what still fails, and removes the hand-off labels so
   the ping-pong halts.
@@ -211,18 +213,19 @@ events.
 
 ## Migration plan
 
-Phased, so the working single-routine loop keeps running until each piece lands:
+The operator provisioned all three GitHub Apps up front, so the full model is
+implemented in one branch rather than phased. The three conceptual steps it
+combines:
 
-1. **Reviewer first (biggest win) — implemented on this branch.** Adds the
-   reviewer routine + the two PR hand-off labels + the `loop:review-requested` /
-   `loop:changes-requested` / `check_suite` bridge triggers. The existing routine
-   keeps planning and coding; the self-review step is replaced by the reviewer
-   hand-off. This alone fixes the #36/#37 stall. Remaining operator work:
-   provision the reviewer bot + routines + secrets, then merge.
-2. **Split the coder out** of the existing routine (dedicated build prompt, drop
-   its authority to set `loop:done`).
-3. **Split the planner out** (smallest win — plan is already a distinct phase;
-   separate mostly for prompt clarity).
+1. **Reviewer** — the reviewer routine + the two PR hand-off labels + the
+   `loop:review-requested` / `loop:changes-requested` / `check_suite` triggers;
+   replaces self-review and fixes the #36/#37 stall.
+2. **Coder** — its own routine and `code-gengar` identity (the only App with
+   Contents:write), with no authority to set `loop:done`.
+3. **Planner** — its own routine and read-only `plan-gengar` identity.
+
+Remaining operator work: create the three Apps, routines, and secret pairs per
+[operator-setup.md](./operator-setup.md), then merge.
 
 ## Decisions
 

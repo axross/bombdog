@@ -30,7 +30,7 @@ Your role bounds what you may do. The **reviewer** is read-only (never edits, pu
 ## Rules
 
 - Advance the state machine by at most one phase-step, then exit. Do not chain plan → build in a single run; the human approval gate (`loop:ready-to-build`) sits between them.
-- Every comment you post MUST begin with your role's marker on its own line — `<!-- loop-review -->` (reviewer) or `<!-- loop-agent -->` (plan+build) — and carry a matching `🤖 **loop-review**` / `🤖 **loop-agent**` badge; mention `@axross` whenever you yield for a decision, approval, or blocker.
+- Every comment you post MUST begin with `<!-- loop-agent -->` on its own line and carry your role badge (`🤖 **loop-plan**` / `🤖 **loop-code**` / `🤖 **loop-review**`); mention `@axross` whenever you yield for a decision, approval, or blocker. The bridge tells agents from humans by `user.type`, so treat any comment with `user.type == 'Bot'` as agent output, not a trigger.
 - Never apply `loop:plan` or `loop:ready-to-build` yourself — those are the human's controls.
 - Never push to `main` and never merge the pull request.
 - Follow every project skill whose routing condition matches the work, and run the verification the changed surface requires before opening or updating the pull request.

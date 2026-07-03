@@ -7,7 +7,7 @@ description: Apply this skill when operating the autonomous issue-to-pull-reques
 
 Loop Engineering runs feature development as an autonomous loop: a GitHub issue is planned, refined, implemented, opened as a pull request, reviewed, and driven to review-ready with minimal human input. It is operated by short-lived cloud sessions triggered by GitHub events.
 
-The work is split across three roles — **planner**, **coder**, and **reviewer** — each with a dedicated prompt. The reviewer is independent of the coder and runs under a read-only GitHub identity, so it, and only it, decides a pull request is done. See [references/state-machine.md](./references/state-machine.md) for the roles and [references/multi-agent-loop-proposal.md](./references/multi-agent-loop-proposal.md) for the design and rollout phases.
+The work is split across three roles — **planner**, **coder**, and **reviewer** — each running as its own routine under its own read-only-or-write GitHub App identity. The planner and reviewer cannot change code (Contents:Read); only the coder can. The reviewer, and only it, decides a pull request is done. See [references/state-machine.md](./references/state-machine.md) for the roles and [references/multi-agent-loop-proposal.md](./references/multi-agent-loop-proposal.md) for the design.
 
 ## The Stateless-Worker Model
 
@@ -56,13 +56,13 @@ See [references/review-phase.md](./references/review-phase.md) for:
 
 See [references/operator-setup.md](./references/operator-setup.md) for:
 
-- creating the `loop:*` labels, the reviewer's read-only bot identity, and the plan+build and reviewer routines with their API triggers and secrets
-- wiring the `.github/workflows/loop-dispatch.yaml` bridge (issue events + PR label / review / CI events) and the `LOOP_REVIEW_BOT_LOGIN` variable
+- creating the `loop:*` labels, the three GitHub App identities (planner/coder/reviewer with their Contents permission ceilings), and the three routines with their API triggers and secrets
+- wiring the `.github/workflows/loop-dispatch.yaml` bridge (issue events + PR label / review / CI events, routed by event + label + `user.type`)
 - the per-routine prompts, network/branch-push settings, and the daily-run and usage caveats
 
 ## Repo-Specific Values
 
-This repository's own repo-specific values are: the operator handle `@axross`, the reviewer bot login (`LOOP_REVIEW_BOT_LOGIN`), the Node/npm verification commands in [references/implementation-phase.md](./references/implementation-phase.md), and the sibling-skill links to this project's `.agents/skills/`. Everything else — the `loop:*` labels, the `<!-- loop-agent -->` / `<!-- loop-review -->` markers, the `/loop` dispatcher logic, and `.github/workflows/loop-dispatch.yaml` — is repo-agnostic.
+This repository's own repo-specific values are: the operator handle `@axross`, the three GitHub App identities (`plan-gengar` / `code-gengar` / `review-gengar`), the Node/npm verification commands in [references/implementation-phase.md](./references/implementation-phase.md), and the sibling-skill links to this project's `.agents/skills/`. Everything else — the `loop:*` labels, the `<!-- loop-agent -->` marker, the `/loop` dispatcher logic, and `.github/workflows/loop-dispatch.yaml` — is repo-agnostic.
 
 ## Relationship to Project Skills
 
