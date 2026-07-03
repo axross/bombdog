@@ -98,10 +98,11 @@ describe("<TrackerApp>", () => {
 		expect(
 			within(header).getByRole("button", { name: "Reset" }),
 		).toBeInTheDocument();
-		// move history + composer are mounted.
+		// move history + composer bar are mounted; the resting affordance is the
+		// Add move button (the composer form lives behind it in a sheet).
 		expect(screen.getByTestId("move-log")).toBeInTheDocument();
 		expect(
-			screen.getByRole("button", { name: "Log move" }),
+			screen.getByRole("button", { name: "Add move" }),
 		).toBeInTheDocument();
 	});
 

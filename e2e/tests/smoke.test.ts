@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
-	composer,
+	bar,
 	gotoApp,
 	logDualCut,
 	moveLog,
@@ -31,7 +31,8 @@ test.describe("smoke", () => {
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
-		await expect(composer(page)).toBeVisible();
+		// the tracker rests on the bar (Add move) with an empty move log.
+		await expect(bar(page).getByTestId("add-move")).toBeVisible();
 		await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 	});
 

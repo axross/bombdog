@@ -29,18 +29,55 @@ afterEach(() => {
 	});
 });
 
+/**
+ * Open the composer sheet from the resting bar's Add move button.
+ */
+async function openSheet(user: ReturnType<typeof userEvent.setup>) {
+	await user.click(screen.getByRole("button", { name: "Add move" }));
+	// the sheet's form is now mounted.
+	await screen.findByRole("button", { name: "Log move" });
+}
+
 describe("<MoveComposer>", () => {
-	it("keeps Log move disabled until the action's fields are complete", () => {
+	it("shows the resting bar with Add move and undo/redo, form hidden", () => {
 		render(<MoveComposer />);
-		expect(screen.getByRole("button", { name: "Log move" })).toBeDisabled();
+		expect(screen.getByRole("button", { name: "Add move" })).toBeVisible();
 		expect(screen.getByRole("button", { name: /Undo/ })).toBeDisabled();
 		expect(screen.getByRole("button", { name: /Redo/ })).toBeDisabled();
+		// the form and Log move only exist once the sheet is opened.
+		expect(
+			screen.queryByRole("button", { name: "Log move" }),
+		).not.toBeInTheDocument();
+	});
+
+	it("opens the sheet from Add move and closes it with Esc", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+
+		await openSheet(user);
+		expect(screen.getByRole("tab", { name: "Dual cut" })).toBeVisible();
+
+		await user.keyboard("{Escape}");
+		expect(
+			screen.queryByRole("button", { name: "Log move" }),
+		).not.toBeInTheDocument();
+		// undo/redo stay reachable on the bar while the sheet is closed.
+		expect(screen.getByRole("button", { name: /Undo/ })).toBeInTheDocument();
+	});
+
+	it("keeps Log move disabled until the action's fields are complete", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+
+		await openSheet(user);
+		expect(screen.getByRole("button", { name: "Log move" })).toBeDisabled();
 	});
 
 	it("logs a solo cut once a wire is chosen", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
+		await openSheet(user);
 		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
 		// solo cut needs no target/outcome; the actor defaults to the Captain.
 		await user.click(screen.getByRole("radio", { name: "Wire 7" }));
@@ -62,6 +99,7 @@ describe("<MoveComposer>", () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
+		await openSheet(user);
 		// dual cut is the default and targets another player (segmented control).
 		expect(
 			screen.getByRole("radiogroup", { name: "Target" }),
@@ -77,6 +115,7 @@ describe("<MoveComposer>", () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
+		await openSheet(user);
 		await user.click(screen.getByRole("tab", { name: "Detectors" }));
 		// the default card is the Double Detector; the actor defaults to the Captain.
 		await user.click(screen.getByRole("radio", { name: "Bob" }));
@@ -99,24 +138,22 @@ describe("<MoveComposer>", () => {
 		});
 	});
 
-	it("collapses and expands the composer via the toggle", async () => {
+	it("keeps the sheet open and resets the form after Log move", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 
-		const collapse = screen.getByRole("button", { name: "Collapse composer" });
-		expect(collapse).toHaveAttribute("aria-expanded", "true");
+		await openSheet(user);
+		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
+		await user.click(screen.getByRole("radio", { name: "Wire 7" }));
 
-		await user.click(collapse);
-		const expand = screen.getByRole("button", { name: "Expand composer" });
-		expect(expand).toHaveAttribute("aria-expanded", "false");
-		// while collapsed the Log move button is removed from the a11y tree (inert).
-		expect(screen.getByRole("button", { name: "Log move" })).toHaveAttribute(
-			"inert",
-		);
+		const logButton = screen.getByRole("button", { name: "Log move" });
+		await user.click(logButton);
 
-		await user.click(expand);
-		expect(
-			screen.getByRole("button", { name: "Collapse composer" }),
-		).toHaveAttribute("aria-expanded", "true");
+		// the move is recorded…
+		expect(useTrackerStore.getState().moves).toHaveLength(1);
+		// …and the sheet stays open with a reset form: Log move is back to disabled
+		// (a fresh solo cut has no wire yet) and the previous wire is deselected.
+		expect(screen.getByRole("button", { name: "Log move" })).toBeDisabled();
+		expect(screen.getByRole("radio", { name: "Wire 7" })).not.toBeChecked();
 	});
 });

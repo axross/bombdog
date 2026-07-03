@@ -12,8 +12,8 @@ export type Revealed = number | "yellow" | "unknown";
 /**
  * Navigate to the app and neutralise the Next.js dev-tools badge. Served by
  * `npm run dev`, that badge sits bottom-left inside a `<nextjs-portal>` and
- * intercepts pointer events on the composer's bottom controls (collapse /
- * undo / redo). Hiding it makes those clicks land reliably; it is a no-op
+ * intercepts pointer events on the bottom bar's controls (undo / redo /
+ * Add move). Hiding it makes those clicks land reliably; it is a no-op
  * against a production build where the badge is absent.
  */
 export async function gotoApp(page: Page): Promise<void> {
@@ -27,7 +27,8 @@ export async function gotoApp(page: Page): Promise<void> {
 export async function startTracking(page: Page): Promise<void> {
 	await gotoApp(page);
 	await page.getByTestId("setup").getByTestId("start").click();
-	await expect(composer(page)).toBeVisible();
+	// the tracker rests on the composer bar; the form lives behind Add move.
+	await expect(bar(page).getByTestId("add-move")).toBeVisible();
 }
 
 /**
@@ -70,14 +71,41 @@ export async function startTrackingWith(
 		.click();
 
 	await setup.getByTestId("start").click();
+	await expect(bar(page).getByTestId("add-move")).toBeVisible();
+}
+
+/**
+ * The move composer sheet (the modal opened from the bar's Add move button).
+ */
+export function composer(page: Page): Locator {
+	return page.getByTestId("composer");
+}
+
+/**
+ * The persistent bottom bar carrying undo/redo and Add move. It stays mounted
+ * behind the composer sheet, so it is queryable whether the sheet is open or
+ * closed — but its controls are only clickable while the sheet is closed.
+ */
+export function bar(page: Page): Locator {
+	return page.getByTestId("composer-bar");
+}
+
+/**
+ * Open the composer sheet, idempotently: a no-op when it is already open (the
+ * sheet stays open after a log, so consecutive log helpers don't re-open it).
+ */
+export async function openComposer(page: Page): Promise<void> {
+	if (await composer(page).isVisible()) return;
+	await bar(page).getByTestId("add-move").click();
 	await expect(composer(page)).toBeVisible();
 }
 
 /**
- * The bottom-half move composer.
+ * Dismiss the composer sheet with Esc so the bar's undo/redo become clickable.
  */
-export function composer(page: Page): Locator {
-	return page.getByTestId("composer");
+export async function closeComposer(page: Page): Promise<void> {
+	await page.keyboard.press("Escape");
+	await expect(composer(page)).toBeHidden();
 }
 
 /**
@@ -191,10 +219,12 @@ export async function setOutcome(
 }
 
 /**
- * Submit the composed move.
+ * Submit the composed move. Logging keeps the sheet open with a reset form, so
+ * assert it stays open for rapid back-to-back logging.
  */
 export async function logMove(page: Page): Promise<void> {
 	await composer(page).getByTestId("log-move").click();
+	await expect(composer(page)).toBeVisible();
 }
 
 /**
@@ -211,6 +241,7 @@ interface CutOptions {
  * Compose and log a dual cut.
  */
 export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-dual-cut").click();
 	if (opts.actor) await setActor(page, opts.actor);
 	await pickTarget(page, opts.target);
@@ -243,6 +274,7 @@ export async function logDetector(
 	page: Page,
 	opts: DetectorOptions,
 ): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-detector").click();
 	if (opts.actor) await setActor(page, opts.actor);
 	if (opts.card) await chooseInComposer(page, "detector", opts.card);
@@ -259,6 +291,7 @@ export async function logSoloCut(
 	page: Page,
 	{ actor, wire }: { actor?: string; wire: Wire },
 ): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-solo-cut").click();
 	if (actor) await setActor(page, actor);
 	await selectWire(page, wire);
@@ -276,6 +309,7 @@ export async function logEquipment(
 		note,
 	}: { actor?: string; equipment: string; note?: string },
 ): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-equipment").click();
 	if (actor) await setActor(page, actor);
 	await chooseInComposer(page, "equipment", equipment);

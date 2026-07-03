@@ -1,5 +1,7 @@
 import { expect, type Locator, test } from "@playwright/test";
 import {
+	bar,
+	closeComposer,
 	composer,
 	gotoApp,
 	logDetector,
@@ -8,6 +10,7 @@ import {
 	logSoloCut,
 	moveLog,
 	moveRow,
+	openComposer,
 	pickTarget,
 	selectWire,
 	startTracking,
@@ -27,15 +30,15 @@ function selectedText(input: Locator): Promise<string> {
 
 // happy-path coverage of the main use cases a player runs through a session:
 // configuring a roster, logging each of the four action types, watching the
-// suggested actor advance, undo/redo, editing a logged move, and collapsing the
-// composer.
+// suggested actor advance, undo/redo, editing a logged move, and opening/
+// closing the composer sheet.
 
 test.describe("setup", () => {
 	test("configures a two-player game (the minimum)", {
 		tag: ["@scenario:setup.min-players", "@area:setup", "@priority:should"],
 	}, async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
-		await expect(composer(page)).toBeVisible();
+		await openComposer(page);
 		// the Captain (seat 1) takes the first turn, so the composer suggests Uno.
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
@@ -89,6 +92,7 @@ test.describe("setup", () => {
 			names: ["Ada", "Bo", "Cy", "Di", "Ed"],
 			captainIndex: 2,
 		});
+		await openComposer(page);
 		// the chosen Captain (Cy, seat 3) acts first, so the composer suggests Cy.
 		await expect(composer(page).getByTestId("acting")).toContainText("Cy");
 		// the custom names reached the composer's target control.
@@ -109,6 +113,8 @@ test.describe("logging each action type", () => {
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
+		// the sheet stays open after a log; dismiss it to read the move log behind.
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Player 1");
@@ -130,6 +136,7 @@ test.describe("logging each action type", () => {
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 
 		await test.step("Compose the cut and verify Log move is blocked until the reveal", async () => {
 			await pickTarget(page, "Player 2");
@@ -162,6 +169,7 @@ test.describe("logging each action type", () => {
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logSoloCut(page, { wire: 5 });
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Solo cut");
@@ -176,6 +184,7 @@ test.describe("logging each action type", () => {
 		await startTracking(page);
 		// the cut pads offer "?" for a wire whose value is unknown.
 		await logSoloCut(page, { wire: "unknown" });
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Solo cut");
@@ -188,6 +197,7 @@ test.describe("logging each action type", () => {
 		tag: ["@scenario:log.double-detector", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 		await composer(page).getByTestId("tab-detector").click();
 		// detectors read blue values only: no Yellow option is offered.
 		await expect(composer(page).getByTestId("wire-yellow")).toHaveCount(0);
@@ -197,6 +207,7 @@ test.describe("logging each action type", () => {
 			values: [6],
 			outcome: "success",
 		});
+		await closeComposer(page);
 		const row = moveRow(page, 1);
 		// the default detector card names itself in the log.
 		await expect(row).toContainText("Double Detector");
@@ -217,6 +228,7 @@ test.describe("logging each action type", () => {
 			values: [3, 11],
 			outcome: "success",
 		});
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("X or Y Ray (10)");
@@ -229,6 +241,7 @@ test.describe("logging each action type", () => {
 		tag: ["@scenario:log.detector.super", "@area:logging", "@priority:may"],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 		await composer(page).getByTestId("tab-detector").click();
 
 		await logDetector(page, {
@@ -265,6 +278,7 @@ test.describe("session flow", () => {
 		tag: ["@scenario:session.turn-advance", "@area:session", "@priority:must"],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 		// Captain (Player 1) starts, so the composer suggests Player 1.
 		await expect(composer(page).getByTestId("acting")).toContainText(
 			"Player 1",
@@ -343,21 +357,24 @@ test.describe("session flow", () => {
 		});
 
 		await test.step("Undo both back to empty", async () => {
-			await composer(page).getByTestId("undo").click();
-			await composer(page).getByTestId("undo").click();
+			// undo/redo live on the bar behind the sheet; dismiss it to reach them.
+			await closeComposer(page);
+			await bar(page).getByTestId("undo").click();
+			await bar(page).getByTestId("undo").click();
 			await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 		});
 
 		await test.step("Redo and verify only the first move returns", async () => {
-			await composer(page).getByTestId("redo").click();
+			await bar(page).getByTestId("redo").click();
 			await expect(moveRow(page, 1)).toBeVisible();
 			await expect(moveRow(page, 2)).toHaveCount(0);
 		});
 
 		await test.step("Log a fresh move and verify redo is cleared", async () => {
+			// logSoloCut re-opens the sheet; redo (on the bar) is now disabled.
 			await logSoloCut(page, { wire: 7 });
 			await expect(moveRow(page, 2)).toBeVisible();
-			await expect(composer(page).getByTestId("redo")).toBeDisabled();
+			await expect(bar(page).getByTestId("redo")).toBeDisabled();
 		});
 	});
 
@@ -376,6 +393,8 @@ test.describe("session flow", () => {
 				"data-outcome",
 				"success",
 			);
+			// dismiss the composer sheet so the logged row is interactive.
+			await closeComposer(page);
 		});
 
 		await test.step("Edit it to a failed cut revealing wire 8", async () => {
@@ -401,6 +420,8 @@ test.describe("session flow", () => {
 			await logSoloCut(page, { wire: 7 });
 			await expect(moveRow(page, 1)).toBeVisible();
 			await expect(moveRow(page, 2)).toBeVisible();
+			// dismiss the composer sheet so the logged rows are interactive.
+			await closeComposer(page);
 		});
 
 		await test.step("Delete the first move, confirming the prompt", async () => {
@@ -420,23 +441,28 @@ test.describe("session flow", () => {
 		});
 	});
 
-	test("collapses and expands the composer", {
-		tag: ["@scenario:session.collapse", "@area:session", "@priority:should"],
+	test("opens and closes the composer sheet", {
+		tag: [
+			"@scenario:session.composer-open-close",
+			"@area:session",
+			"@priority:should",
+		],
 	}, async ({ page }) => {
 		await startTracking(page);
 
-		await test.step("Collapse and verify the form and Log move hide while undo/redo stay", async () => {
-			await expect(composer(page).getByTestId("acting")).toBeVisible();
-			await composer(page).getByTestId("toggle-composer").click();
-			await expect(composer(page).getByTestId("acting")).toBeHidden();
-			await expect(composer(page).getByTestId("undo")).toBeVisible();
-			await expect(composer(page).getByTestId("log-move")).toBeHidden();
-		});
-
-		await test.step("Expand and verify the form and Log move return", async () => {
-			await composer(page).getByTestId("toggle-composer").click();
+		await test.step("Open with Add move: the form and Log move show, undo/redo stay on the bar", async () => {
+			// resting state: the form is hidden behind the bar.
+			await expect(composer(page)).toBeHidden();
+			await openComposer(page);
 			await expect(composer(page).getByTestId("acting")).toBeVisible();
 			await expect(composer(page).getByTestId("log-move")).toBeVisible();
+			await expect(bar(page).getByTestId("undo")).toBeVisible();
+		});
+
+		await test.step("Dismiss with Esc: the form hides while undo/redo and Add move stay", async () => {
+			await closeComposer(page);
+			await expect(bar(page).getByTestId("undo")).toBeVisible();
+			await expect(bar(page).getByTestId("add-move")).toBeVisible();
 		});
 	});
 
