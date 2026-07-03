@@ -36,11 +36,11 @@ When everything is clear, the agent writes the plan into the issue and refines i
 **Guidelines:**
 
 - MUST rewrite the issue body to contain the comprehensive plan with these sections, omitting any that genuinely do not apply and saying why:
-  1. **Product requirement** — the user-facing outcome and constraints.
-  2. **UI design** — hierarchy, states, responsive and accessibility intent, and copy constraints, in user-facing terms (per [UI and Components](../../ui-and-components/SKILL.md)), when the change is UI-bearing.
-  3. **System design / architecture** — data flow, state, routes, and module placement (per [Project Structure](../../project-structure/SKILL.md)), when applicable.
+  1. **Product requirement** — the user-facing outcome and constraints (per [Product Requirement Guidelines](../../product-requirement-guidelines/SKILL.md)).
+  2. **UI design** — hierarchy, states, responsive and accessibility intent, and copy constraints, in user-facing terms (per [UI and Components](../../ui-and-components/SKILL.md) for implementation mechanics and [Product Requirement Guidelines](../../product-requirement-guidelines/SKILL.md) for framing the section and right-sizing it to view-affected changes), when the change is UI-bearing.
+  3. **System design / architecture** — data flow, state, routes, and module placement (per [Project Structure](../../project-structure/SKILL.md) for implementation mechanics and [Product Requirement Guidelines](../../product-requirement-guidelines/SKILL.md) for framing the section and right-sizing it to broad or hard-to-reverse changes), when applicable.
   4. **Testing strategy** — the E2E and unit coverage to add or update (per [E2E Testing Guidelines](../../e2e-testing-guidelines/SKILL.md) and [Unit Test Guidelines](../../unit-test-guidelines/SKILL.md)), when applicable.
-  5. **Acceptance criteria** — a checklist a reviewer can verify against the finished pull request.
+  5. **Acceptance criteria** — a checklist a reviewer can verify against the finished pull request (per [Product Requirement Guidelines](../../product-requirement-guidelines/SKILL.md)).
 - MUST refine the issue title to state the concrete deliverable.
 - MUST move the original, unedited description into a collapsed section at the end of the body using the [collapsed-section](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections) format:
 
