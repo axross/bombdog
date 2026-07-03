@@ -59,7 +59,7 @@ Turn the target into a buildable specification recorded in the issue.
 Review is **not** done by you. It runs as a separate Claude Code session on a GitHub-hosted runner — different session, different infrastructure, a bot identity distinct from the operator — via the [`claude-review.yaml`](../../.github/workflows/claude-review.yaml) workflow. That separation is the whole point: the code's author never certifies its own work.
 
 - Open the pull request in **draft** with `Closes #<n>`, structured from any repository PR template, summarizing the change, the verification evidence, and the acceptance criteria with their status.
-- Request the review by posting a top-level `@claude review` comment on the pull request (a marked comment). This fires the review workflow, which posts inline findings, tagged by severity, on the diff.
+- Request the review by posting a top-level `@claude review` comment on the pull request (a marked comment). This fires the review workflow, which submits its findings as a **GitHub pull-request review** — inline comments anchored to the diff, tagged by severity, with a summary in the review body — not as loose conversation comments.
 - The review is a machine event that completes on its own in minutes — poll for it in the tail alongside CI. Do NOT review the diff yourself in place of it.
 
 ## Phase 4 — Address
