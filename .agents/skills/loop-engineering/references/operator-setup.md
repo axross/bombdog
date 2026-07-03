@@ -41,17 +41,35 @@ reviewer swap to hand off.
 ## 2. Create the Reviewer Bot Identity
 
 The reviewer must be independent of the coder and unable to change code, so it
-runs under its own GitHub identity with **no write access to code**.
+runs under its own GitHub identity with **no write access to code**. Use a
+**GitHub App** (recommended) or a dedicated machine user, separate from `@axross`.
 
-- Create a dedicated **machine user** (or a GitHub App) for the reviewer, e.g.
-  `bombdog-loop-review`, separate from `@axross`.
-- Grant it the repository permissions it needs and no more: **read** contents,
-  **write** on pull requests and issues (to post reviews, comments, and labels),
-  and **no `contents:write`** (it must not be able to push or merge). With a
-  machine user, add it as a collaborator with a role that excludes push, or scope
-  its token to `pull_requests:write`, `issues:write`, and `contents:read` only.
-- Record its login for the bridge (step 4): this is the `LOOP_REVIEW_BOT_LOGIN`
-  variable.
+**GitHub App (recommended):**
+
+1. Register the App at **Settings → Developer settings → GitHub Apps → New GitHub
+   App**, e.g. named `bombdog-loop-reviewer`.
+2. Grant only the repository permissions the reviewer needs — this is what enforces
+   the read-only contract at the platform:
+   - **Contents: Read-only** (must **not** be Read & write — this is what stops it
+     pushing or merging)
+   - **Pull requests: Read & write** (submit reviews, comments)
+   - **Issues: Read & write** (comments and labels — GitHub groups label writes
+     under Issues)
+   - **Checks: Read-only** (read CI status)
+   - Metadata: Read-only (mandatory, added automatically)
+3. Subscribe to no webhooks (the Actions bridge drives triggers, not the App).
+4. **Install** the App on this repository.
+5. Record its bot login for the bridge (step 4). A GitHub App acts as
+   `<app-slug>[bot]`, where `<app-slug>` is the slug in the App's public URL
+   `https://github.com/apps/<app-slug>`. The `LOOP_REVIEW_BOT_LOGIN` value is that
+   full string **including the `[bot]` suffix**, e.g. `bombdog-loop-reviewer[bot]`.
+   Confirm it against a real comment once the App has acted (the author `login`
+   in the API / webhook payload is authoritative; `user.type` reads `Bot`).
+
+**Machine user (alternative):** create a dedicated account and add it as a
+repository collaborator with the **Triage** role — read + manage issues/PRs
+(labels, reviews, comments) but no push or merge. Its `LOOP_REVIEW_BOT_LOGIN` is
+just its username (no `[bot]` suffix).
 
 ## 3. Create the Routines
 
@@ -78,7 +96,12 @@ role it is and which target to act on.
 **Reviewer routine**:
 
 - **Repositories**: this repository, **read-only** — no branch pushes. **GitHub
-  connector**: the reviewer bot identity from step 2.
+  connector**: authenticate as the reviewer bot from step 2 (the installed GitHub
+  App, or the machine user). Its Contents:Read-only ceiling means the reviewer
+  cannot push even if a prompt injection told it to. If the routine connector
+  cannot authenticate as the App directly, use a token minted from the App
+  installation (or the machine user's fine-grained token) scoped to the same
+  read-only permissions.
 - **Model / network**: read + comment only; no build/push is expected.
 - **Prompt**:
 
