@@ -80,7 +80,7 @@ describe("<MoveFilter>", () => {
 		expect(onChange).toHaveBeenCalledWith(EMPTY_MOVE_FILTER);
 	});
 
-	it("marks Reset aria-disabled and no-ops it when nothing is excluded", async () => {
+	it("marks Clear aria-disabled and no-ops it when nothing is excluded", async () => {
 		const { user, onChange } = await open();
 		const reset = screen.getByTestId("filter-reset");
 		expect(reset).toHaveAttribute("aria-disabled", "true");
