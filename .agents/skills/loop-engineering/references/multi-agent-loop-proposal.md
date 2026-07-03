@@ -226,9 +226,10 @@ Resolved with `@axross`:
 1. **Hand-off mechanism → PR labels.** Reliable, role-attributable webhooks; each
    role removes the label that woke it. (Rejected: sessions directly POSTing the
    next routine's `/fire`, which would embed routine tokens in sessions.)
-2. **Reviewer scope enforcement → platform-level (pending final confirmation).**
-   The reviewer bot is granted no `contents:write`, so it cannot push regardless
-   of prompt compliance or injection. Made cheap by decision 3. *Confirm to lock.*
+2. **Reviewer scope enforcement → platform-level.** The reviewer bot is granted
+   no `contents:write`, so it cannot push regardless of prompt compliance or
+   injection from untrusted PR content. Made cheap by decision 3. (Rejected:
+   prompt-only "please don't edit code".)
 3. **Identity → a separate GitHub bot per role.** Author login attributes every
    comment; per-identity permissions enforce role scope. (Rejected: shared
    identity with per-role comment markers.)
