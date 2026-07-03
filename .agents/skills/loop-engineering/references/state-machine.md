@@ -65,7 +65,8 @@ PR:loop:review-requested --clean round + green CI--> loop:done (reviewer flips P
 -----------------------------------------------------------
 
 loop:blocked --human comment--> (the owning role resumes and replaces loop:blocked)
-loop:done                                                   (terminal; further comments are no-ops)
+loop:done --new human review or comment on the pull request--> loop:in-review (coder resumes per implementation-phase.md's "Address Review After Done"; not a no-op)
+loop:done                                                   (terminal to the issue's own comment thread otherwise; a human comment on the *issue* remains a no-op unless it explicitly asks to reopen, per the planner's routing)
 (active phase) --role genuinely stuck--> loop:blocked       (role @mentions the operator)
 ```
 
@@ -75,6 +76,7 @@ loop:done                                                   (terminal; further c
 - MUST, when handing off, remove the hand-off label that woke the role in the same step that applies the next, so a re-fired duplicate event is a no-op.
 - MUST NOT apply a human-owned trigger label (`loop:plan`, `loop:ready-to-build`) from an agent session; those are the human's controls and applying them from a bot creates an event loop.
 - MUST set `loop:blocked` and stop rather than guess when progress needs a human product, scope, or platform decision that the thread cannot answer.
+- MUST NOT treat a human review or comment left on the pull request as a no-op merely because the issue already carries `loop:done`; `loop:done` means the last review round converged, not that the human has stopped participating on the open PR.
 
 ## Concurrency Lock
 
