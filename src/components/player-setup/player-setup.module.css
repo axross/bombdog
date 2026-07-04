@@ -90,12 +90,20 @@
 
 		.seat {
 			display: flex;
-			align-items: center;
+			flex-direction: column;
 			gap: var(--space-3);
-			padding: var(--space-2) var(--space-3);
+			padding: var(--space-3);
 			background-color: var(--surface-2);
 			border: 1px solid var(--border);
 			border-radius: var(--radius);
+		}
+
+		/* The name row (Captain radio + name input + tag) at the top of a seat; the
+		   info-token pad sits below it inside the same seat block. */
+		.seatMain {
+			display: flex;
+			align-items: center;
+			gap: var(--space-3);
 		}
 
 		.radio {
@@ -137,6 +145,43 @@
 			text-transform: uppercase;
 			letter-spacing: 0.03em;
 			color: var(--accent);
+		}
+
+		/* Roster group: the info-token hint leads directly into the seats, so it
+		   hugs them with a tight gap. The skip toggle sits above as its own
+		   element, separated by the screen's larger inter-block rhythm. */
+		.roster {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		.skip {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-2);
+			color: var(--text-muted);
+			font-size: 0.9rem;
+			cursor: pointer;
+		}
+
+		.skip input {
+			inline-size: 18px;
+			block-size: 18px;
+			accent-color: var(--accent);
+			cursor: pointer;
+		}
+
+		.infoHint {
+			color: var(--text-muted);
+			font-size: 0.9rem;
+		}
+
+		/* The info-token pad folded into a seat, separated from the name row above
+		   by a hairline within the same seat block. */
+		.infoPad {
+			padding-block-start: var(--space-3);
+			border-block-start: 1px solid var(--border);
 		}
 
 		.start {

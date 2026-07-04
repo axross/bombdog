@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useMemo, useRef, useState } from "react";
 import { MoveEditor } from "@/components/move-editor/move-editor";
+import { StartingInfo } from "@/components/starting-info/starting-info";
 import { filterMoves, formatWire, getPlayerName, wireLabel } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import {
@@ -236,6 +237,9 @@ export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 			data-testid="move-log"
 		>
 			<div className={css.scroll} ref={scrollRef}>
+				{/* Starting info tokens head the scrollable history and scroll away with
+				    it (not pinned); renders nothing when none were placed. */}
+				<StartingInfo />
 				{moves.length === 0 ? (
 					<p className={css.empty}>No moves yet. Log the first turn below.</p>
 				) : visibleMoves.length === 0 ? (

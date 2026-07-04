@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
@@ -10,6 +10,7 @@ beforeEach(() => {
 		players: [],
 		captainIndex: 0,
 		moves: [],
+		infoTokens: {},
 		redoStack: [],
 		previousPlayers: [],
 		previousCaptainIndex: 0,
@@ -24,6 +25,7 @@ afterEach(() => {
 		players: [],
 		captainIndex: 0,
 		moves: [],
+		infoTokens: {},
 		redoStack: [],
 		previousPlayers: [],
 		previousCaptainIndex: 0,
@@ -31,9 +33,9 @@ afterEach(() => {
 });
 
 function seatRows(): HTMLElement[] {
-	// each seat exposes a "Make player N the Captain" radio; use its inputs to
-	// scope name/radio queries per row.
-	return screen.getAllByRole("radio");
+	// each seat exposes a "Make player N the Captain" radio; scope to those by
+	// name so the (also role="radio") info-token wire pads aren't counted.
+	return screen.getAllByRole("radio", { name: /the Captain$/ });
 }
 
 describe("<PlayerSetup>", () => {
@@ -41,7 +43,7 @@ describe("<PlayerSetup>", () => {
 		render(<PlayerSetup />);
 
 		// default count is 4.
-		expect(screen.getByText("4")).toBeInTheDocument();
+		expect(screen.getByTestId("player-count")).toHaveTextContent("4");
 		expect(seatRows()).toHaveLength(4);
 		expect(
 			screen.getByRole("textbox", { name: "Name of player 1" }),
@@ -60,7 +62,9 @@ describe("<PlayerSetup>", () => {
 
 		// from 4 up to MAX_PLAYERS (5); the add button then disables.
 		await user.click(add);
-		expect(screen.getByText(String(MAX_PLAYERS))).toBeInTheDocument();
+		expect(screen.getByTestId("player-count")).toHaveTextContent(
+			String(MAX_PLAYERS),
+		);
 		expect(seatRows()).toHaveLength(MAX_PLAYERS);
 		expect(add).toBeDisabled();
 
@@ -68,7 +72,9 @@ describe("<PlayerSetup>", () => {
 		await user.click(remove);
 		await user.click(remove);
 		await user.click(remove);
-		expect(screen.getByText(String(MIN_PLAYERS))).toBeInTheDocument();
+		expect(screen.getByTestId("player-count")).toHaveTextContent(
+			String(MIN_PLAYERS),
+		);
 		expect(seatRows()).toHaveLength(MIN_PLAYERS);
 		expect(remove).toBeDisabled();
 	});
@@ -181,7 +187,7 @@ describe("<PlayerSetup>", () => {
 
 		render(<PlayerSetup />);
 
-		expect(screen.getByText("3")).toBeInTheDocument();
+		expect(screen.getByTestId("player-count")).toHaveTextContent("3");
 		expect(seatRows()).toHaveLength(3);
 		expect(
 			screen.getByRole("textbox", { name: "Name of player 1" }),
@@ -192,6 +198,72 @@ describe("<PlayerSetup>", () => {
 		expect(
 			screen.getByRole("radio", { name: "Make player 3 the Captain" }),
 		).toBeChecked();
+	});
+
+	it("shows a per-player blue wire pad for each seat by default", () => {
+		render(<PlayerSetup />);
+
+		// default count is 4, phase not skipped → one pad per seat.
+		expect(screen.getByTestId("info-token-0")).toBeInTheDocument();
+		expect(screen.getByTestId("info-token-3")).toBeInTheDocument();
+		// info tokens are blue-only: no yellow option on the pads.
+		expect(
+			within(screen.getByTestId("info-token-0")).queryByTestId("wire-yellow"),
+		).not.toBeInTheDocument();
+	});
+
+	it("hides the per-player pads when the phase is skipped", async () => {
+		const user = userEvent.setup();
+		render(<PlayerSetup />);
+
+		expect(screen.getByTestId("info-token-0")).toBeInTheDocument();
+		await user.click(
+			screen.getByRole("checkbox", { name: "Skip starting info tokens" }),
+		);
+		expect(screen.queryByTestId("info-token-0")).not.toBeInTheDocument();
+	});
+
+	it("records the selected starting info tokens keyed by player id on Start", async () => {
+		const user = userEvent.setup();
+		render(<PlayerSetup />);
+
+		// seat 0 marks wire 9; seat 2 marks wire 4.
+		await user.click(
+			within(screen.getByTestId("info-token-0")).getByTestId("wire-9"),
+		);
+		await user.click(
+			within(screen.getByTestId("info-token-2")).getByTestId("wire-4"),
+		);
+		await user.click(screen.getByRole("button", { name: "Start tracking" }));
+
+		const state = useTrackerStore.getState();
+		const [p1, , p3] = state.players;
+		expect(state.infoTokens).toEqual({ [p1.id]: 9, [p3.id]: 4 });
+	});
+
+	it("records no info tokens when the phase is skipped, even after a pick", async () => {
+		const user = userEvent.setup();
+		render(<PlayerSetup />);
+
+		// pick a wire, then skip — skipping wins.
+		await user.click(
+			within(screen.getByTestId("info-token-0")).getByTestId("wire-9"),
+		);
+		await user.click(
+			screen.getByRole("checkbox", { name: "Skip starting info tokens" }),
+		);
+		await user.click(screen.getByRole("button", { name: "Start tracking" }));
+
+		expect(useTrackerStore.getState().infoTokens).toEqual({});
+	});
+
+	it("records no info tokens when none are selected", async () => {
+		const user = userEvent.setup();
+		render(<PlayerSetup />);
+
+		await user.click(screen.getByRole("button", { name: "Start tracking" }));
+
+		expect(useTrackerStore.getState().infoTokens).toEqual({});
 	});
 
 	it("still generates seat ids when crypto.randomUUID is unavailable", async () => {

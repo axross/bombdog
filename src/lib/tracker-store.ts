@@ -9,7 +9,13 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { idbStorage, STORAGE_KEY } from "./idb-storage";
-import type { Move, MoveDraft, Player, TrackerState } from "./types";
+import type {
+	BlueWireValue,
+	Move,
+	MoveDraft,
+	Player,
+	TrackerState,
+} from "./types";
 
 /**
  * The live tracker store: the persisted {@link TrackerState} plus the ephemeral
@@ -33,9 +39,16 @@ interface TrackerStore extends TrackerState {
 	previousCaptainIndex: number;
 
 	/**
-	 * Set the roster and Captain seat for a new game.
+	 * Set the roster and Captain seat for a new game, plus the starting info
+	 * tokens each player placed (keyed by player id; empty when the phase was
+	 * skipped). Captured atomically so the tracker opens with the tokens already
+	 * recorded.
 	 */
-	configurePlayers: (players: Player[], captainIndex: number) => void;
+	configurePlayers: (
+		players: Player[],
+		captainIndex: number,
+		infoTokens?: Record<string, BlueWireValue>,
+	) => void;
 	/**
 	 * Move the Captain to a different seat.
 	 */
@@ -72,6 +85,7 @@ const EMPTY_STATE: TrackerState = {
 	players: [],
 	captainIndex: 0,
 	moves: [],
+	infoTokens: {},
 };
 
 /**
@@ -169,8 +183,8 @@ export const useTrackerStore = create<TrackerStore>()(
 			previousPlayers: [],
 			previousCaptainIndex: 0,
 
-			configurePlayers: (players, captainIndex) => {
-				set({ players, captainIndex });
+			configurePlayers: (players, captainIndex, infoTokens = {}) => {
+				set({ players, captainIndex, infoTokens });
 			},
 
 			setCaptain: (captainIndex) => {
@@ -238,7 +252,7 @@ export const useTrackerStore = create<TrackerStore>()(
 		{
 			name: STORAGE_KEY,
 			storage: createJSONStorage(() => idbStorage),
-			version: 2,
+			version: 3,
 			// v1 → v2, detectors became first-class. two fixups on persisted moves:
 			//   1. rewrite the standalone "double-detector" move into the unified
 			//      "detector" shape (a `detector` kind plus a `values` array).
@@ -254,6 +268,17 @@ export const useTrackerStore = create<TrackerStore>()(
 							.map(rewriteLegacyDoubleDetector);
 					}
 				}
+				// v2 -> v3: starting info tokens were added. default the new field to
+				// an empty record so a pre-v3 game loads as "no starting info tokens".
+				if (version < 3 && persisted && typeof persisted === "object") {
+					const state = persisted as { infoTokens?: unknown };
+					if (
+						typeof state.infoTokens !== "object" ||
+						state.infoTokens === null
+					) {
+						state.infoTokens = {};
+					}
+				}
 				return persisted as TrackerStore;
 			},
 			// persist the durable game state plus the carried-over roster (so a
@@ -262,6 +287,7 @@ export const useTrackerStore = create<TrackerStore>()(
 				players: state.players,
 				captainIndex: state.captainIndex,
 				moves: state.moves,
+				infoTokens: state.infoTokens,
 				previousPlayers: state.previousPlayers,
 				previousCaptainIndex: state.previousCaptainIndex,
 			}),
