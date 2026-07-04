@@ -45,8 +45,11 @@ When the review output is a **posted** pull-request review — the `/review` com
 
 - MUST apply [`REVIEW.md`](../../../REVIEW.md) on top of this methodology for any posted PR review, and let it win on conflict.
 - MUST collapse the posted report to `REVIEW.md`'s label set (Important / Nit) and open the summary with its one-line tally when `REVIEW.md` defines them, instead of the four-tier report sections below.
+- MUST run every mandatory check `REVIEW.md` lists on a posted review and raise a finding for each miss, grading it by the severity floors below (a miss that breaks the requirement is Important).
+- MUST treat every acceptance criterion of the linked issue that the diff leaves unmet or unverifiable as an **Important** posted finding.
+- MUST report **every** finding in a posted review — `REVIEW.md` sets no nit cap, so do not drop or summarize findings away (repeated identical nits may share one comment).
 - MUST NOT report, in a posted review, findings the repo policy excludes — CI-enforced Biome lint/format and TypeScript errors — even though the severity floors below would otherwise rate them Critical.
-- MUST keep a posted review COMMENT-type (never APPROVE / REQUEST_CHANGES), per [github-operations](../github-operations/SKILL.md) and `REVIEW.md`.
+- MUST keep a posted review COMMENT-type (never APPROVE / REQUEST_CHANGES), per [github-operations](../github-operations/SKILL.md); the reviewer is advisory and does not gate merges.
 
 ## Evidence-Based Reporting
 
