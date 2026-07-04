@@ -1,6 +1,10 @@
 @layer components {
 	@scope (.wrap) {
 		:where(:scope) {
+			/* a constant inset — present whether or not the field is flagged, so the
+			   invalid tint below reads as a soft padded frame around the control
+			   without the layout shifting when the flag toggles. */
+			padding: var(--space-1);
 			border-radius: var(--radius-sm);
 		}
 
