@@ -57,17 +57,11 @@ function CutMeter({
 }
 
 /**
- * The players known to hold an uncut copy, as name badges. Renders a muted dash
- * when possession is unknown, so every row keeps the same shape.
+ * The players known to hold an uncut copy, as name badges. Renders nothing when
+ * possession is unknown — the column simply stays empty.
  */
-function Holders({ holders }: { holders: Player[] }): JSX.Element {
-	if (holders.length === 0) {
-		return (
-			<span className={css.noHolders} aria-hidden>
-				—
-			</span>
-		);
-	}
+function Holders({ holders }: { holders: Player[] }): JSX.Element | null {
+	if (holders.length === 0) return null;
 	return (
 		<span className={css.holders}>
 			{holders.map((player) => (
@@ -104,6 +98,12 @@ export function StatusPanel(): JSX.Element {
 			data-testid="status-panel"
 		>
 			<div className={css.scroll}>
+				{/* Column headers for the wire table: value · cut meter · holders. */}
+				<div className={css.head}>
+					<span>Wire</span>
+					<span>Cut</span>
+					<span className={css.headPossession}>Possession</span>
+				</div>
 				<ol className={css.list}>
 					{blue.map((row) => (
 						<li

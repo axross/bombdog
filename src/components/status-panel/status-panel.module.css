@@ -5,6 +5,11 @@
 			min-block-size: 0;
 			display: flex;
 			flex-direction: column;
+
+			/* Fixed wire + cut columns so the header and every row line up as a
+			   table; the third (holders) column flexes. */
+			--col-wire: 2.5rem;
+			--col-cut: 6rem;
 		}
 
 		.scroll {
@@ -17,6 +22,28 @@
 			gap: var(--space-3);
 		}
 
+		/* Column headers, aligned to the row grid; scrolls with the list. */
+		.head {
+			display: grid;
+			grid-template-columns: var(--col-wire) var(--col-cut) 1fr;
+			align-items: center;
+			gap: var(--space-3);
+			padding-inline: var(--space-3);
+
+			& span {
+				font-size: 0.7rem;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: var(--text-muted);
+			}
+		}
+
+		/* Right-aligned to sit over the right-aligned holder badges. */
+		.headPossession {
+			text-align: end;
+		}
+
 		.list {
 			display: flex;
 			flex-direction: column;
@@ -24,11 +51,12 @@
 			list-style: none;
 		}
 
-		/* value | cut meter | holders. The holders column flexes so long rosters
-		   wrap within their own cell rather than pushing the meter around. */
+		/* value | cut meter | holders. Fixed first two columns keep every row and
+		   the header aligned; the holders column flexes so long rosters wrap within
+		   their own cell rather than pushing the meter around. */
 		.row {
 			display: grid;
-			grid-template-columns: auto auto 1fr;
+			grid-template-columns: var(--col-wire) var(--col-cut) 1fr;
 			align-items: center;
 			gap: var(--space-3);
 			padding: var(--space-2) var(--space-3);
@@ -120,11 +148,6 @@
 			background-color: var(--surface-3);
 			border: 1px solid var(--border);
 			border-radius: var(--radius-sm);
-		}
-
-		.noHolders {
-			justify-self: end;
-			color: var(--text-muted);
 		}
 
 		/* Yellow possession line: chip, label, and holders (no fixed count). */
