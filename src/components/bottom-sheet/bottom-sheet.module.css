@@ -73,6 +73,24 @@
 			&[data-state="closed"] {
 				animation: sheet-out var(--motion-fast) var(--ease-standard);
 			}
+
+			/* Wide viewport: a centered dialog that fades and zooms, rather than a
+			   bottom sheet. Drag-to-dismiss is a touch/sheet gesture, so the handle
+			   is hidden and the drag is gated off here (see the component). */
+			@container (width >= 30rem) {
+				inset-block-start: 50%;
+				inset-block-end: auto;
+				translate: -50% -50%;
+				border-radius: var(--radius-lg);
+
+				&[data-state="open"] {
+					animation: dialog-in var(--motion-fast) var(--ease-standard);
+				}
+
+				&[data-state="closed"] {
+					animation: dialog-out var(--motion-fast) var(--ease-standard);
+				}
+			}
 		}
 
 		/* Grab handle + title: the drag region. `touch-action: none` keeps a
@@ -99,6 +117,11 @@
 			block-size: 4px;
 			border-radius: var(--radius-sm);
 			background-color: var(--border);
+
+			/* No drag affordance on the wide centered dialog. */
+			@container (width >= 30rem) {
+				display: none;
+			}
 		}
 
 		.title {
@@ -149,6 +172,34 @@
 		}
 		to {
 			translate: -50% 100%;
+		}
+	}
+
+	/* Wide centered dialog: fade + zoom, matching the reveal/editor's prior
+	   wide-viewport treatment. */
+	@keyframes dialog-in {
+		from {
+			opacity: 0;
+			translate: -50% -48%;
+			scale: 0.96;
+		}
+		to {
+			opacity: 1;
+			translate: -50% -50%;
+			scale: 1;
+		}
+	}
+
+	@keyframes dialog-out {
+		from {
+			opacity: 1;
+			translate: -50% -50%;
+			scale: 1;
+		}
+		to {
+			opacity: 0;
+			translate: -50% -48%;
+			scale: 0.96;
 		}
 	}
 

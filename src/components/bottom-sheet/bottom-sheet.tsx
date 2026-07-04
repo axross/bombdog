@@ -111,6 +111,9 @@ export function BottomSheet({
 	const handleDragStart = (event: React.PointerEvent) => {
 		const content = contentRef.current;
 		if (!content) return;
+		// on wide viewports the sheet is a centered dialog (no handle, no drag);
+		// the container query keys off body width, which tracks the viewport.
+		if (window.matchMedia?.("(min-width: 30rem)")?.matches) return;
 		dragRef.current = {
 			startY: event.clientY,
 			pointerId: event.pointerId,

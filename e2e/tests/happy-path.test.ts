@@ -542,6 +542,9 @@ test.describe("session flow", () => {
 			"@priority:should",
 		],
 	}, async ({ page }) => {
+		// drag-to-dismiss is the bottom-sheet (mobile) gesture; on wide viewports
+		// the sheet is a centered dialog with no handle, so run this narrow.
+		await page.setViewportSize({ width: 390, height: 780 });
 		await startTracking(page);
 		await openComposer(page);
 		// the sheet exposes a grab handle; dragging it down past the threshold
