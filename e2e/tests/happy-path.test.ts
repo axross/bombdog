@@ -138,12 +138,11 @@ test.describe("logging each action type", () => {
 		await startTracking(page);
 		await openComposer(page);
 
-		await test.step("Compose the cut and verify Log move is blocked until the reveal", async () => {
+		await test.step("Compose the cut; choosing Fail opens the reveal dialog", async () => {
 			await pickTarget(page, "Player 2");
 			await selectWire(page, 9);
 			await composer(page).getByTestId("outcome-fail").click();
-			// a fail can't be logged until the actual wire value is recorded.
-			await expect(composer(page).getByTestId("log-move")).toBeDisabled();
+			// a fail must record the actual wire value, so the reveal dialog opens.
 			// the reveal sheet nests over the composer, which becomes background
 			// (its overlay quiets so the reveal's overlay dims the whole stack).
 			await expect(page.getByTestId("reveal-dialog")).toBeVisible();
@@ -155,11 +154,10 @@ test.describe("logging each action type", () => {
 			await expect(page.getByTestId("reveal-dialog")).toBeHidden();
 			// with the reveal gone, the composer is no longer backgrounded.
 			await expect(composer(page)).not.toHaveAttribute("data-sheet-nested");
-			// the chosen value is echoed on the Fail button and unblocks logging.
+			// the chosen value is echoed on the Fail button.
 			await expect(composer(page).getByTestId("outcome-fail")).toContainText(
 				"(8)",
 			);
-			await expect(composer(page).getByTestId("log-move")).toBeEnabled();
 		});
 
 		await test.step("Log it and verify the revealed value in the history", async () => {

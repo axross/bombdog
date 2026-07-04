@@ -113,6 +113,75 @@ export function fieldsFromMove(move: Move): DraftFields {
 }
 
 /**
+ * Identifies a single control in the move form, so a failed validation can point
+ * at the exact field to highlight. `wire` is the single-wire pad (dual/solo cut),
+ * `values` the multi-select detector pad; `outcome` also stands in for a failed
+ * cut that is still missing its revealed wire.
+ */
+export type MoveFieldKey =
+	| "actor"
+	| "target"
+	| "wire"
+	| "values"
+	| "outcome"
+	| "cutValue"
+	| "equipment";
+
+/**
+ * The per-field counterpart to {@link buildDraft}: the list of controls that are
+ * unselected, missing, or invalid for the given action, in top-to-bottom form
+ * order. Empty exactly when {@link buildDraft} would return a non-null draft, so
+ * the composer can flag precisely what is blocking "Log move".
+ *
+ * The two functions encode the same rules independently; the invariant that they
+ * agree (`invalidFields(t,f).length === 0` ⇔ `buildDraft(t,f) !== null`) is
+ * pinned by a unit test, so a change to one that forgets the other is caught.
+ */
+export function invalidFields(type: MoveType, f: DraftFields): MoveFieldKey[] {
+	const missing: MoveFieldKey[] = [];
+	switch (type) {
+		case "dual-cut":
+			if (!f.actorId) missing.push("actor");
+			if (!f.targetId) missing.push("target");
+			if (f.value === null) missing.push("wire");
+			// a missing outcome, or a fail whose revealed wire is unset, both resolve
+			// at the same Result control.
+			if (f.outcome === null || (f.outcome === "fail" && f.revealed === null))
+				missing.push("outcome");
+			return missing;
+		case "solo-cut":
+			if (!f.actorId) missing.push("actor");
+			if (f.value === null) missing.push("wire");
+			return missing;
+		case "detector": {
+			const { valueCount } = detectorOption(f.detector);
+			if (!f.actorId) missing.push("actor");
+			if (!f.targetId) missing.push("target");
+			// wrong count, or a duplicate wire (the pad prevents duplicates, but keep
+			// parity with buildDraft's defensive check).
+			if (
+				f.values.length !== valueCount ||
+				new Set(f.values).size !== f.values.length
+			)
+				missing.push("values");
+			if (f.outcome === null || (f.outcome === "fail" && f.revealed === null))
+				missing.push("outcome");
+			if (
+				f.detector === "x-or-y-ray" &&
+				f.outcome === "success" &&
+				f.cutValue === null
+			)
+				missing.push("cutValue");
+			return missing;
+		}
+		case "equipment":
+			if (!f.actorId) missing.push("actor");
+			if (!f.equipment.trim()) missing.push("equipment");
+			return missing;
+	}
+}
+
+/**
  * Build a validated draft for the given action, or `null` when required fields
  * are missing. Also the single source of truth for "is Log move enabled?". A
  * failed cut additionally requires the revealed wire value.

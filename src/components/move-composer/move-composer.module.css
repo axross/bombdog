@@ -69,6 +69,20 @@
 			gap: var(--space-4);
 		}
 
+		/* Visually-hidden live region: announces the fields a failed Log move press
+		   flagged, mirrored visually by the field shakes. */
+		.srOnly {
+			position: absolute;
+			inline-size: 1px;
+			block-size: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
 		.actions {
 			display: flex;
 			justify-content: flex-end;

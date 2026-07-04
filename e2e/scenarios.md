@@ -42,6 +42,7 @@ carries its `@scenario:<id>` tag. The reporter
 | log.detector.xy-ray | Log an X or Y Ray naming two values against one wire | logging | should |
 | log.detector.super | Log a super detector pointed at a whole stand | logging | may |
 | log.equipment | Log an equipment action with a note | logging | should |
+| log.invalid-highlight | Pressing Log move with an incomplete move flags the missing fields | logging | should |
 | session.turn-advance | The turn indicator advances to the next seat after a cut | session | must |
 | session.equipment-no-advance | Logging equipment keeps the turn on the same actor | session | should |
 | session.off-turn-equipment | Off-turn equipment returns the suggestion to the turn-holder | session | should |

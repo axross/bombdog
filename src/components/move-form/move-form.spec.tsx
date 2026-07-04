@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { type JSX, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MoveType, Player } from "@/lib/types";
-import { type DraftFields, emptyDraftFields } from "./draft";
+import { type DraftFields, emptyDraftFields, type MoveFieldKey } from "./draft";
 import { MoveForm } from "./move-form";
 
 const players: Player[] = [
@@ -21,12 +21,14 @@ function Harness({
 	initialType = "dual-cut",
 	initialFields,
 	withTabs = true,
+	invalid,
 	onTypeChangeSpy,
 	onFieldsChangeSpy,
 }: {
 	initialType?: MoveType;
 	initialFields?: DraftFields;
 	withTabs?: boolean;
+	invalid?: ReadonlySet<MoveFieldKey>;
 	onTypeChangeSpy?: (type: MoveType) => void;
 	onFieldsChangeSpy?: (fields: DraftFields) => void;
 }): JSX.Element {
@@ -52,6 +54,8 @@ function Harness({
 			onTypeChange={withTabs ? handleTypeChange : undefined}
 			fields={fields}
 			onFieldsChange={handleFieldsChange}
+			invalid={invalid}
+			nudge={invalid ? 1 : 0}
 		/>
 	);
 }
@@ -309,6 +313,59 @@ describe("<MoveForm>", () => {
 		expect(onFieldsChange).toHaveBeenCalledWith(
 			expect.objectContaining({ note: "x" }),
 		);
+	});
+
+	describe("when flagging invalid fields", () => {
+		it("flags the detector's value pad via its highlight wrapper", () => {
+			render(
+				<Harness
+					initialType="detector"
+					initialFields={{ ...emptyDraftFields("a"), targetId: "b" }}
+					invalid={new Set<MoveFieldKey>(["values", "outcome"])}
+				/>,
+			);
+			expect(screen.getByTestId("highlight-values")).toHaveAttribute(
+				"data-invalid",
+			);
+			expect(screen.getByTestId("highlight-outcome")).toHaveAttribute(
+				"data-invalid",
+			);
+			// an unflagged field's wrapper stays unmarked.
+			expect(screen.getByTestId("highlight-target")).not.toHaveAttribute(
+				"data-invalid",
+			);
+		});
+
+		it("flags the actual-value picker for a successful X or Y Ray", () => {
+			render(
+				<Harness
+					initialType="detector"
+					initialFields={{
+						...emptyDraftFields("a"),
+						detector: "x-or-y-ray",
+						targetId: "b",
+						values: [4, 9],
+						outcome: "success",
+					}}
+					invalid={new Set<MoveFieldKey>(["cutValue"])}
+				/>,
+			);
+			expect(screen.getByTestId("highlight-cutValue")).toHaveAttribute(
+				"data-invalid",
+			);
+		});
+
+		it("flags the equipment select for a Misc move", () => {
+			render(
+				<Harness
+					initialType="equipment"
+					invalid={new Set<MoveFieldKey>(["equipment"])}
+				/>,
+			);
+			expect(screen.getByTestId("highlight-equipment")).toHaveAttribute(
+				"data-invalid",
+			);
+		});
 	});
 
 	describe("when in edit mode (no onTypeChange)", () => {

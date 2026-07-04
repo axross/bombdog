@@ -54,12 +54,86 @@ describe("<MoveComposer>", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("keeps Log move disabled until the action's fields are complete", async () => {
+	it("leaves Log move pressable even before the fields are complete", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
 		await openComposer(user);
 
-		expect(screen.getByRole("button", { name: "Log move" })).toBeDisabled();
+		// Log move is always pressable; an incomplete move is caught on press.
+		expect(screen.getByRole("button", { name: "Log move" })).toBeEnabled();
+	});
+
+	it("flags the missing fields and announces them instead of logging", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+		await openComposer(user);
+
+		// a fresh dual cut has no target, wire, or result; nothing is flagged yet.
+		expect(screen.getByTestId("highlight-target")).not.toHaveAttribute(
+			"data-invalid",
+		);
+
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+
+		// no move is logged…
+		expect(useTrackerStore.getState().moves).toHaveLength(0);
+		// …the incomplete fields are flagged (the actor defaults to the Captain, so
+		// it stays valid)…
+		expect(screen.getByTestId("highlight-target")).toHaveAttribute(
+			"data-invalid",
+		);
+		expect(screen.getByTestId("highlight-wire")).toHaveAttribute(
+			"data-invalid",
+		);
+		expect(screen.getByTestId("highlight-outcome")).toHaveAttribute(
+			"data-invalid",
+		);
+		expect(screen.getByTestId("highlight-actor")).not.toHaveAttribute(
+			"data-invalid",
+		);
+		// …and a live-region message names them for screen readers.
+		expect(screen.getByRole("status")).toHaveTextContent(
+			"Can't log yet — check: Target, Wire, Result.",
+		);
+	});
+
+	it("re-announces on a repeat press even when the same fields are missing", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+		await openComposer(user);
+		const status = screen.getByRole("status");
+
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+		const first = status.textContent;
+
+		// press again with nothing changed; the live region's DOM text must still
+		// change so an assertive screen reader re-announces it…
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+		expect(status.textContent).not.toBe(first);
+		// …while the spoken wording stays the same.
+		expect(status).toHaveTextContent(
+			"Can't log yet — check: Target, Wire, Result.",
+		);
+	});
+
+	it("clears a field's flag as soon as it is filled in", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+		await openComposer(user);
+
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+		expect(screen.getByTestId("highlight-target")).toHaveAttribute(
+			"data-invalid",
+		);
+
+		// picking the target clears just that field's flag; the others persist.
+		await user.click(screen.getByRole("radio", { name: "Bob" }));
+		expect(screen.getByTestId("highlight-target")).not.toHaveAttribute(
+			"data-invalid",
+		);
+		expect(screen.getByTestId("highlight-wire")).toHaveAttribute(
+			"data-invalid",
+		);
 	});
 
 	it("logs a solo cut once a wire is chosen", async () => {
