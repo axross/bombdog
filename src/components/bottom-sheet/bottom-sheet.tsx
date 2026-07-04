@@ -34,13 +34,21 @@ const BottomSheetContext = createContext<BottomSheetNesting>({
  * Props for {@link BottomSheet}.
  */
 interface BottomSheetProps {
-	/** Controlled open state. */
+	/**
+	 * Controlled open state.
+	 */
 	open: boolean;
-	/** Requested open/close (Escape, backdrop, drag-to-dismiss, or a close button). */
+	/**
+	 * Requested open/close (Escape, backdrop, drag-to-dismiss, or a close button).
+	 */
 	onOpenChange: (open: boolean) => void;
-	/** The sheet's accessible title, shown next to the grab handle. */
+	/**
+	 * The sheet's accessible title, shown next to the grab handle.
+	 */
 	title: ReactNode;
-	/** Optional hint rendered under the title (wires the dialog's description). */
+	/**
+	 * Optional hint rendered under the title (wires the dialog's description).
+	 */
 	description?: ReactNode;
 	children: ReactNode;
 	"data-testid"?: string;
@@ -93,7 +101,7 @@ export function BottomSheet({
 		[depth],
 	);
 
-	// Sheet drag state lives in refs and is written straight to the DOM (a CSS
+	// sheet drag state lives in refs and is written straight to the DOM (a CSS
 	// custom property) so dragging never re-renders the sheet body under the finger.
 	const contentRef = useRef<HTMLDivElement>(null);
 	const dragRef = useRef<{
@@ -106,8 +114,10 @@ export function BottomSheet({
 		contentRef.current?.style.setProperty("--sheet-drag-y", `${px}px`);
 	};
 
-	/** Begin a drag from the handle; suspend the snap-back transition so the sheet
-	 * tracks the finger 1:1. */
+	/**
+	 * Begin a drag from the handle; suspend the snap-back transition so the sheet
+	 * tracks the finger 1:1.
+	 */
 	const handleDragStart = (event: React.PointerEvent) => {
 		const content = contentRef.current;
 		if (!content) return;
@@ -130,8 +140,10 @@ export function BottomSheet({
 		setDragOffset(Math.max(0, event.clientY - drag.startY));
 	};
 
-	/** Release: dismiss past ~a third of the sheet height (capped so a tall sheet
-	 * still closes on a firm drag), otherwise spring back to rest. */
+	/**
+	 * Release: dismiss past ~a third of the sheet height (capped so a tall sheet
+	 * still closes on a firm drag), otherwise spring back to rest.
+	 */
 	const handleDragEnd = (event: React.PointerEvent) => {
 		const drag = dragRef.current;
 		const content = contentRef.current;
@@ -148,7 +160,9 @@ export function BottomSheet({
 		}
 	};
 
-	/** Pointer cancel (e.g. an interrupted gesture): spring back, never dismiss. */
+	/**
+	 * Pointer cancel (e.g. an interrupted gesture): spring back, never dismiss.
+	 */
 	const handleDragCancel = () => {
 		if (!dragRef.current) return;
 		dragRef.current = null;
@@ -156,7 +170,7 @@ export function BottomSheet({
 		setDragOffset(0);
 	};
 
-	// Deeper sheets sit above shallower ones; the exact z-indices are 40/50 at
+	// deeper sheets sit above shallower ones; the exact z-indices are 40/50 at
 	// depth 0, 60/70 at depth 1, and so on (see the module's calc()).
 	const depthStyle = { "--sheet-depth": depth } as CSSProperties;
 

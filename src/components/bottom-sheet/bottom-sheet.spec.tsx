@@ -5,7 +5,33 @@ import { BottomSheet } from "./bottom-sheet";
 
 afterEach(() => {
 	vi.clearAllMocks();
+	vi.unstubAllGlobals();
 });
+
+/**
+ * Render an open sheet and return its content plus grab handle, giving each
+ * element a fixed `offsetHeight` (jsdom reports 0) so the drag threshold — a
+ * third of the sheet height — is meaningful.
+ */
+function renderDraggable(onOpenChange: () => void) {
+	render(
+		<BottomSheet
+			open
+			onOpenChange={onOpenChange}
+			title="Sheet title"
+			data-testid="sheet"
+		>
+			<p>Body</p>
+		</BottomSheet>,
+	);
+	const content = screen.getByTestId("sheet");
+	const handle = screen.getByTestId("sheet-handle");
+	Object.defineProperty(content, "offsetHeight", {
+		configurable: true,
+		value: 400,
+	});
+	return { content, handle };
+}
 
 describe("<BottomSheet>", () => {
 	it("renders the title and body when open", () => {
@@ -140,5 +166,62 @@ describe("<BottomSheet>", () => {
 		// the entrance animation (or any animationEnd while open) must not unmount.
 		fireEvent.animationEnd(screen.getByTestId("sheet"));
 		expect(onCloseComplete).not.toHaveBeenCalled();
+	});
+
+	it("dismisses when the handle is dragged past the threshold", () => {
+		const onOpenChange = vi.fn();
+		const { content, handle } = renderDraggable(onOpenChange);
+
+		fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 });
+		fireEvent.pointerMove(handle, { pointerId: 1, clientY: 300 });
+		// the sheet tracks the drag via the custom property.
+		expect(content.style.getPropertyValue("--sheet-drag-y")).toBe("200px");
+		fireEvent.pointerUp(handle, { pointerId: 1, clientY: 300 });
+
+		// 200px > a third of the 400px sheet, so the drag dismisses.
+		expect(onOpenChange).toHaveBeenCalledWith(false);
+	});
+
+	it("springs back and does not dismiss for a short drag", () => {
+		const onOpenChange = vi.fn();
+		const { content, handle } = renderDraggable(onOpenChange);
+
+		fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 });
+		fireEvent.pointerMove(handle, { pointerId: 1, clientY: 150 });
+		fireEvent.pointerUp(handle, { pointerId: 1, clientY: 150 });
+
+		// 50px is under the threshold, so it snaps back rather than dismissing.
+		expect(onOpenChange).not.toHaveBeenCalled();
+		expect(content.style.getPropertyValue("--sheet-drag-y")).toBe("0px");
+	});
+
+	it("resets without dismissing when the gesture is cancelled", () => {
+		const onOpenChange = vi.fn();
+		const { content, handle } = renderDraggable(onOpenChange);
+
+		fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 });
+		fireEvent.pointerMove(handle, { pointerId: 1, clientY: 300 });
+		fireEvent.pointerCancel(handle, { pointerId: 1 });
+
+		expect(onOpenChange).not.toHaveBeenCalled();
+		expect(content.style.getPropertyValue("--sheet-drag-y")).toBe("0px");
+	});
+
+	it("ignores the drag gesture on wide viewports (centered dialog)", () => {
+		// on wide the sheet is a centered dialog with no handle/drag; matchMedia
+		// (keyed off body width) reports the wide breakpoint.
+		vi.stubGlobal(
+			"matchMedia",
+			vi.fn().mockReturnValue({ matches: true } as MediaQueryList),
+		);
+		const onOpenChange = vi.fn();
+		const { handle } = renderDraggable(onOpenChange);
+
+		fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 });
+		fireEvent.pointerMove(handle, { pointerId: 1, clientY: 400 });
+		fireEvent.pointerUp(handle, { pointerId: 1, clientY: 400 });
+
+		// the gesture never starts, so a big drag does not dismiss.
+		expect(onOpenChange).not.toHaveBeenCalled();
 	});
 });

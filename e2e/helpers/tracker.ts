@@ -196,6 +196,8 @@ export async function closeComposer(page: Page): Promise<void> {
  * Dismiss the composer sheet by dragging its handle down past the threshold —
  * the bottom-sheet drag gesture, as opposed to Escape/backdrop. Drags in steps
  * so `pointermove` fires along the way.
+ *
+ * @throws if the composer handle is not visible.
  */
 export async function dragComposerToDismiss(page: Page): Promise<void> {
 	const handle = composer(page).getByTestId("sheet-handle");
