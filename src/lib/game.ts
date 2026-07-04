@@ -135,10 +135,10 @@ export interface WireStatusRow {
 	cut: number;
 	/**
 	 * Uncut copies whose location is known — a starting info token or a failed-cut
-	 * reveal exposed them. One per known holding, so it equals the number of
-	 * {@link holders} entries (counting a player once per copy they hold), clamped
-	 * to the copies still uncut. The remaining `uncut - revealed` copies are still
-	 * hidden.
+	 * reveal exposed them. One per distinct {@link holders} entry (a player counts
+	 * once per value, since a wire we've already located and later see referenced
+	 * again is the same wire), clamped to the copies still uncut. The remaining
+	 * `uncut - revealed` copies are still hidden.
 	 */
 	revealed: number;
 	/**
@@ -195,8 +195,10 @@ function detectorCutValue(move: DetectorMove): WireValueOrUnknown | null {
  * two wires, both still uncut — the actor holds the value they named (they must
  * hold a match to claim it) and the target's pointed-at wire is its now-known
  * true value (the X or Y Ray's two names leave the actor's ambiguous, so only
- * the target is recorded there). A successful cut consumes one known copy from
- * *both* the actor and the target; a solo cut clears the value entirely.
+ * the target is recorded there). Each player is tracked at most once per value —
+ * re-referencing an already-located wire is the same wire, not a second copy. A
+ * successful cut clears the value from *both* the actor and the target; a solo
+ * cut clears every holder of the value.
  */
 export function deriveWireStatus(
 	players: Player[],
@@ -206,20 +208,19 @@ export function deriveWireStatus(
 	const cut = new Map<BlueWireValue, number>();
 	// values fully cut by a solo cut, pinned to 4 regardless of prior partial cuts.
 	const complete = new Set<BlueWireValue>();
-	// possession as a multiset of player ids per value, so both-side consumption
-	// removes exactly one known copy at a time.
-	const holders = new Map<HolderKey, string[]>();
+	// possession as a set of player ids per value: a player is tracked at most
+	// once per value, since re-referencing a wire we've already located (e.g. a
+	// player naming a value they were earlier revealed to hold) is the same wire,
+	// not a second copy.
+	const holders = new Map<HolderKey, Set<string>>();
 
 	const addHolder = (key: HolderKey, playerId: string) => {
-		const list = holders.get(key);
-		if (list) list.push(playerId);
-		else holders.set(key, [playerId]);
+		const set = holders.get(key);
+		if (set) set.add(playerId);
+		else holders.set(key, new Set([playerId]));
 	};
 	const consumeHolder = (key: HolderKey, playerId: string) => {
-		const list = holders.get(key);
-		if (!list) return;
-		const at = list.indexOf(playerId);
-		if (at !== -1) list.splice(at, 1);
+		holders.get(key)?.delete(playerId);
 	};
 	const addCut = (value: WireValueOrUnknown | null) => {
 		if (typeof value !== "number") return;
@@ -288,19 +289,19 @@ export function deriveWireStatus(
 		}
 	}
 
-	// resolve a holder multiset to unique players in seat order.
+	// resolve a holder set to its players in seat order.
 	const resolveHolders = (key: HolderKey): Player[] => {
-		const ids = new Set(holders.get(key) ?? []);
-		return players.filter((p) => ids.has(p.id));
+		const ids = holders.get(key);
+		return ids ? players.filter((p) => ids.has(p.id)) : [];
 	};
 
 	const blue: WireStatusRow[] = BLUE_WIRE_VALUES.map((value) => {
 		const cutCount = complete.has(value)
 			? WIRE_COPIES
 			: Math.min(WIRE_COPIES, cut.get(value) ?? 0);
-		// one revealed copy per known holding, but never more than the copies still
-		// uncut (an inconsistent over-log can't reveal more than exist).
-		const knownUncut = holders.get(value)?.length ?? 0;
+		// one revealed copy per distinct known holder, but never more than the
+		// copies still uncut (an inconsistent over-log can't reveal more than exist).
+		const knownUncut = holders.get(value)?.size ?? 0;
 		const revealed = Math.min(knownUncut, WIRE_COPIES - cutCount);
 		return {
 			value,

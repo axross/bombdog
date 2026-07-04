@@ -549,18 +549,43 @@ describe("deriveWireStatus()", () => {
 			expect(row(status, 9).cut).toBe(2);
 		});
 
-		it("never reveals more copies than remain uncut", () => {
-			// an inconsistent log: three fail-reveals pile three 5s onto Carol while a
-			// separate cut removes two 5s elsewhere. Only 4 - 2 = 2 copies can remain,
-			// so the revealed count is clamped to 2 despite three known holdings.
+		it("counts a re-referenced wire once, not twice", () => {
+			// Alice cuts at Bob naming a 1; it's a 2 → Bob holds a 2. Next, Bob cuts
+			// at Carol naming that same 2; it's a 3 → Carol holds a 3. Bob's named 2
+			// is the wire revealed in the first move, so 2 is held once, not twice.
 			const status = derive([
-				dual(1, "fail", { targetId: "c", revealed: 5 }),
-				dual(1, "fail", { targetId: "c", revealed: 5 }),
-				dual(1, "fail", { targetId: "c", revealed: 5 }),
-				dual(5, "success", { actorId: "a", targetId: "b" }),
+				dual(1, "fail", { actorId: "a", targetId: "b", revealed: 2 }),
+				dual(2, "fail", { actorId: "b", targetId: "c", revealed: 3 }),
 			]);
-			expect(row(status, 5).cut).toBe(2);
-			expect(row(status, 5).revealed).toBe(2);
+			expect(holderNames(status, 1)).toEqual(["Alice"]);
+			expect(holderNames(status, 2)).toEqual(["Bob"]);
+			expect(holderNames(status, 3)).toEqual(["Carol"]);
+			expect(row(status, 1).revealed).toBe(1);
+			// the key assertion: the shared 2 is one revealed copy, not two.
+			expect(row(status, 2).revealed).toBe(1);
+			expect(row(status, 3).revealed).toBe(1);
+		});
+
+		it("tracks the same player once per value across repeated reveals", () => {
+			// two failed cuts both reveal Bob holds a 2 → still one known copy.
+			const status = derive([
+				dual(9, "fail", { actorId: "a", targetId: "b", revealed: 2 }),
+				dual(9, "fail", { actorId: "a", targetId: "b", revealed: 2 }),
+			]);
+			expect(holderNames(status, 2)).toEqual(["Bob"]);
+			expect(row(status, 2).revealed).toBe(1);
+		});
+
+		it("never reveals more copies than remain uncut", () => {
+			// Alice is revealed to hold a 2, but two separate cuts account for all
+			// four 2s. No copy can still be uncut, so revealed clamps to 0.
+			const status = derive([
+				dual(9, "fail", { actorId: "b", targetId: "a", revealed: 2 }),
+				dual(2, "success", { actorId: "b", targetId: "c" }),
+				dual(2, "success", { actorId: "b", targetId: "c" }),
+			]);
+			expect(row(status, 2).cut).toBe(WIRE_COPIES);
+			expect(row(status, 2).revealed).toBe(0);
 		});
 	});
 
