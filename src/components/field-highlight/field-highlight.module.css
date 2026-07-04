@@ -10,9 +10,11 @@
 		   shake is re-triggered on each press via a reflow in the component. */
 		:where(:scope)[data-invalid] {
 			box-shadow: 0 0 0 2px var(--danger);
-			/* the cubic-bezier keeps the shake snappy rather than smooth. */
-			animation: field-highlight-shake 0.45s
-				cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+			/* duration and easing compose from the shared motion tokens; the shake's
+			   snappy feel comes from the keyframe offsets below, and the emphasized
+			   curve suits the quick settle. two motion beats give it room to decay. */
+			animation: field-highlight-shake calc(var(--motion) * 2)
+				var(--ease-emphasized) both;
 		}
 
 		@media (prefers-reduced-motion: reduce) {
