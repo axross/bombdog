@@ -6,10 +6,12 @@ import {
 	type BlueWireValueOrUnknown,
 	type DetectorKind,
 	detectorOption,
+	GENERAL_RADAR_EQUIPMENT,
 	type Move,
 	type MoveDraft,
 	type MoveType,
 	type Outcome,
+	POST_IT_EQUIPMENT,
 	type RevealedWire,
 	type WireValueOrUnknown,
 } from "@/lib/types";
@@ -45,6 +47,11 @@ export interface DraftFields {
 	 */
 	cutValue: BlueWireValueOrUnknown | null;
 	equipment: string;
+	/**
+	 * The players a General Radar found holding the announced value. Empty is a
+	 * valid selection — the radar can find no one.
+	 */
+	holderIds: string[];
 	note: string;
 }
 
@@ -64,6 +71,7 @@ export function emptyDraftFields(actorId = ""): DraftFields {
 		revealed: null,
 		cutValue: null,
 		equipment: "",
+		holderIds: [],
 		note: "",
 	};
 }
@@ -108,7 +116,14 @@ export function fieldsFromMove(move: Move): DraftFields {
 		case "solo-cut":
 			return { ...base, value: move.value };
 		case "equipment":
-			return { ...base, equipment: move.equipment, note: move.note ?? "" };
+			return {
+				...base,
+				equipment: move.equipment,
+				targetId: move.targetId ?? "",
+				value: move.value ?? null,
+				holderIds: move.holderIds ?? [],
+				note: move.note ?? "",
+			};
 	}
 }
 
@@ -166,9 +181,24 @@ export function buildDraft(type: MoveType, f: DraftFields): MoveDraft | null {
 			const equipment = f.equipment.trim();
 			if (!f.actorId || !equipment) return null;
 			const note = f.note.trim();
-			return note
-				? { type, actorId: f.actorId, equipment, note }
-				: { type, actorId: f.actorId, equipment };
+			const base = {
+				type,
+				actorId: f.actorId,
+				equipment,
+				...(note ? { note } : {}),
+			};
+			// the structured cards' pads are blue-only, so a chosen value is always
+			// a blue number; the typeof check both validates and narrows it.
+			if (equipment === POST_IT_EQUIPMENT) {
+				if (!f.targetId || typeof f.value !== "number") return null;
+				return { ...base, targetId: f.targetId, value: f.value };
+			}
+			if (equipment === GENERAL_RADAR_EQUIPMENT) {
+				if (typeof f.value !== "number") return null;
+				// zero holders is valid: "the radar found no one" is worth logging.
+				return { ...base, value: f.value, holderIds: [...f.holderIds] };
+			}
+			return base;
 		}
 	}
 }

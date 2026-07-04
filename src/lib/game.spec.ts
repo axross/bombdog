@@ -19,6 +19,7 @@ import {
 	type DetectorMove,
 	type DualCutMove,
 	EMPTY_MOVE_FILTER,
+	type EquipmentMove,
 	type Move,
 	type Outcome,
 	type Player,
@@ -309,6 +310,27 @@ describe("deriveWireStatus()", () => {
 		return { id: `m${seq}`, seq, at: seq, type: "solo-cut", actorId, value };
 	}
 
+	function equipment(
+		opts: {
+			targetId?: string;
+			value?: BlueWireValue;
+			holderIds?: string[];
+		} = {},
+	): EquipmentMove {
+		seq += 1;
+		return {
+			id: `m${seq}`,
+			seq,
+			at: seq,
+			type: "equipment",
+			actorId: "a",
+			equipment: "Equipment",
+			...(opts.targetId !== undefined ? { targetId: opts.targetId } : {}),
+			...(opts.value !== undefined ? { value: opts.value } : {}),
+			...(opts.holderIds !== undefined ? { holderIds: opts.holderIds } : {}),
+		};
+	}
+
 	function derive(
 		moves: Move[],
 		infoTokens: Record<string, BlueWireValue> = {},
@@ -516,6 +538,39 @@ describe("deriveWireStatus()", () => {
 				a: 5,
 			});
 			expect(holderNames(status, 5)).toEqual(["Alice", "Bob"]);
+		});
+
+		it("marks the Post-it's target as holding the revealed value", () => {
+			const status = derive([equipment({ targetId: "b", value: 7 })]);
+			expect(holderNames(status, 7)).toEqual(["Bob"]);
+			expect(row(status, 7).revealed).toBe(1);
+		});
+
+		it("marks every General Radar holder of the announced value", () => {
+			const status = derive([equipment({ value: 4, holderIds: ["a", "c"] })]);
+			expect(holderNames(status, 4)).toEqual(["Alice", "Carol"]);
+			expect(row(status, 4).revealed).toBe(2);
+		});
+
+		it("changes no possession for a zero-holder General Radar", () => {
+			const status = derive([equipment({ value: 4, holderIds: [] })]);
+			for (const r of status.blue) expect(r.holders).toEqual([]);
+		});
+
+		it("consumes an equipment-revealed holder on a later successful cut", () => {
+			// the Post-it exposed Bob's 9; Alice then successfully cuts it.
+			const status = derive([
+				equipment({ targetId: "b", value: 9 }),
+				dual(9, "success", { actorId: "a", targetId: "b" }),
+			]);
+			expect(holderNames(status, 9)).toEqual([]);
+			expect(row(status, 9).cut).toBe(2);
+		});
+
+		it("ignores a legacy equipment move with no structured fields", () => {
+			const status = derive([equipment()]);
+			for (const r of status.blue) expect(r.holders).toEqual([]);
+			expect(status.yellowHolders).toEqual([]);
 		});
 	});
 

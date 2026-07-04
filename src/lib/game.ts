@@ -236,8 +236,19 @@ export function deriveWireStatus(
 	const ordered = [...moves].sort((a, b) => a.seq - b.seq);
 	for (const move of ordered) {
 		switch (move.type) {
-			case "equipment":
+			case "equipment": {
+				// possession-revealing equipment. structural checks, not label
+				// matches, so legacy free-text logs (no structured fields) simply
+				// contribute nothing. a Post-it exposes one wire of its target; a
+				// General Radar exposes every player who declared the announced
+				// value (possibly none).
+				if (move.value === undefined) break;
+				if (move.targetId !== undefined) addHolder(move.value, move.targetId);
+				for (const holderId of move.holderIds ?? []) {
+					addHolder(move.value, holderId);
+				}
 				break;
+			}
 			case "solo-cut": {
 				// the last copies of this value leave play: mark it complete and drop
 				// every known holder of it (the actor held them; no one holds it now).

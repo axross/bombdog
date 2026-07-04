@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type {
-	BlueWireValue,
-	DetectorMove,
-	DualCutMove,
-	EquipmentMove,
-	SoloCutMove,
+import {
+	type BlueWireValue,
+	type DetectorMove,
+	type DualCutMove,
+	type EquipmentMove,
+	GENERAL_RADAR_EQUIPMENT,
+	POST_IT_EQUIPMENT,
+	type SoloCutMove,
 } from "@/lib/types";
 import {
 	buildDraft,
@@ -25,6 +27,7 @@ describe("emptyDraftFields()", () => {
 			revealed: null,
 			cutValue: null,
 			equipment: "",
+			holderIds: [],
 			note: "",
 		});
 	});
@@ -313,6 +316,72 @@ describe("buildDraft()", () => {
 			buildDraft("equipment", { ...emptyDraftFields(""), equipment: "Radar" }),
 		).toBeNull();
 	});
+
+	describe("when the equipment is the Post-it", () => {
+		const base = { ...emptyDraftFields("a"), equipment: POST_IT_EQUIPMENT };
+
+		it("requires both the target and the revealed wire", () => {
+			expect(buildDraft("equipment", base)).toBeNull();
+			expect(buildDraft("equipment", { ...base, targetId: "b" })).toBeNull();
+			expect(buildDraft("equipment", { ...base, value: 7 })).toBeNull();
+			expect(
+				buildDraft("equipment", { ...base, targetId: "b", value: 7 }),
+			).toEqual({
+				type: "equipment",
+				actorId: "a",
+				equipment: POST_IT_EQUIPMENT,
+				targetId: "b",
+				value: 7,
+			});
+		});
+
+		it("rejects a non-blue wire value", () => {
+			// the pad is blue-only, but the shared field can carry a leftover pick
+			// from another tab; the card deals in numbered wires only.
+			expect(
+				buildDraft("equipment", { ...base, targetId: "b", value: "yellow" }),
+			).toBeNull();
+		});
+
+		it("keeps the optional note alongside the structured fields", () => {
+			expect(
+				buildDraft("equipment", {
+					...base,
+					targetId: "b",
+					value: 7,
+					note: "  own wire  ",
+				}),
+			).toMatchObject({ targetId: "b", value: 7, note: "own wire" });
+		});
+	});
+
+	describe("when the equipment is the General Radar", () => {
+		const base = {
+			...emptyDraftFields("a"),
+			equipment: GENERAL_RADAR_EQUIPMENT,
+		};
+
+		it("requires the announced value", () => {
+			expect(buildDraft("equipment", base)).toBeNull();
+			expect(buildDraft("equipment", { ...base, value: "unknown" })).toBeNull();
+		});
+
+		it("allows zero holders — the radar can find no one", () => {
+			expect(buildDraft("equipment", { ...base, value: 4 })).toEqual({
+				type: "equipment",
+				actorId: "a",
+				equipment: GENERAL_RADAR_EQUIPMENT,
+				value: 4,
+				holderIds: [],
+			});
+		});
+
+		it("keeps every selected holder", () => {
+			expect(
+				buildDraft("equipment", { ...base, value: 4, holderIds: ["b", "c"] }),
+			).toMatchObject({ value: 4, holderIds: ["b", "c"] });
+		});
+	});
 });
 
 describe("detectorValues()", () => {
@@ -502,5 +571,57 @@ describe("fieldsFromMove()", () => {
 			equipment: "Radar",
 		};
 		expect(fieldsFromMove(move).note).toBe("");
+	});
+
+	it("seeds the Post-it's target and wire", () => {
+		const move: EquipmentMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "equipment",
+			actorId: "c",
+			equipment: POST_IT_EQUIPMENT,
+			targetId: "b",
+			value: 7,
+		};
+		expect(fieldsFromMove(move)).toMatchObject({
+			equipment: POST_IT_EQUIPMENT,
+			targetId: "b",
+			value: 7,
+		});
+	});
+
+	it("seeds the General Radar's value and holders", () => {
+		const move: EquipmentMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "equipment",
+			actorId: "c",
+			equipment: GENERAL_RADAR_EQUIPMENT,
+			value: 4,
+			holderIds: ["a", "b"],
+		};
+		expect(fieldsFromMove(move)).toMatchObject({
+			equipment: GENERAL_RADAR_EQUIPMENT,
+			value: 4,
+			holderIds: ["a", "b"],
+		});
+	});
+
+	it("defaults the structured fields when equipment has none (legacy log)", () => {
+		const move: EquipmentMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "equipment",
+			actorId: "c",
+			equipment: POST_IT_EQUIPMENT,
+		};
+		expect(fieldsFromMove(move)).toMatchObject({
+			targetId: "",
+			value: null,
+			holderIds: [],
+		});
 	});
 });

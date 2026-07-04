@@ -189,4 +189,66 @@ describe("<PlayerPicker>", () => {
 			).not.toHaveAttribute("data-active");
 		});
 	});
+
+	describe("multi-select mode", () => {
+		it("labels the group and reports a player toggled on", async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<PlayerPicker
+					label="Holders"
+					multiple
+					values={["a"]}
+					onValuesChange={onValuesChange}
+					options={options}
+				/>,
+			);
+
+			// the multi root exposes Radix's toolbar role with the field's label.
+			expect(
+				screen.getByRole("toolbar", { name: "Holders" }),
+			).toBeInTheDocument();
+			await user.click(screen.getByRole("button", { name: "Bob" }));
+			expect(onValuesChange).toHaveBeenCalledWith(["a", "b"]);
+		});
+
+		it("reflects the selected subset as pressed", () => {
+			render(
+				<PlayerPicker
+					label="Holders"
+					multiple
+					values={["a", "c"]}
+					onValuesChange={vi.fn()}
+					options={options}
+				/>,
+			);
+
+			expect(screen.getByRole("button", { name: "Alice" })).toHaveAttribute(
+				"aria-pressed",
+				"true",
+			);
+			expect(screen.getByRole("button", { name: "Bob" })).toHaveAttribute(
+				"aria-pressed",
+				"false",
+			);
+		});
+
+		it("toggling a pressed player off reports the remaining subset", async () => {
+			const user = userEvent.setup();
+			const onValuesChange = vi.fn();
+			render(
+				<PlayerPicker
+					label="Holders"
+					multiple
+					values={["a", "b"]}
+					onValuesChange={onValuesChange}
+					options={options}
+				/>,
+			);
+
+			// unlike single mode, deselecting is legal: an empty subset is valid.
+			await user.click(screen.getByRole("button", { name: "Alice" }));
+			expect(onValuesChange).toHaveBeenCalledWith(["b"]);
+		});
+	});
 });
