@@ -106,11 +106,19 @@ export function MoveComposer(): JSX.Element {
 		// them, rather than logging.
 		if (!draft) {
 			const missing = invalidFields(type, fields);
-			setNudge((n) => n + 1);
+			const next = nudge + 1;
+			setNudge(next);
+			// Re-announce on every failed press. A repeat press with the same missing
+			// fields would set an identical string — React bails on the no-op state
+			// update, the live region's DOM text never changes, and assertive screen
+			// readers stay silent (regressing #26's "hears which fields need
+			// attention"). A trailing zero-width space toggled per press keeps the
+			// text changing while leaving the spoken wording untouched.
+			const marker = next % 2 === 1 ? "\u200B" : "";
 			setAlert(
 				`Can't log yet — check: ${missing
 					.map((key) => FIELD_LABELS[key])
-					.join(", ")}.`,
+					.join(", ")}.${marker}`,
 			);
 			return;
 		}

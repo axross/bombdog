@@ -97,6 +97,25 @@ describe("<MoveComposer>", () => {
 		);
 	});
 
+	it("re-announces on a repeat press even when the same fields are missing", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+		await openComposer(user);
+		const status = screen.getByRole("status");
+
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+		const first = status.textContent;
+
+		// press again with nothing changed; the live region's DOM text must still
+		// change so an assertive screen reader re-announces it…
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+		expect(status.textContent).not.toBe(first);
+		// …while the spoken wording stays the same.
+		expect(status).toHaveTextContent(
+			"Can't log yet — check: Target, Wire, Result.",
+		);
+	});
+
 	it("clears a field's flag as soon as it is filled in", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
