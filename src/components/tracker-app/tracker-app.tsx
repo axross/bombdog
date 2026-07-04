@@ -7,7 +7,6 @@ import { MoveFilter } from "@/components/move-filter/move-filter";
 import { MoveLog } from "@/components/move-log/move-log";
 import { PlayerSetup } from "@/components/player-setup/player-setup";
 import { ResetButton } from "@/components/reset-button/reset-button";
-import { StartingInfo } from "@/components/starting-info/starting-info";
 import { useTrackerStore } from "@/lib/tracker-store";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./tracker-app.module.css";
@@ -52,7 +51,6 @@ export function TrackerApp(): JSX.Element {
 				<MoveFilter filter={filter} onChange={setFilter} />
 				<ResetButton />
 			</header>
-			<StartingInfo />
 			<MoveLog filter={filter} />
 			<MoveComposer />
 		</div>
