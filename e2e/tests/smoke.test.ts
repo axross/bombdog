@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
-	composer,
+	addMoveButton,
+	closeComposer,
 	gotoApp,
 	logDualCut,
 	moveLog,
@@ -31,7 +32,8 @@ test.describe("smoke", () => {
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
-		await expect(composer(page)).toBeVisible();
+		// the composer starts closed, so the bar (Add move) is the resting state.
+		await expect(addMoveButton(page)).toBeVisible();
 		await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 	});
 
@@ -49,6 +51,7 @@ test.describe("smoke", () => {
 			wire: 9,
 			outcome: "success",
 		});
+		await closeComposer(page);
 		await expect(moveRow(page, 1)).toBeVisible();
 	});
 
@@ -66,6 +69,7 @@ test.describe("smoke", () => {
 			wire: 9,
 			outcome: "success",
 		});
+		await closeComposer(page);
 		await expect(moveRow(page, 1)).toBeVisible();
 
 		await page.reload();

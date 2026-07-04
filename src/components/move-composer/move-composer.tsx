@@ -1,8 +1,8 @@
 "use client";
 
-import { clsx } from "clsx";
-import { ChevronDown, ChevronUp, Redo2, Undo2 } from "lucide-react";
+import { Redo2, Undo2 } from "lucide-react";
 import { type JSX, useState } from "react";
+import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
 import {
 	buildDraft,
 	type DraftFields,
@@ -15,7 +15,11 @@ import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
 
 /**
- * Bottom-half form to log the next move, with undo/redo.
+ * The tracker's bottom area. A persistent bar carries undo/redo and an "Add
+ * move" button; Add move opens the move composer as a modal bottom sheet (shared
+ * {@link BottomSheet}, draggable to dismiss). Logging a move keeps the sheet open
+ * and resets the form so the next move can be entered right away, while the bar
+ * (behind the modal overlay) resurfaces once the sheet closes.
  */
 export function MoveComposer(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
@@ -29,22 +33,19 @@ export function MoveComposer(): JSX.Element {
 	const suggestedActor =
 		nextActorId(players, captainIndex, moves) ?? players[0]?.id ?? "";
 
+	const [open, setOpen] = useState(false);
 	const [type, setType] = useState<MoveType>("dual-cut");
-	const [collapsed, setCollapsed] = useState(false);
 	const [fields, setFields] = useState<DraftFields>(() =>
 		emptyDraftFields(suggestedActor),
 	);
 
 	const draft = buildDraft(type, fields);
 
-	const handleTypeChange = (next: MoveType) => {
-		setType(next);
-	};
-
 	/**
-	 * Log the built draft, then reset the form for the next move, seeding the
-	 * suggested actor from the same {@link nextActorId} rule a reloaded log runs
-	 * through so the live suggestion matches what a reload would show.
+	 * Log the built draft, then reset the form for the next move. The sheet stays
+	 * open for rapid consecutive logging; the suggested actor is seeded from the
+	 * same {@link nextActorId} rule a reloaded log runs through so the live
+	 * suggestion matches what a reload would show.
 	 */
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
@@ -70,46 +71,10 @@ export function MoveComposer(): JSX.Element {
 	};
 
 	return (
-		<form
-			className={css.composer}
-			onSubmit={handleSubmit}
-			aria-label="Log a move"
-			data-testid="composer"
-		>
-			{/* kept mounted and animated (grid-rows 1fr↔0fr) so the composer height
-			    interpolates and the flex-sibling move log grows/shrinks in step.
-			    `inert` removes the collapsed form from tab order + a11y tree. */}
-			<div
-				className={clsx(css.collapsible, collapsed && css.collapsed)}
-				inert={collapsed}
-			>
-				<div className={css.collapsibleInner}>
-					<MoveForm
-						players={players}
-						type={type}
-						onTypeChange={handleTypeChange}
-						fields={fields}
-						onFieldsChange={setFields}
-					/>
-				</div>
-			</div>
-
-			<div className={css.actions}>
+		<>
+			{/* Persistent bar behind any modal: undo/redo lead, Add move trails. */}
+			<div className={css.bar} data-testid="composer-bar">
 				<div className={css.history}>
-					<button
-						type="button"
-						className={clsx(css.icon, css.toggle)}
-						onClick={() => setCollapsed((c) => !c)}
-						aria-label={collapsed ? "Expand composer" : "Collapse composer"}
-						aria-expanded={!collapsed}
-						data-testid="toggle-composer"
-					>
-						{collapsed ? (
-							<ChevronUp size={20} aria-hidden />
-						) : (
-							<ChevronDown size={20} aria-hidden />
-						)}
-					</button>
 					<button
 						type="button"
 						className={css.icon}
@@ -132,15 +97,41 @@ export function MoveComposer(): JSX.Element {
 					</button>
 				</div>
 				<button
-					type="submit"
-					className={clsx(css.primary, collapsed && css.hidden)}
-					disabled={!draft}
-					inert={collapsed}
-					data-testid="log-move"
+					type="button"
+					className={css.addMove}
+					onClick={() => setOpen(true)}
+					data-testid="add-move"
 				>
-					Log move
+					Add move
 				</button>
 			</div>
-		</form>
+
+			<BottomSheet
+				open={open}
+				onOpenChange={setOpen}
+				title="New move"
+				data-testid="composer"
+			>
+				<form className={css.form} onSubmit={handleSubmit}>
+					<MoveForm
+						players={players}
+						type={type}
+						onTypeChange={setType}
+						fields={fields}
+						onFieldsChange={setFields}
+					/>
+					<div className={css.actions}>
+						<button
+							type="submit"
+							className={css.logButton}
+							disabled={!draft}
+							data-testid="log-move"
+						>
+							Log move
+						</button>
+					</div>
+				</form>
+			</BottomSheet>
+		</>
 	);
 }

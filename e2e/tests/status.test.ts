@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
+	closeComposer,
 	gotoApp,
 	logDetector,
 	logDualCut,
@@ -60,6 +61,8 @@ test.describe("status view", () => {
 		// a solo cut of 5 removes its last copies → fully cut.
 		await logSoloCut(page, { wire: 5 });
 
+		// dismiss the composer sheet so the tab bar is reachable.
+		await closeComposer(page);
 		await openStatusTab(page);
 
 		await expect(
@@ -93,6 +96,7 @@ test.describe("status view", () => {
 				outcome: { reveal: 8 },
 			});
 
+			await closeComposer(page);
 			await openStatusTab(page);
 			// starting info token: Player 1 holds a 3.
 			await expect(
@@ -123,6 +127,7 @@ test.describe("status view", () => {
 				outcome: "success",
 			});
 
+			await closeComposer(page);
 			await openStatusTab(page);
 			await expect(statusRow(page, 3).getByTestId("status-holder")).toHaveCount(
 				0,
@@ -154,6 +159,7 @@ test.describe("status view", () => {
 			cutValue: 7,
 		});
 
+		await closeComposer(page);
 		await openStatusTab(page);
 		// only the captured value is tallied, not the other named candidate.
 		await expect(

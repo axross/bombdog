@@ -11,6 +11,17 @@ const players: Player[] = [
 	{ id: "c", name: "Carol" },
 ];
 
+type User = ReturnType<typeof userEvent.setup>;
+
+/**
+ * Open the composer sheet from the bar's Add move button, then wait for the
+ * Radix-portaled form to mount (its Log move button is the ready signal).
+ */
+async function openComposer(user: User): Promise<void> {
+	await user.click(screen.getByRole("button", { name: "Add move" }));
+	await screen.findByRole("button", { name: "Log move" });
+}
+
 beforeEach(() => {
 	useTrackerStore.setState({
 		players,
@@ -30,16 +41,31 @@ afterEach(() => {
 });
 
 describe("<MoveComposer>", () => {
-	it("keeps Log move disabled until the action's fields are complete", () => {
+	it("starts closed: the bar shows undo/redo and Add move, with no form", () => {
 		render(<MoveComposer />);
-		expect(screen.getByRole("button", { name: "Log move" })).toBeDisabled();
+
+		// the bar's controls are present immediately; undo/redo start disabled.
+		expect(screen.getByRole("button", { name: "Add move" })).toBeEnabled();
 		expect(screen.getByRole("button", { name: /Undo/ })).toBeDisabled();
 		expect(screen.getByRole("button", { name: /Redo/ })).toBeDisabled();
+		// the form only exists once the sheet is opened.
+		expect(
+			screen.queryByRole("button", { name: "Log move" }),
+		).not.toBeInTheDocument();
+	});
+
+	it("keeps Log move disabled until the action's fields are complete", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+		await openComposer(user);
+
+		expect(screen.getByRole("button", { name: "Log move" })).toBeDisabled();
 	});
 
 	it("logs a solo cut once a wire is chosen", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
+		await openComposer(user);
 
 		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
 		// solo cut needs no target/outcome; the actor defaults to the Captain.
@@ -61,6 +87,7 @@ describe("<MoveComposer>", () => {
 	it("shows the target selector only for targeted actions", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
+		await openComposer(user);
 
 		// dual cut is the default and targets another player (segmented control).
 		expect(
@@ -76,6 +103,7 @@ describe("<MoveComposer>", () => {
 	it("logs a detector move with its card, target, value, and outcome", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
+		await openComposer(user);
 
 		await user.click(screen.getByRole("tab", { name: "Detectors" }));
 		// the default card is the Double Detector; the actor defaults to the Captain.
@@ -102,6 +130,7 @@ describe("<MoveComposer>", () => {
 	it("returns to the Dual cut tab after logging a non-dual-cut move", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
+		await openComposer(user);
 
 		// switch to Solo cut and log a move — Solo cut hides the Target control.
 		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
@@ -122,24 +151,19 @@ describe("<MoveComposer>", () => {
 		).toBeInTheDocument();
 	});
 
-	it("collapses and expands the composer via the toggle", async () => {
+	it("keeps the sheet open after logging so the next move can be entered", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
+		await openComposer(user);
 
-		const collapse = screen.getByRole("button", { name: "Collapse composer" });
-		expect(collapse).toHaveAttribute("aria-expanded", "true");
+		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
+		await user.click(screen.getByRole("radio", { name: "Wire 7" }));
+		await user.click(screen.getByRole("button", { name: "Log move" }));
 
-		await user.click(collapse);
-		const expand = screen.getByRole("button", { name: "Expand composer" });
-		expect(expand).toHaveAttribute("aria-expanded", "false");
-		// while collapsed the Log move button is removed from the a11y tree (inert).
-		expect(screen.getByRole("button", { name: "Log move" })).toHaveAttribute(
-			"inert",
-		);
-
-		await user.click(expand);
+		// the move is recorded and the sheet stays open (its form is still mounted).
+		expect(useTrackerStore.getState().moves).toHaveLength(1);
 		expect(
-			screen.getByRole("button", { name: "Collapse composer" }),
-		).toHaveAttribute("aria-expanded", "true");
+			screen.getByRole("button", { name: "Log move" }),
+		).toBeInTheDocument();
 	});
 });

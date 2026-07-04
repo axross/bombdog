@@ -2,8 +2,8 @@
 
 import { clsx } from "clsx";
 import { Check, ListFilter } from "lucide-react";
-import { Dialog } from "radix-ui";
-import type { JSX } from "react";
+import { type JSX, useState } from "react";
+import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
 import { isFilterActive } from "@/lib/game";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./move-filter.module.css";
@@ -17,40 +17,39 @@ interface MoveFilterProps {
 }
 
 /**
- * The move-log filter: a trigger button that opens a dialog for hiding move
- * types. The trigger is meant to sit in the app header, so it stays in view
+ * The move-log filter: a trigger button that opens a bottom sheet for hiding
+ * move types. The trigger is meant to sit in the app header, so it stays in view
  * while the history scrolls below it.
  */
 export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
+	const [open, setOpen] = useState(false);
 	const active = isFilterActive(filter);
 	const bothExcluded = filter.excludeSuccessfulDualCut && filter.excludeSoloCut;
 
 	return (
-		<Dialog.Root>
-			<Dialog.Trigger asChild>
-				<button
-					type="button"
-					className={clsx(css.trigger, active && css.triggerActive)}
-					aria-label={active ? "Filter (active)" : "Filter"}
-					data-testid="filter"
-				>
-					<ListFilter size={16} aria-hidden />
-					Filter
-					{active && (
-						<span className={css.dot} aria-hidden data-testid="filter-active" />
-					)}
-				</button>
-			</Dialog.Trigger>
-			<Dialog.Portal>
-				<Dialog.Overlay className={css.overlay} />
-				<Dialog.Content
-					className={css.content}
-					aria-describedby={undefined}
-					data-testid="filter-dialog"
-				>
-					<Dialog.Title className={css.title}>Filter moves</Dialog.Title>
-					<p className={css.hint}>Hide the move types you don't need to see.</p>
+		<>
+			<button
+				type="button"
+				className={clsx(css.trigger, active && css.triggerActive)}
+				aria-label={active ? "Filter (active)" : "Filter"}
+				onClick={() => setOpen(true)}
+				data-testid="filter"
+			>
+				<ListFilter size={16} aria-hidden />
+				Filter
+				{active && (
+					<span className={css.dot} aria-hidden data-testid="filter-active" />
+				)}
+			</button>
 
+			<BottomSheet
+				open={open}
+				onOpenChange={setOpen}
+				title="Filter moves"
+				description="Hide the move types you don't need to see."
+				data-testid="filter-dialog"
+			>
+				<div className={css.body}>
 					{/* shortcut above the individual toggles: turn both exclusions on
 					    (or off again once both are set) in a single tap. it is a plain
 					    action, not a toggle, so it carries no aria-pressed state — that
@@ -120,18 +119,17 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 						>
 							Clear
 						</button>
-						<Dialog.Close asChild>
-							<button
-								type="button"
-								className={css.done}
-								data-testid="filter-done"
-							>
-								Done
-							</button>
-						</Dialog.Close>
+						<button
+							type="button"
+							className={css.done}
+							onClick={() => setOpen(false)}
+							data-testid="filter-done"
+						>
+							Done
+						</button>
 					</div>
-				</Dialog.Content>
-			</Dialog.Portal>
-		</Dialog.Root>
+				</div>
+			</BottomSheet>
+		</>
 	);
 }
