@@ -12,45 +12,40 @@ describe("<FieldHighlight>", () => {
 		expect(screen.getByRole("button", { name: "Target" })).toBeInTheDocument();
 	});
 
-	it("stays unmarked and paints no overlay while valid", () => {
+	it("stays unmarked while valid", () => {
 		render(
 			<FieldHighlight invalid={false} nudge={0} data-testid="wrap">
 				<button type="button">Target</button>
 			</FieldHighlight>,
 		);
-		const wrap = screen.getByTestId("wrap");
-		expect(wrap).not.toHaveAttribute("data-invalid");
-		// the decorative pulse overlay is only present when invalid.
-		expect(wrap.querySelector("[aria-hidden]")).toBeNull();
+		expect(screen.getByTestId("wrap")).not.toHaveAttribute("data-invalid");
 	});
 
-	it("marks the field and paints a decorative overlay when invalid", () => {
+	it("marks the field when invalid", () => {
 		render(
 			<FieldHighlight invalid={true} nudge={1} data-testid="wrap">
 				<button type="button">Target</button>
 			</FieldHighlight>,
 		);
-		const wrap = screen.getByTestId("wrap");
-		expect(wrap).toHaveAttribute("data-invalid");
-		const overlay = wrap.querySelector("[aria-hidden]");
-		expect(overlay).not.toBeNull();
-		// decorative only: it must not carry a role or accessible text.
-		expect(overlay).toBeEmptyDOMElement();
+		expect(screen.getByTestId("wrap")).toHaveAttribute("data-invalid");
 	});
 
-	it("keeps exactly one overlay as the nudge counter advances", () => {
+	it("keeps the same child instance as the nudge counter advances", () => {
+		// the shake replays via a reflow, not by remounting — so a repeat press
+		// must not tear down the field's interactive children.
 		const { rerender } = render(
 			<FieldHighlight invalid={true} nudge={1} data-testid="wrap">
 				<button type="button">Target</button>
 			</FieldHighlight>,
 		);
+		const button = screen.getByRole("button", { name: "Target" });
 		rerender(
 			<FieldHighlight invalid={true} nudge={2} data-testid="wrap">
 				<button type="button">Target</button>
 			</FieldHighlight>,
 		);
-		expect(
-			screen.getByTestId("wrap").querySelectorAll("[aria-hidden]"),
-		).toHaveLength(1);
+		// same DOM node — not replaced by a remount.
+		expect(screen.getByRole("button", { name: "Target" })).toBe(button);
+		expect(screen.getByTestId("wrap")).toHaveAttribute("data-invalid");
 	});
 });

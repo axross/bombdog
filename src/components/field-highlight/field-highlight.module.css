@@ -1,47 +1,52 @@
 @layer components {
 	@scope (.wrap) {
 		:where(:scope) {
-			/* anchor the absolutely-positioned pulse overlay, and lay out the single
-			   wrapped field as-is. no padding, so the ring hugs the field. */
-			position: relative;
 			border-radius: var(--radius-sm);
 		}
 
-		/* Persistent invalid marker: a static ring that stays until the field is
-		   fixed. box-shadow (not border/outline) so toggling it never shifts layout.
-		   Also the sole indicator under reduced motion, where the pulse is off. */
+		/* Invalid marker: a static ring (persists until the field is fixed, and the
+		   sole cue under reduced motion) plus a single sharp shake to draw the eye.
+		   box-shadow, not border/outline, so toggling it never shifts layout. The
+		   shake is re-triggered on each press via a reflow in the component. */
 		:where(:scope)[data-invalid] {
 			box-shadow: 0 0 0 2px var(--danger);
-		}
-
-		/* Decorative pulse layered over the ring; remounted per `nudge` to replay. */
-		.pulse {
-			position: absolute;
-			inset: 0;
-			border-radius: inherit;
-			pointer-events: none;
-			box-shadow: 0 0 0 2px var(--danger);
-			animation: field-highlight-pulse var(--motion) var(--ease-standard) 3;
+			/* the cubic-bezier keeps the shake snappy rather than smooth. */
+			animation: field-highlight-shake 0.45s
+				cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 		}
 
 		@media (prefers-reduced-motion: reduce) {
-			.pulse {
+			/* no lateral motion (a vestibular trigger); the static ring alone marks
+			   the field, reinforced by the composer's live-region announcement. */
+			:where(:scope)[data-invalid] {
 				animation: none;
 			}
 		}
 	}
 
-	/* A ring that flashes out and fades on each iteration, drawing the eye to the
-	   field that needs attention. */
-	@keyframes field-highlight-pulse {
-		from {
-			box-shadow: 0 0 0 2px var(--danger);
-			opacity: 1;
+	/* A short "no" head-shake: a few decaying horizontal nudges, settling to rest. */
+	@keyframes field-highlight-shake {
+		0%,
+		100% {
+			transform: translateX(0);
 		}
-
-		to {
-			box-shadow: 0 0 0 7px color-mix(in oklch, var(--danger), transparent 100%);
-			opacity: 0;
+		12% {
+			transform: translateX(-6px);
+		}
+		26% {
+			transform: translateX(5px);
+		}
+		40% {
+			transform: translateX(-4px);
+		}
+		54% {
+			transform: translateX(3px);
+		}
+		68% {
+			transform: translateX(-2px);
+		}
+		82% {
+			transform: translateX(1px);
 		}
 	}
 }

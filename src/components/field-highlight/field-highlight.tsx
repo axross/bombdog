@@ -1,7 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
-import type { JSX, ReactNode } from "react";
+import { type JSX, type ReactNode, useEffect, useRef } from "react";
 import css from "./field-highlight.module.css";
 
 /**
@@ -10,14 +10,14 @@ import css from "./field-highlight.module.css";
 interface FieldHighlightProps {
 	/**
 	 * Whether the wrapped field is currently unselected, missing, or invalid. When
-	 * true, a danger-colored ring is drawn around the field; when false the wrapper
-	 * is inert and only lays out its child.
+	 * true, a danger-colored ring is drawn around the field and it shakes once;
+	 * when false the wrapper is inert and only lays out its child.
 	 */
 	invalid: boolean;
 	/**
-	 * A counter that replays the pulse. Incrementing it (e.g. on each failed
-	 * "Log move" press) remounts the decorative overlay, restarting its animation
-	 * so a still-invalid field pulses again without any imperative DOM work.
+	 * A counter that replays the shake. Incrementing it (e.g. on each failed
+	 * "Log move" press) restarts the animation so a still-invalid field shakes
+	 * again to reassert what needs attention.
 	 */
 	nudge: number;
 	children: ReactNode;
@@ -26,12 +26,13 @@ interface FieldHighlightProps {
 }
 
 /**
- * Wraps a form field and, when it is {@link FieldHighlightProps.invalid}, draws a
- * danger-colored ring plus a short pulse to draw the eye. The ring is rendered
- * with `box-shadow`/an absolutely-positioned overlay so toggling it never shifts
- * layout, and the pulse is keyed on `nudge` so it replays declaratively. The
- * overlay is `aria-hidden` decoration; screen-reader users are told what needs
- * attention through the composer's live region instead.
+ * Wraps a form field and, when it is {@link FieldHighlightProps.invalid}, marks
+ * it with a danger-colored ring and a single sharp "no" shake — the familiar
+ * failed-submit cue — that settles back into the steady ring. The ring is drawn
+ * with `box-shadow` so toggling it never shifts layout, and it persists until the
+ * field is fixed (the sole signal under `prefers-reduced-motion`, where the shake
+ * is suppressed). Screen-reader users are told what needs attention through the
+ * composer's live region.
  */
 export function FieldHighlight({
 	invalid,
@@ -40,18 +41,30 @@ export function FieldHighlight({
 	className,
 	"data-testid": dataTestId,
 }: FieldHighlightProps): JSX.Element {
+	const ref = useRef<HTMLDivElement>(null);
+
+	// Replay the shake on each failed press: the CSS animation lives on
+	// `[data-invalid]`, so it plays once when the flag first appears but not on a
+	// repeat press (no class changes). Clear the animation, force a reflow, then
+	// restore it so the same animation runs again — no key/remount of the field's
+	// interactive children required. A no-op under reduced motion (animation: none).
+	useEffect(() => {
+		if (!invalid || nudge === 0) return;
+		const el = ref.current;
+		if (!el) return;
+		el.style.animation = "none";
+		void el.offsetWidth; // reflow
+		el.style.animation = "";
+	}, [invalid, nudge]);
+
 	return (
 		<div
+			ref={ref}
 			className={clsx(css.wrap, className)}
 			data-invalid={invalid || undefined}
 			data-testid={dataTestId}
 		>
 			{children}
-			{invalid && (
-				// keyed on `nudge` so each failed press remounts the span and its CSS
-				// pulse animation runs from the start again.
-				<span key={nudge} className={css.pulse} aria-hidden />
-			)}
 		</div>
 	);
 }
