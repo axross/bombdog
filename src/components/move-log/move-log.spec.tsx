@@ -149,7 +149,9 @@ describe("<MoveLog>", () => {
 		// the X or Y Ray names two values, so both chips render.
 		expect(screen.getByLabelText("Wire 3")).toBeInTheDocument();
 		expect(screen.getByLabelText("Wire 11")).toBeInTheDocument();
-		// equipment notes are appended after an em dash.
+		// the equipment/misc action is labelled "Misc" on its row…
+		expect(screen.getByText("Misc")).toBeInTheDocument();
+		// …and equipment notes are appended after an em dash.
 		expect(screen.getByText(/seat 3 is empty/)).toBeInTheDocument();
 
 		// each row carries an outcome-coloured accent category on its left edge:

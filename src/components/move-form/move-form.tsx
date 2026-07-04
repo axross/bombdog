@@ -41,14 +41,14 @@ const ACTIONS: { type: MoveType; label: string }[] = [
 	{ type: "dual-cut", label: "Dual cut" },
 	{ type: "solo-cut", label: "Solo cut" },
 	{ type: "detector", label: "Detectors" },
-	{ type: "equipment", label: "Equipment" },
+	{ type: "equipment", label: "Misc" },
 ];
 
 const ACTION_LABEL: Record<MoveType, string> = {
 	"dual-cut": "Dual cut",
 	"solo-cut": "Solo cut",
 	detector: "Detectors",
-	equipment: "Equipment",
+	equipment: "Misc",
 };
 
 const EQUIPMENT_SELECT_OPTIONS: SelectOption[] = EQUIPMENT_OPTIONS.map(
