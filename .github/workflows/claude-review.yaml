@@ -72,6 +72,11 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # TEMPORARY (diagnostic): surface the full SDK stream in the job log so
+          # we can see exactly which tools the plugin calls and which get denied
+          # on a non-trivial PR. Remove once the allow-list below is confirmed
+          # complete — it makes the review's full reasoning visible in Actions logs.
+          show_full_output: true
           # Run the official code-review plugin against this PR. The plugin posts
           # findings through the action's own review mechanism; a custom /review
           # command that posts via mcp__github__ does not work inside the action
@@ -86,12 +91,17 @@ jobs:
           # ref (not the PR head), so the plugin reads the diff via `gh pr diff`
           # and posts via `mcp__github_inline_comment__create_inline_comment` plus
           # a `gh pr comment` summary — all of which must be allow-listed here.
-          # COMMENT-only (no APPROVE/REQUEST_CHANGES) is a CI-review choice made
-          # here, not portable review policy, so it lives in this prompt rather
-          # than in REVIEW.md.
+          # Read/Grep/Glob let the reviewer inspect the checked-out base tree for
+          # context (conventions, sibling files, the modules a change touches) —
+          # a tiny diff needs none, but a multi-file PR does, and denying them was
+          # the likely cause of 18 permission denials + a no-op review on a large
+          # PR. The base tree is trusted `main`, never the PR head, so reading it
+          # is safe. COMMENT-only (no APPROVE/REQUEST_CHANGES) is a CI-review
+          # choice made here, not portable review policy, so it lives in this
+          # prompt rather than in REVIEW.md.
           claude_args: >-
             --append-system-prompt "Read REVIEW.md at the repository root and follow it as the highest-priority, review-only instructions for this review. Post your findings as a single COMMENT-type pull-request review — do not APPROVE or REQUEST_CHANGES; this reviewer is advisory and does not gate merges."
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*),Bash(gh api:*)"
             --disallowedTools "WebFetch,WebSearch"
             # Turn count scales with PR size and is high-variance even on a tiny
             # diff (a 9-line PR completed in 22 turns on one run yet blew past 30
