@@ -8,6 +8,7 @@ import {
 	type Move,
 	type MoveFilter,
 	type Player,
+	type WireValue,
 	type WireValueOrUnknown,
 } from "./types";
 
@@ -324,4 +325,37 @@ export function deriveWireStatus(
 	});
 
 	return { blue, yellowHolders: resolveHolders("yellow") };
+}
+
+/**
+ * One player's line in the status view's Players section: the wire values
+ * (blue 1–12 or yellow) the log proves they hold uncut.
+ */
+export interface PlayerPossession {
+	player: Player;
+	/**
+	 * Known-held values in wire order (1–12, then yellow). Empty when nothing is
+	 * known about the player's hand.
+	 */
+	values: WireValue[];
+}
+
+/**
+ * Pivot {@link deriveWireStatus}'s value-first possession facts player-first,
+ * for the per-player status view. Every player appears, in seat order — a
+ * player with no known wires simply carries an empty `values`.
+ */
+export function derivePlayerPossessions(
+	players: Player[],
+	status: WireStatus,
+): PlayerPossession[] {
+	return players.map((player) => {
+		const values: WireValue[] = status.blue
+			.filter((row) => row.holders.some((holder) => holder.id === player.id))
+			.map((row) => row.value);
+		if (status.yellowHolders.some((holder) => holder.id === player.id)) {
+			values.push("yellow");
+		}
+		return { player, values };
+	});
 }

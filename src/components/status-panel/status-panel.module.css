@@ -5,12 +5,6 @@
 			min-block-size: 0;
 			display: flex;
 			flex-direction: column;
-
-			/* Fixed wire + cut columns so the header and every row line up as a
-			   table; the third (holders) column flexes. The cut column is wide
-			   enough for the "Cut / Revealed" header. */
-			--col-wire: 2.5rem;
-			--col-cut: 7.5rem;
 		}
 
 		.scroll {
@@ -20,159 +14,158 @@
 			padding: var(--space-4);
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-3);
+			gap: var(--space-4);
 		}
 
-		/* Column headers, aligned to the row grid; scrolls with the list. */
-		.head {
-			display: grid;
-			grid-template-columns: var(--col-wire) var(--col-cut) 1fr;
-			align-items: center;
-			gap: var(--space-3);
-			padding-inline: var(--space-3);
+		.section {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-2);
+		}
 
-			& span {
-				font-size: 0.7rem;
-				font-weight: 700;
-				text-transform: uppercase;
-				letter-spacing: 0.04em;
-				white-space: nowrap;
-				color: var(--text-muted);
+		.sectionLabel {
+			font-size: 0.7rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+			color: var(--text-muted);
+		}
+
+		/* The wire-count strip: one tile per blue value, all twelve on one row.
+		   Below ~400px the tiles' fixed square grids no longer fit twelve across,
+		   so the strip breaks into two rows of six. */
+		.wireStrip {
+			display: grid;
+			grid-template-columns: repeat(12, 1fr);
+			gap: var(--space-1);
+			list-style: none;
+		}
+
+		@container (max-width: 400px) {
+			.wireStrip {
+				grid-template-columns: repeat(6, 1fr);
 			}
 		}
 
-		/* Right-aligned to sit over the right-aligned holder badges. */
-		.headPossession {
-			text-align: end;
+		.wireTile {
+			display: flex;
+			justify-content: center;
+			padding: var(--space-2) 2px;
+			background-color: var(--surface-2);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
 		}
 
-		.list {
+		.wireFigure {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: var(--space-1);
+		}
+
+		.wireNumber {
+			font-family: var(--font-mono);
+			font-weight: 700;
+			font-size: 0.85rem;
+			line-height: 1;
+			color: var(--wire-blue-text);
+		}
+
+		/* A fully cut value mutes and strikes its number — out of the game. */
+		.wireTile[data-state="full-cut"] .wireNumber {
+			color: var(--text-muted);
+			text-decoration: line-through;
+		}
+
+		/* The four copies as a 2×2 grid; squares fill row-major, so a half-cut
+		   wire keeps its top pair solid. */
+		.copyGrid {
+			display: grid;
+			grid-template-columns: repeat(2, 8px);
+			grid-auto-rows: 8px;
+			gap: 3px;
+		}
+
+		/* One copy still in play: solid wire blue. */
+		.copy {
+			border-radius: 2px;
+			background-color: var(--wire-blue);
+		}
+
+		/* A cut copy: hollow. */
+		.copy[data-fill="cut"] {
+			background-color: var(--surface-3);
+			border: 1px solid var(--border-strong);
+		}
+
+		.playerList {
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-2);
 			list-style: none;
 		}
 
-		/* value | cut meter | holders. Fixed first two columns keep every row and
-		   the header aligned; the holders column flexes so long rosters wrap within
-		   their own cell rather than pushing the meter around. */
-		.row {
-			display: grid;
-			grid-template-columns: var(--col-wire) var(--col-cut) 1fr;
-			align-items: center;
-			gap: var(--space-3);
-			padding: var(--space-2) var(--space-3);
+		.playerCard {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-2);
+			padding: var(--space-2) var(--space-3) var(--space-3);
 			background-color: var(--surface-2);
 			border: 1px solid var(--border);
 			border-radius: var(--radius);
 		}
 
-		.chipBlue,
-		.chipYellow {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			min-inline-size: 26px;
-			block-size: 26px;
-			padding-inline: var(--space-2);
-			font-family: var(--font-mono);
-			font-weight: 700;
+		.playerHead {
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
+			gap: var(--space-3);
+		}
+
+		.playerName {
 			font-size: 0.85rem;
-			border-radius: var(--radius-sm);
+			font-weight: 600;
 		}
 
-		.chipBlue {
-			color: var(--wire-blue-contrast);
-			background-color: var(--wire-blue);
-		}
-
-		.chipYellow {
-			color: var(--wire-yellow-contrast);
-			background-color: var(--wire-yellow);
-		}
-
-		/* Cut fill: four pips plus a monospace fraction. */
-		.meter {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-2);
-		}
-
-		.pips {
-			display: inline-flex;
-			gap: 3px;
-		}
-
-		/* Hidden copy (still unknown): a faint rest-step square. */
-		.pip {
-			inline-size: 10px;
-			block-size: 10px;
-			border-radius: 2px;
-			background-color: var(--surface-3);
-			border: 1px solid var(--border-strong);
-		}
-
-		/* Cut copy: solid wire blue. */
-		.pip[data-fill="cut"] {
-			background-color: var(--wire-blue);
-			border-color: var(--wire-blue);
-		}
-
-		/* Uncut but revealed: half solid. A diagonal split fills one triangle with
-		   wire blue over the faint empty background, reading as "half cut". */
-		.pip[data-fill="revealed"] {
-			background-image: linear-gradient(
-				135deg,
-				var(--wire-blue) 0 50%,
-				transparent 50% 100%
-			);
-			border-color: var(--wire-blue-border);
-		}
-
-		.fraction {
-			font-family: var(--font-mono);
-			font-size: 0.8rem;
+		.playerSummary {
+			font-size: 0.72rem;
 			color: var(--text-muted);
-			font-variant-numeric: tabular-nums;
 		}
 
-		/* Known holders, wrapping within their cell. */
-		.holders {
+		/* The hand chips wrap at narrow widths; each chip keeps its fixed size
+		   rather than stretching to fill a short overflow row. */
+		.hand {
 			display: flex;
 			flex-wrap: wrap;
-			justify-content: flex-end;
 			gap: var(--space-1);
 		}
 
-		/* Neutral gray pill — the holder is a plain player-name tag, not a wire. */
-		.holder {
+		.cell {
 			display: inline-flex;
 			align-items: center;
-			padding: 2px var(--space-2);
-			font-size: 0.8rem;
-			font-weight: 600;
-			color: var(--text-muted);
-			background-color: var(--surface-3);
-			border: 1px solid var(--border);
+			justify-content: center;
+			inline-size: 26px;
+			block-size: 24px;
+			font-family: var(--font-mono);
+			font-size: 0.7rem;
+			font-weight: 700;
 			border-radius: var(--radius-sm);
+			border: 1px dashed var(--border);
+			color: var(--border-strong);
 		}
 
-		/* Yellow possession line: chip, label, and holders (no fixed count). */
-		.yellow {
-			display: grid;
-			grid-template-columns: auto auto 1fr;
-			align-items: center;
-			gap: var(--space-3);
-			padding: var(--space-2) var(--space-3);
-			background-color: var(--wire-yellow-soft);
-			border: 1px solid var(--wire-yellow-border);
-			border-radius: var(--radius);
+		/* A known holding: solid wire colour, blue for numbers and amber for the
+		   yellow column. */
+		.cell[data-held="true"] {
+			background-color: var(--wire-blue);
+			border: 1px solid var(--wire-blue);
+			color: var(--wire-blue-contrast);
 		}
 
-		.yellowLabel {
-			font-size: 0.8rem;
-			font-weight: 600;
-			color: var(--wire-yellow-text);
+		.cell[data-held="true"][data-value="yellow"] {
+			background-color: var(--wire-yellow);
+			border-color: var(--wire-yellow);
+			color: var(--wire-yellow-contrast);
 		}
 	}
 }

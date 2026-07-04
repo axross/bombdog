@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+	derivePlayerPossessions,
 	deriveWireStatus,
 	filterMoves,
 	formatWire,
@@ -651,5 +652,61 @@ describe("deriveWireStatus()", () => {
 		const reveal = dual(1, "fail", { targetId: "b", revealed: 9 });
 		const status = derive([reveal, success], {});
 		expect(holderNames(status, 9)).toEqual(["Bob"]);
+	});
+});
+
+describe("derivePlayerPossessions()", () => {
+	function possessions(
+		moves: Move[],
+		infoTokens: Record<string, BlueWireValue> = {},
+	) {
+		return derivePlayerPossessions(
+			players,
+			deriveWireStatus(players, moves, infoTokens),
+		);
+	}
+
+	function failedCut(
+		seq: number,
+		value: WireValueOrUnknown,
+		opts: { actorId?: string; targetId?: string; revealed?: RevealedWire } = {},
+	): DualCutMove {
+		return {
+			id: `m${seq}`,
+			seq,
+			at: seq,
+			type: "dual-cut",
+			actorId: opts.actorId ?? "a",
+			targetId: opts.targetId ?? "b",
+			value,
+			outcome: "fail",
+			...(opts.revealed !== undefined ? { revealed: opts.revealed } : {}),
+		};
+	}
+
+	it("lists every player in seat order with empty hands when nothing is known", () => {
+		const result = possessions([]);
+		expect(result.map((p) => p.player.name)).toEqual(["Alice", "Bob", "Carol"]);
+		for (const entry of result) expect(entry.values).toEqual([]);
+	});
+
+	it("pivots each value's holders onto the holding player", () => {
+		// Carol's token marks a 3; a failed cut reveals Alice's named 6 and Bob's
+		// actual 8.
+		const result = possessions([failedCut(1, 6, { revealed: 8 })], { c: 3 });
+		expect(result[0].values).toEqual([6]);
+		expect(result[1].values).toEqual([8]);
+		expect(result[2].values).toEqual([3]);
+	});
+
+	it("keeps a player's values in wire order with yellow last", () => {
+		// Bob is revealed to hold a yellow first, then a 7, then a 2: the pivot
+		// reports wire order (2, 7, yellow), not reveal order.
+		const result = possessions([
+			failedCut(1, 9, { revealed: "yellow" }),
+			failedCut(2, 9, { revealed: 7 }),
+			failedCut(3, 9, { revealed: 2 }),
+		]);
+		expect(result[1].values).toEqual([2, 7, "yellow"]);
 	});
 });

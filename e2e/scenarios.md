@@ -58,9 +58,10 @@ carries its `@scenario:<id>` tag. The reporter
 | session.log-consecutive | Log two moves back-to-back reusing the same target | session | should |
 | session.reset-to-dual-cut | Logging a move returns the composer's action tab to Dual cut | session | should |
 | status.tab-switch | Switching tabs shows only the active panel, filling the content area | status | should |
-| status.counts | The Status view tallies cut vs uncut copies per value | status | should |
-| status.possession | The Status view shows known wire holders and consumes them on a successful cut | status | should |
+| status.counts | The Status view's wire strip tallies each value as uncut, half-cut, or fully cut | status | should |
+| status.possession | The Status view marks known holdings on player cards and consumes them on a successful cut | status | should |
 | status.xy-ray-cut-value | A successful X or Y Ray records its actual cut value and tallies it in Status | status | should |
+| status.yellow | A revealed yellow wire lights the holder's yellow chip on their player card | status | should |
 | history.shows-moves | Logged moves appear in the history | history | must |
 | history.filter.exclude-dual-cut | The filter hides successful dual cuts while keeping failed ones | history | should |
 | history.filter.exclude-solo-cut | The filter hides solo cuts | history | should |
