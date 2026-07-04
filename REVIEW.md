@@ -15,8 +15,14 @@ through.
 
 Review the whole diff through every matching lens from `code-review-guideline`:
 correctness/bugs, maintainability, security, performance/reliability,
-UI/components, project structure, and test coverage. Give each finding a
-severity label, `file:line` evidence, and a concrete fix.
+UI/components, project structure, and test coverage. **Verify the change
+conforms to every project agent skill whose routing condition matches the
+changed files**, per [`AGENTS.md`](AGENTS.md)'s skill index (e.g.
+`development-guidelines`, `unit-test-guidelines`, `e2e-testing-guidelines`,
+`ui-and-components`, `project-structure`) — flag any deviation from a skill's
+stated rule, citing the skill and the rule; a violated skill **MUST** rule is
+Important. Give each finding a severity label, `file:line` evidence, and a
+concrete fix.
 
 ## What "Important" means here
 
