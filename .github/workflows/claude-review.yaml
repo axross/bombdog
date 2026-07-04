@@ -72,11 +72,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # TEMPORARY (diagnostic): surface the full SDK stream in the job log so
-          # we can see exactly which tools the plugin calls and which get denied
-          # on a non-trivial PR. Remove once the allow-list below is confirmed
-          # complete — it makes the review's full reasoning visible in Actions logs.
-          show_full_output: true
           # Run the official code-review plugin against this PR. The plugin posts
           # findings through the action's own review mechanism; a custom /review
           # command that posts via mcp__github__ does not work inside the action
