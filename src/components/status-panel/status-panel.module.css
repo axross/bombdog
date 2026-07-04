@@ -32,7 +32,7 @@
 		}
 
 		/* The wire-count strip: one tile per blue value, all twelve on one row.
-		   Below ~400px the tiles' fixed square grids no longer fit twelve across,
+		   Below 25rem the tiles' fixed square grids no longer fit twelve across,
 		   so the strip breaks into two rows of six. */
 		.wireStrip {
 			display: grid;
@@ -41,7 +41,7 @@
 			list-style: none;
 		}
 
-		@container (max-width: 400px) {
+		@container (width < 25rem) {
 			.wireStrip {
 				grid-template-columns: repeat(6, 1fr);
 			}
@@ -151,7 +151,7 @@
 			font-weight: 700;
 			border-radius: var(--radius-sm);
 			border: 1px dashed var(--border);
-			color: var(--border-strong);
+			color: var(--text-muted);
 		}
 
 		/* A known holding: solid wire colour, blue for numbers and amber for the

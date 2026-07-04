@@ -25,7 +25,9 @@ function reset() {
 beforeEach(reset);
 afterEach(reset);
 
-/** The wire-count tile for a given blue value. */
+/**
+ * The wire-count tile for a given blue value.
+ */
 function tileFor(value: number): HTMLElement {
 	const tile = screen
 		.getAllByTestId("status-wire")
@@ -34,7 +36,9 @@ function tileFor(value: number): HTMLElement {
 	return tile;
 }
 
-/** The possession card for a given player name. */
+/**
+ * The possession card for a given player name.
+ */
 function cardFor(name: string): HTMLElement {
 	const card = screen
 		.getAllByTestId("status-player")
@@ -43,7 +47,9 @@ function cardFor(name: string): HTMLElement {
 	return card;
 }
 
-/** A card's chip for a given wire value ("yellow" or a blue number). */
+/**
+ * A card's chip for a given wire value ("yellow" or a blue number).
+ */
 function cellFor(card: HTMLElement, value: number | "yellow"): HTMLElement {
 	const cell = within(card)
 		.getAllByTestId("status-cell")

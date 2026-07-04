@@ -5,12 +5,13 @@ import {
 	derivePlayerPossessions,
 	deriveWireStatus,
 	formatWire,
+	type PlayerPossession,
 	WIRE_COPIES,
 	type WireStatusRow,
 	wireLabel,
 } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
-import { BLUE_WIRE_VALUES, type Player, type WireValue } from "@/lib/types";
+import { BLUE_WIRE_VALUES, type WireValue } from "@/lib/types";
 import css from "./status-panel.module.css";
 
 /**
@@ -72,13 +73,7 @@ function WireTile({ row }: { row: WireStatusRow }): JSX.Element {
  * per value 1–12 + yellow — solid when the log proves the player holds an
  * uncut copy of that value, dashed while unknown.
  */
-function PlayerCard({
-	player,
-	values,
-}: {
-	player: Player;
-	values: WireValue[];
-}): JSX.Element {
+function PlayerCard({ player, values }: PlayerPossession): JSX.Element {
 	const summary =
 		values.length === 0
 			? "no known wires"
