@@ -63,6 +63,10 @@ export function MoveComposer(): JSX.Element {
 				{ ...draft, id: "", seq: 0, at: 0 },
 			]) ?? fields.actorId;
 		setFields(emptyDraftFields(suggested));
+		// return the action tab to Dual cut — the most common move — so the next
+		// turn's cut needs no tab switch. only the type resets; the fields and
+		// suggested actor above are the already-correct per-move resets.
+		setType("dual-cut");
 	};
 
 	return (

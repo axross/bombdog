@@ -99,6 +99,29 @@ describe("<MoveComposer>", () => {
 		});
 	});
 
+	it("returns to the Dual cut tab after logging a non-dual-cut move", async () => {
+		const user = userEvent.setup();
+		render(<MoveComposer />);
+
+		// switch to Solo cut and log a move — Solo cut hides the Target control.
+		await user.click(screen.getByRole("tab", { name: "Solo cut" }));
+		expect(
+			screen.queryByRole("radiogroup", { name: "Target" }),
+		).not.toBeInTheDocument();
+		await user.click(screen.getByRole("radio", { name: "Wire 7" }));
+		await user.click(screen.getByRole("button", { name: "Log move" }));
+
+		// the composer resets to Dual cut, so the Target control reappears and the
+		// Dual cut tab is the selected one.
+		expect(screen.getByRole("tab", { name: "Dual cut" })).toHaveAttribute(
+			"aria-selected",
+			"true",
+		);
+		expect(
+			screen.getByRole("radiogroup", { name: "Target" }),
+		).toBeInTheDocument();
+	});
+
 	it("collapses and expands the composer via the toggle", async () => {
 		const user = userEvent.setup();
 		render(<MoveComposer />);
