@@ -167,6 +167,28 @@ describe("<MoveLog>", () => {
 		expect(accentBySeq(5)).toHaveAttribute("data-accent", "success"); // detector success
 	});
 
+	it("shows the actual cut value on a successful X or Y Ray badge", () => {
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "detector",
+				detector: "x-or-y-ray",
+				actorId: "a",
+				targetId: "b",
+				values: [3, 11],
+				outcome: "success",
+				cutValue: 11,
+			},
+		]);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
+
+		const badge = screen.getByTestId("badge");
+		expect(badge).toHaveTextContent("success (11)");
+		expect(badge).toHaveAttribute("data-cut", "11");
+	});
+
 	it('renders a "?" chip for a wire cut with an unknown value', () => {
 		seed([
 			{
