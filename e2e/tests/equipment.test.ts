@@ -10,8 +10,8 @@ import {
 	statusRow,
 } from "../helpers/tracker";
 
-// The structured equipment cards: a Post-it reveals one wire of its target and
-// a General Radar reveals who holds an announced value. Both feed the Status
+// the structured equipment cards: a Post-it reveals one wire of its target and
+// a General Radar reveals who holds an announced value. both feed the Status
 // view's possession column, unlike the free-text Misc cards.
 
 test.describe("structured equipment", () => {
