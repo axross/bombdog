@@ -2,6 +2,8 @@
 
 Apply these rules to verify that caching is applied with a deliberate lifetime and scope, never to per-user/per-request data, and that invalidation is wired on writes. Map "the cache directive/API" and "the cache-lifetime API" to whatever Next.js (App Router) or the project's caching layer provides.
 
+> **Dormant for bombdog today.** The app has no server-side caching (no `unstable_cache` / `revalidate*`; state is client-side zustand + IndexedDB), so these checks apply only when server-side caching is added.
+
 ## Cache Placement
 
 This review focuses on critical-severity cases where caching is applied on the client tier (caching is a server-tier concern) or applied to request-specific data.

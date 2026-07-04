@@ -2,6 +2,8 @@
 
 Apply these rules to verify the change keeps the project's error-propagation model and structured-logging discipline intact. This file is the **reviewer's** flagging checklist. Throughout, `reportError(...)` denotes the project's error-reporting call (it maps to the project's error-reporting mechanism if the project has one), and `logger` denotes the structured logger.
 
+> **Mostly dormant for bombdog today.** This client-only app has no `reportError` service and no structured `logger`, so the reporting- and logger-specific rules below are forward-looking. The general error-propagation discipline (let errors reach the root call site; never silently swallow) and Next.js error boundaries (`error.tsx`) still apply to client code.
+
 ## `try`/`catch` Placement
 
 This review focuses on major-severity cases where a new `try`/`catch` is placed inside a nested helper rather than at the root call site (the request entry point / top-level handler / server action). The project rule is "let errors propagate to the root call site".
