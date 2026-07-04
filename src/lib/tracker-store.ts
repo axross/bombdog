@@ -54,6 +54,13 @@ interface TrackerStore extends TrackerState {
 	 */
 	setCaptain: (captainIndex: number) => void;
 	/**
+	 * Correct one player's starting info token value in place. Updates an
+	 * existing token only — a no-op when the player has no token — so the tracker
+	 * can fix a mismarked value without gaining an add/remove path (the roster and
+	 * the skip-the-phase decision stay owned by setup).
+	 */
+	setInfoToken: (playerId: string, value: BlueWireValue) => void;
+	/**
 	 * Log a new move from a draft, clearing the redo history.
 	 */
 	addMove: (draft: MoveDraft) => void;
@@ -189,6 +196,14 @@ export const useTrackerStore = create<TrackerStore>()(
 
 			setCaptain: (captainIndex) => {
 				set({ captainIndex });
+			},
+
+			setInfoToken: (playerId, value) => {
+				const { infoTokens } = get();
+				// correct an existing token only; never add one for a player who
+				// placed none (that decision belongs to setup).
+				if (infoTokens[playerId] == null) return;
+				set({ infoTokens: { ...infoTokens, [playerId]: value } });
 			},
 
 			addMove: (draft) => {

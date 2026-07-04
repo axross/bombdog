@@ -115,6 +115,46 @@ export function startingInfo(page: Page): Locator {
 }
 
 /**
+ * The starting-info editor dialog (portaled to the body; open only after the
+ * strip's Edit control is activated).
+ */
+export function startingInfoEditor(page: Page): Locator {
+	return page.getByTestId("starting-info-editor");
+}
+
+/**
+ * Open the starting-info editor from the strip's Edit control.
+ */
+export async function openStartingInfoEditor(page: Page): Promise<void> {
+	await startingInfo(page).getByTestId("edit-starting-info").click();
+	await expect(startingInfoEditor(page)).toBeVisible();
+}
+
+/**
+ * In the open starting-info editor, set `playerName`'s token to a blue wire. The
+ * per-player row is scoped by its `data-player` so the shared `wire-<n>` buttons
+ * stay unambiguous across rows.
+ */
+export async function editInfoToken(
+	page: Page,
+	playerName: string,
+	wire: number,
+): Promise<void> {
+	await startingInfoEditor(page)
+		.locator(`[data-player="${playerName}"]`)
+		.getByTestId(`wire-${wire}`)
+		.click();
+}
+
+/**
+ * Save the starting-info editor and wait for it to close.
+ */
+export async function saveStartingInfo(page: Page): Promise<void> {
+	await startingInfoEditor(page).getByTestId("save-starting-info").click();
+	await expect(startingInfoEditor(page)).toBeHidden();
+}
+
+/**
  * The bottom-half move composer.
  */
 export function composer(page: Page): Locator {

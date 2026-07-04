@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { Player } from "@/lib/types";
@@ -63,5 +63,20 @@ describe("<StartingInfo>", () => {
 		const tokens = screen.getAllByTestId("starting-info-token");
 		expect(tokens).toHaveLength(1);
 		expect(tokens[0]).toHaveAttribute("data-player", "Bob");
+	});
+
+	it("opens the editor from the Edit control when tokens exist", () => {
+		useTrackerStore.setState({ players, infoTokens: { a: 9 } });
+
+		render(<StartingInfo />);
+
+		// the editor is closed until the trigger is activated.
+		expect(
+			screen.queryByTestId("starting-info-editor"),
+		).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByTestId("edit-starting-info"));
+
+		expect(screen.getByTestId("starting-info-editor")).toBeInTheDocument();
 	});
 });

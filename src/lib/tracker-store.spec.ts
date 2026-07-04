@@ -67,6 +67,24 @@ describe("setCaptain()", () => {
 	});
 });
 
+describe("setInfoToken()", () => {
+	it("updates an existing token's value, leaving the others untouched", () => {
+		state().configurePlayers(players, 0, { a: 9, c: 4 });
+
+		state().setInfoToken("a", 2);
+
+		expect(state().infoTokens).toEqual({ a: 2, c: 4 });
+	});
+
+	it("is a no-op for a player who has no token (never adds one)", () => {
+		state().configurePlayers(players, 0, { a: 9 });
+
+		state().setInfoToken("b", 5);
+
+		expect(state().infoTokens).toEqual({ a: 9 });
+	});
+});
+
 describe("addMove()", () => {
 	it("appends moves with monotonic seq and generated fields", () => {
 		state().addMove(dual);

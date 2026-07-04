@@ -56,5 +56,32 @@
 			color: var(--wire-blue-contrast);
 			background-color: var(--wire-blue);
 		}
+
+		/* Edit trigger, mirroring the move-log row's edit button; pushed to the
+		   trailing edge so it sits opposite the "Starting info" label. */
+		.edit {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-1);
+			min-block-size: 36px;
+			margin-inline-start: auto;
+			padding-inline: var(--space-2);
+			color: var(--text-muted);
+			background-color: transparent;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			font-size: 0.85rem;
+
+			&:hover {
+				color: var(--text);
+				background-color: var(--surface-3);
+			}
+		}
+
+		.editText {
+			@container (width < 24rem) {
+				display: none;
+			}
+		}
 	}
 }
