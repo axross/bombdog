@@ -38,8 +38,8 @@ const FIELD_LABELS: Record<MoveFieldKey, string> = {
  * (behind the modal overlay) resurfaces once the sheet closes.
  *
  * Log move is always pressable: pressing it with an incomplete move flags the
- * unselected/missing/invalid fields (a shake plus a persistent ring) and
- * announces them, rather than logging.
+ * unselected/missing/invalid fields (a shake plus a persistent danger label,
+ * badge, and tint) and announces them, rather than logging.
  */
 export function MoveComposer(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);

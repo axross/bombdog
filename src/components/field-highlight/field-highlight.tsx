@@ -10,8 +10,8 @@ import css from "./field-highlight.module.css";
 interface FieldHighlightProps {
 	/**
 	 * Whether the wrapped field is currently unselected, missing, or invalid. When
-	 * true, a danger-colored ring is drawn around the field and it shakes once;
-	 * when false the wrapper is inert and only lays out its child.
+	 * true, the field's label turns danger with a "!" badge over a faint tint, and
+	 * it shakes once; when false the wrapper is inert and only lays out its child.
 	 */
 	invalid: boolean;
 	/**
@@ -27,11 +27,12 @@ interface FieldHighlightProps {
 
 /**
  * Wraps a form field and, when it is {@link FieldHighlightProps.invalid}, marks
- * it with a danger-colored ring and a single sharp "no" shake — the familiar
- * failed-submit cue — that settles back into the steady ring. The ring is drawn
- * with `box-shadow` so toggling it never shifts layout, and it persists until the
- * field is fixed (the sole signal under `prefers-reduced-motion`, where the shake
- * is suppressed). Screen-reader users are told what needs attention through the
+ * it label-first: the field's own label turns danger with a small "!" badge over
+ * a faint danger tint, plus a single sharp "no" shake — the familiar failed-
+ * submit cue. The static label/badge/tint cue is drawn without a border or
+ * outline so toggling it never shifts layout, and it persists until the field is
+ * fixed (the sole signal under `prefers-reduced-motion`, where the shake is
+ * suppressed). Screen-reader users are told what needs attention through the
  * composer's live region.
  */
 export function FieldHighlight({
