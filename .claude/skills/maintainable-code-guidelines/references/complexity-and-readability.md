@@ -20,7 +20,7 @@ The project enforces complexity/length/typing thresholds in its `Biome` configur
 
 ## Magic Values
 
-Magic Values sets the required project default: flag a magic number / string that is not paired with either a design token (e.g., a CSS variable or shared constant), a named constant, or `Biome`'s inline suppression directive (with a justification comment) that explains the meaning.
+A bare literal forces every later reader to reverse-engineer what it means, and scatters a value that should have one authoritative definition.
 
 **Guidelines:**
 
@@ -30,7 +30,7 @@ Magic Values sets the required project default: flag a magic number / string tha
 
 ## Dead Code
 
-Dead Code sets the required project default: flag commented-out code blocks introduced by the change. Remove or restore them — do not leave them as TODO breadcrumbs.
+Commented-out code cannot be tested or type-checked and only rots, and version control already preserves anything worth recovering.
 
 **Guidelines:**
 
@@ -41,7 +41,7 @@ Dead Code sets the required project default: flag commented-out code blocks intr
 
 ## Comments and Doc-Comments
 
-Comments and Doc-Comments sets the reviewer's default: verify the change follows the project's comment rules, owned by [development-guidelines › code-quality › Comments](../../development-guidelines/references/code-quality.md). Flag violations and link to that rule rather than restating it.
+The project's comment and doc-comment rules are owned by [development-guidelines › code-quality › Comments](../../development-guidelines/references/code-quality.md); this lens flags violations of them and links back rather than restating them.
 
 **Guidelines:**
 
@@ -51,7 +51,7 @@ Comments and Doc-Comments sets the reviewer's default: verify the change follows
 
 ## Type Reuse
 
-Type Reuse sets the required project default: flag an inline object type repeated more than once in the diff — extract into a named type alias.
+A repeated inline shape has to be changed in every copy when it evolves, whereas a single named alias documents the concept in one place.
 
 **Guidelines:**
 
@@ -61,7 +61,7 @@ Type Reuse sets the required project default: flag an inline object type repeate
 
 ## Control Flow
 
-Control Flow describes the preferred project default: flag a deeply nested ternary or `if`/`else` chain that could be flattened with early returns — improves the cognitive complexity score.
+Deep nesting forces a reader to hold every branch condition at once, while early returns let each case be understood and dismissed on its own.
 
 **Guidelines:**
 
