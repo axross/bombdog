@@ -101,7 +101,7 @@ export function StatusPanel(): JSX.Element {
 				{/* Column headers for the wire table: value · cut meter · holders. */}
 				<div className={css.head}>
 					<span>Wire</span>
-					<span>Cut</span>
+					<span>Cut / Revealed</span>
 					<span className={css.headPossession}>Possession</span>
 				</div>
 				<ol className={css.list}>

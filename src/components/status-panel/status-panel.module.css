@@ -7,9 +7,10 @@
 			flex-direction: column;
 
 			/* Fixed wire + cut columns so the header and every row line up as a
-			   table; the third (holders) column flexes. */
+			   table; the third (holders) column flexes. The cut column is wide
+			   enough for the "Cut / Revealed" header. */
 			--col-wire: 2.5rem;
-			--col-cut: 6rem;
+			--col-cut: 7.5rem;
 		}
 
 		.scroll {
@@ -35,6 +36,7 @@
 				font-weight: 700;
 				text-transform: uppercase;
 				letter-spacing: 0.04em;
+				white-space: nowrap;
 				color: var(--text-muted);
 			}
 		}
@@ -116,9 +118,14 @@
 			border-color: var(--wire-blue);
 		}
 
-		/* Uncut but revealed: half-transparent wire blue. */
+		/* Uncut but revealed: half solid. A diagonal split fills one triangle with
+		   wire blue over the faint empty background, reading as "half cut". */
 		.pip[data-fill="revealed"] {
-			background-color: color-mix(in oklch, var(--wire-blue) 50%, transparent);
+			background-image: linear-gradient(
+				135deg,
+				var(--wire-blue) 0 50%,
+				transparent 50% 100%
+			);
 			border-color: var(--wire-blue-border);
 		}
 
