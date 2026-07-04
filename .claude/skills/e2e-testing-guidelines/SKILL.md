@@ -1,6 +1,6 @@
 ---
 name: e2e-testing-guidelines
-description: Use this skill whenever writing, reviewing, refactoring, or running Playwright end-to-end tests in this project, or whenever a change requires verification via the e2e suite. Covers the test directory layout, test-file naming, structured test/step naming, stable test-id chained/scoped locators (never text matching), framework-native auto-waiting assertions over manual DOM reads, polling/wait-for-condition helpers (never fixed sleeps) for async settling such as scroll-driven or animation transitions, authenticated state reuse for API helpers, reusable API/setup helper conventions, the snapshot update flow, and commands for running tests against dev, local production, and a deployed environment. Use even when the user only mentions e2e tests, snapshots, test IDs, polling/waiting, focus assertions, or a failing test run.
+description: Use this skill whenever writing, reviewing, refactoring, or running Playwright end-to-end tests in this project, or when a change needs verification via the e2e suite. Covers the `e2e/tests` layout and `<name>.test.ts` naming, `test.step` structuring, stable test-id chained/scoped locators (never text matching), framework-native auto-waiting assertions over manual DOM reads, polling/wait-for helpers instead of fixed sleeps for scroll- or animation-driven settling, reusable UI helpers in `e2e/helpers`, the `@scenario` coverage-catalog tagging, and the snapshot-update flow. Use even when the user only mentions e2e tests, snapshots, test IDs, polling/waiting, focus assertions, or a failing test run.
 ---
 
 # E2E Testing Guidelines
@@ -39,6 +39,10 @@ See [scenario-coverage.md](./references/scenario-coverage.md) for:
 - The reporter, the phased `must`-gate, and how to run/read `coverage:scenarios`
 
 ## Project Defaults
+
+These are the load-bearing defaults for bombdog's suite — the layout, run command, scenario tagging, locator, and assertion rules a spec must follow.
+
+**Guidelines:**
 
 - MUST place specs under `e2e/tests/` named `<name>.test.ts`, and reusable helpers under `e2e/helpers/` (Playwright `testDir` is `e2e/tests`).
 - MUST run the suite with `npm run test:e2e`; point at a system Chromium via `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when Playwright's managed browser is unavailable.

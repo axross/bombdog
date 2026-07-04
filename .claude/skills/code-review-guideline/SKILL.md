@@ -37,6 +37,17 @@ See [severity.md](./references/severity.md) for:
 - Required severity for each major issue category (security, data loss, broken e2e, etc.)
 - How severity drives the final verdict (Approve / Approve with Nits / Request Changes)
 
+## Repository Review Policy Overlay
+
+When the review output is a **posted** pull-request review — the `/review` command and the CI reviewer — [`REVIEW.md`](../../../REVIEW.md) at the repo root is the authoritative policy and overrides the vocabulary below where they differ. The internal Critical/Major/Minor/Nit triage still drives self-review; the posted report follows `REVIEW.md`.
+
+**Guidelines:**
+
+- MUST apply [`REVIEW.md`](../../../REVIEW.md) on top of this methodology for any posted PR review, and let it win on conflict.
+- MUST collapse the posted report to `REVIEW.md`'s label set (Important / Nit) and open the summary with its one-line tally when `REVIEW.md` defines them, instead of the four-tier report sections below.
+- MUST NOT report, in a posted review, findings the repo policy excludes — CI-enforced Biome lint/format and TypeScript errors — even though the severity floors below would otherwise rate them Critical.
+- MUST keep a posted review COMMENT-type (never APPROVE / REQUEST_CHANGES), per [github-operations](../github-operations/SKILL.md) and `REVIEW.md`.
+
 ## Evidence-Based Reporting
 
 See [evidence.md](./references/evidence.md) for:
@@ -91,7 +102,6 @@ Developer-facing skills own how to write project-conforming code. The review ski
 | Topic | Skill |
 |---|---|
 | Format/lint loop, change scope discipline, and dependency rules | [Development Guidelines](../development-guidelines/SKILL.md) |
-| Error-propagation and failure-mode review | [Performance and Reliability Requirements](../performance-and-reliability-requirements/SKILL.md) |
 | End-to-end test structure, conventions, and commands | [E2E Testing Guidelines](../e2e-testing-guidelines/SKILL.md) |
 | Unit test structure, conventions, mocks/fixtures, and commands | [Unit Test Guidelines](../unit-test-guidelines/SKILL.md) |
 

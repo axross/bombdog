@@ -4,15 +4,18 @@ Apply these rules to label every finding before reporting it. Severity drives bo
 
 ## Severity Definitions
 
-Severity Definitions captures the project-specific context for the checklist below: **Critical** — MUST block merge. The change introduces a defect that will cause data loss, a security breach, a production outage, a broken `main` branch (lint/build/test failure), or a violation of a developer-facing MUST rule that any user will hit on the first request.
+Four severities order every finding and drive the verdict. Each names a merge-impact and a concrete bombdog example.
 
+- **Critical** — MUST block merge. A defect that will cause data loss, a security breach, a production outage, a broken `main` branch (lint/build/test failure), or a violation of a developer-facing MUST rule that any user hits on the first request.
+- **Major** — SHOULD block merge unless deferred deliberately. A defect that degrades correctness, performance, or reliability in a way users notice, or violates a developer-facing SHOULD rule with no documented justification.
+- **Minor** — Non-blocking but worth addressing. Readability, naming, or small refactor opportunities; missing-but-non-critical test coverage; non-load-bearing convention drift.
 - **Nit** — Optional polish. Style preferences, alternative phrasings, micro-optimizations with no measurable benefit.
 
 **Guidelines:**
 
-- MUST classify **Critical** findings as merge-blocking. The change introduces a defect that will cause data loss, a security breach, a production outage, a broken `main` branch (lint/build/test failure), or a violation of a developer-facing MUST rule that any user will hit on the first request.
-- SHOULD classify **Major** findings as merge-blocking unless deferred deliberately. The change introduces a defect that will degrade correctness, performance, or reliability in a way users will notice, or violates a developer-facing SHOULD rule with no documented justification.
-- SHOULD classify **Minor** findings as non-blocking but worth addressing. Readability, naming, or small refactor opportunities; missing-but-non-critical test coverage; non-load-bearing convention drift.
+- MUST classify every finding as exactly one of Critical, Major, Minor, or Nit.
+- MUST treat Critical as merge-blocking, and Major as merge-blocking unless the author defers it deliberately.
+- SHOULD, for a **posted** PR review, remap these to the repo policy's label set per the [Repository Review Policy Overlay](../SKILL.md#repository-review-policy-overlay).
 
 ## Required Severity Floors
 
@@ -42,6 +45,7 @@ These categories use fixed minimum severities, regardless of perceived "smallnes
 
 - MUST classify each listed category at no lower than its minimum severity.
 - MAY raise severity above the floor when the concrete impact is worse than the table's minimum.
+- MUST NOT surface the CI-enforced rows — the lint-error row, and any TypeScript type error — in a **posted** PR review; repo policy excludes them (see the [Repository Review Policy Overlay](../SKILL.md#repository-review-policy-overlay)). The Critical floor governs only internal self-review triage.
 
 ## Verdict Mapping
 
@@ -54,6 +58,7 @@ The reviewer MUST emit one of these three verdicts in the report Summary, derive
 **Guidelines:**
 
 - MUST derive the review verdict from the severity counts exactly as mapped above.
+- SHOULD, for a **posted** PR review, replace this three-verdict output with `REVIEW.md`'s one-line Important/Nit tally per the [Repository Review Policy Overlay](../SKILL.md#repository-review-policy-overlay).
 
 ## When in Doubt
 

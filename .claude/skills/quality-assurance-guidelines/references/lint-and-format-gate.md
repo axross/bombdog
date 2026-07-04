@@ -2,6 +2,8 @@
 
 Apply these rules to verify the author respected the project's mandatory checks.
 
+> In a **posted** PR review, repo policy (`REVIEW.md`) excludes CI-enforced Biome lint/format and TypeScript findings — omit them there. The Critical/Major flags below govern internal self-review triage; see the [Repository Review Policy Overlay](../../code-review-guideline/SKILL.md#repository-review-policy-overlay).
+
 ## Format
 
 Format sets the required project default: mentally run `npm run format` (Biome) over the diff. Flag any tab/space inconsistency, trailing whitespace, missing trailing newline, or quote-style drift as Critical (lint will fail).

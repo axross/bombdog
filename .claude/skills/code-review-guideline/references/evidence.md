@@ -4,11 +4,11 @@ Apply these rules so every finding is verifiable, actionable, and traceable back
 
 ## Citation Requirements
 
-Citation Requirements sets the required project default: cite a `file:line` (or `file:line-line` for a range) for every finding. Use repo-relative paths from the project root (e.g., `src//records/[id]/get-record.ts:42`).
+Citation Requirements sets the required project default: cite a `file:line` (or `file:line-line` for a range) for every finding. Use repo-relative paths from the project root (e.g., `src/lib/tracker-store.ts:42`).
 
 **Guidelines:**
 
-- MUST cite a `file:line` (or `file:line-line` for a range) for every finding. Use repo-relative paths from the project root (e.g., `src//records/[id]/get-record.ts:42`).
+- MUST cite a `file:line` (or `file:line-line` for a range) for every finding. Use repo-relative paths from the project root (e.g., `src/lib/tracker-store.ts:42`).
 - MUST quote the offending code (one-to-five lines) directly under the citation when the surrounding context is needed to understand the finding.
 - MUST link to the violated guideline section when the finding is a guideline violation, using a relative path from the report context (e.g., `[development-guidelines › change-management](../../development-guidelines/references/change-management.md)`).
 - MUST NOT invent line numbers or paths. If unsure, re-read the file.
@@ -20,7 +20,7 @@ Fix Snippet Format sets the required project default: provide a concrete fix sni
 **Example:**
 
 ````
-[CRITICAL] src//records/get-record.ts:53 — Unsanitized `id` used in a data-layer query filter without an explicit string assertion.
+[CRITICAL] src/lib/get-record.ts:53 — Unsanitized `id` used in a data-layer query filter without an explicit string assertion.
 Risk: A non-string `id` (e.g., an array via request-param coercion) bypasses the equals filter and could leak records the caller is not authorized to read.
 Fix:
 ```ts
@@ -52,6 +52,7 @@ The reviewer MUST emit findings in this exact section order so downstream agents
 **Guidelines:**
 
 - MUST emit review report sections in the exact order shown above.
+- SHOULD, for a **posted** PR review governed by `REVIEW.md`, follow the overlay instead — the policy's Important/Nit labels and one-line tally — per the [Repository Review Policy Overlay](../SKILL.md#repository-review-policy-overlay).
 
 ## What Counts as Evidence
 

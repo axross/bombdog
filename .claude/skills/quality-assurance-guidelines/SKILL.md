@@ -36,8 +36,10 @@ See [e2e-coverage.md](./references/e2e-coverage.md) for:
 
 ## Unit Test Coverage
 
-- Report `npm run test:coverage` results (branch/function/line/statement) after changes to `src/lib` or component logic; the suite enforces ~95% thresholds (V8 provider).
-- Any file below 100% branch has a justified reason: a defensive/type-required guard the UI can't reach (prefer deleting genuinely dead code), or behavior only reachable in a real browser (Radix animation-close callbacks, IndexedDB) that is covered by e2e instead — marked with `/* v8 ignore next */` and a one-line reason. See [unit-test-guidelines › Coverage](../unit-test-guidelines/SKILL.md#project-defaults).
+See [unit-test-guidelines › Project Defaults](../unit-test-guidelines/SKILL.md#project-defaults) for:
+
+- The coverage command and enforced thresholds to confirm were run after `src/lib` or component-logic changes
+- The justification policy every sub-100% branch must satisfy — a defensive/unreachable guard (prefer deleting genuinely dead code), or browser-only behavior covered by e2e, marked with `/* v8 ignore next */` and a reason — rather than an unexplained gap
 
 ## Snapshot Handling
 

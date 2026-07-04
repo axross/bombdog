@@ -33,6 +33,10 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 
 ## File Placement
 
+New files follow fixed placement rules by kind — routes, components, non-UI modules, and their colocated tests each have a home.
+
+**Guidelines:**
+
 - MUST use **kebab-case** for all file and folder names (`move-composer/move-composer.tsx`).
 - MUST place routes under `src/app/` following App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route segment folders).
 - MUST place shared components under `src/components/<name>/` and non-UI modules under `src/lib/`.
