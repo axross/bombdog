@@ -41,6 +41,7 @@ permissions:
 
 jobs:
   review:
+    name: Review
     # Only fire on: a comment on a pull request (not a plain issue), containing
     # `@claude review`, from a trusted user (owner/member/collaborator). This
     # keeps untrusted authors from spending tokens or steering the reviewer.
@@ -64,9 +65,11 @@ jobs:
       # review reads the diff through the GitHub API, so untrusted head code is
       # never executed on the runner. The checkout supplies CLAUDE.md / AGENTS.md
       # and the project skills as review context for the plugin.
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: anthropics/claude-code-action@v1
+      - name: Claude Review
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Run the official code-review plugin against this PR. The plugin posts
