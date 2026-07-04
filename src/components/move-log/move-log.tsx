@@ -22,7 +22,7 @@ const KIND_LABEL: Record<MoveType, string> = {
 	"dual-cut": "Dual cut",
 	"solo-cut": "Solo cut",
 	detector: "Detectors",
-	equipment: "Equipment",
+	equipment: "Misc",
 };
 
 /**

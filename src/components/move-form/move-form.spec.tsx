@@ -63,7 +63,7 @@ afterEach(() => {
 describe("<MoveForm>", () => {
 	it("renders the four action tabs in add mode", () => {
 		render(<Harness />);
-		for (const label of ["Dual cut", "Solo cut", "Detectors", "Equipment"]) {
+		for (const label of ["Dual cut", "Solo cut", "Detectors", "Misc"]) {
 			expect(screen.getByRole("tab", { name: label })).toBeInTheDocument();
 		}
 	});
@@ -174,11 +174,11 @@ describe("<MoveForm>", () => {
 		).toBeInTheDocument();
 	});
 
-	it("switching to Equipment shows the equipment picker and note field", async () => {
+	it("switching to Misc shows the equipment picker and note field", async () => {
 		const user = userEvent.setup();
 		render(<Harness />);
 
-		await user.click(screen.getByRole("tab", { name: "Equipment" }));
+		await user.click(screen.getByRole("tab", { name: "Misc" }));
 
 		expect(
 			screen.getByRole("combobox", { name: "Equipment" }),
@@ -252,12 +252,12 @@ describe("<MoveForm>", () => {
 		);
 	});
 
-	it("typing a note reports it via onFieldsChange in equipment mode", async () => {
+	it("typing a note reports it via onFieldsChange in Misc mode", async () => {
 		const user = userEvent.setup();
 		const onFieldsChange = vi.fn();
 		render(<Harness onFieldsChangeSpy={onFieldsChange} />);
 
-		await user.click(screen.getByRole("tab", { name: "Equipment" }));
+		await user.click(screen.getByRole("tab", { name: "Misc" }));
 		await user.type(screen.getByPlaceholderText(/moved detonator/), "x");
 
 		expect(onFieldsChange).toHaveBeenCalledWith(
