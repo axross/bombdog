@@ -69,25 +69,38 @@ describe("<StatusPanel>", () => {
 		]);
 	});
 
-	it("shows the cut/uncut count a successful dual cut produces", () => {
+	it("shows the cut count a successful dual cut produces", () => {
 		useTrackerStore.setState({ players, moves: [dualCut9] });
 
 		render(<StatusPanel />);
 
 		const count = within(rowFor(9)).getByTestId("status-count");
 		expect(count).toHaveAttribute("data-cut", "2");
+		expect(count).toHaveAttribute("data-revealed", "0");
 		expect(count).toHaveAttribute("data-uncut", "2");
 		// the counts are announced, not conveyed by the pips alone.
-		expect(count).toHaveAccessibleName("2 of 4 cut, 2 still in play");
+		expect(count).toHaveAccessibleName("2 of 4 cut, 0 revealed and uncut");
+		// two pips read as cut, the rest as hidden (no revealed copies here).
+		const fills = Array.from(count.querySelectorAll("[data-fill]")).map((el) =>
+			el.getAttribute("data-fill"),
+		);
+		expect(fills).toEqual(["cut", "cut", "hidden", "hidden"]);
 	});
 
-	it("shows a starting-info-token holder on its value's row", () => {
+	it("shows a starting-info-token holder and its revealed pip", () => {
 		useTrackerStore.setState({ players, infoTokens: { c: 3 } });
 
 		render(<StatusPanel />);
 
-		const holder = within(rowFor(3)).getByTestId("status-holder");
-		expect(holder).toHaveAttribute("data-player", "Carol");
+		const row = rowFor(3);
+		expect(within(row).getByTestId("status-holder")).toHaveAttribute(
+			"data-player",
+			"Carol",
+		);
+		// the token is an uncut-but-revealed copy: one revealed pip, none cut.
+		const count = within(row).getByTestId("status-count");
+		expect(count).toHaveAttribute("data-cut", "0");
+		expect(count).toHaveAttribute("data-revealed", "1");
 	});
 
 	it("omits the yellow line until a yellow holder is known", () => {

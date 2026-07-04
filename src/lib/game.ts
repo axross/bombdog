@@ -124,7 +124,8 @@ export const WIRE_COPIES = 4;
 
 /**
  * One blue value's line in the status view: how many of its four copies are
- * cut vs still uncut, plus the players known to hold an uncut copy.
+ * cut, how many are uncut-but-revealed (location known, not yet cut), and the
+ * players known to hold those uncut-but-revealed copies.
  */
 export interface WireStatusRow {
 	value: BlueWireValue;
@@ -133,12 +134,21 @@ export interface WireStatusRow {
 	 */
 	cut: number;
 	/**
+	 * Uncut copies whose location is known — a starting info token or a failed-cut
+	 * reveal exposed them. One per known holding, so it equals the number of
+	 * {@link holders} entries (counting a player once per copy they hold), clamped
+	 * to the copies still uncut. The remaining `uncut - revealed` copies are still
+	 * hidden.
+	 */
+	revealed: number;
+	/**
 	 * Copies still in play (`WIRE_COPIES - cut`).
 	 */
 	uncut: number;
 	/**
-	 * Players known to hold an uncut copy, in seat order. Deduplicated: a player
-	 * appears once however many copies they are known to hold.
+	 * Players known to hold an uncut-but-revealed copy, in seat order.
+	 * Deduplicated: a player appears once however many copies they are known to
+	 * hold.
 	 */
 	holders: Player[];
 }
@@ -271,9 +281,14 @@ export function deriveWireStatus(
 		const cutCount = complete.has(value)
 			? WIRE_COPIES
 			: Math.min(WIRE_COPIES, cut.get(value) ?? 0);
+		// one revealed copy per known holding, but never more than the copies still
+		// uncut (an inconsistent over-log can't reveal more than exist).
+		const knownUncut = holders.get(value)?.length ?? 0;
+		const revealed = Math.min(knownUncut, WIRE_COPIES - cutCount);
 		return {
 			value,
 			cut: cutCount,
+			revealed,
 			uncut: WIRE_COPIES - cutCount,
 			holders: resolveHolders(value),
 		};

@@ -100,6 +100,13 @@ test.describe("status view", () => {
 			await expect(
 				statusRow(page, 8).getByTestId("status-holder"),
 			).toHaveAttribute("data-player", "Player 2");
+			// each is an uncut-but-revealed copy: one revealed, none cut.
+			await expect(
+				statusRow(page, 3).getByTestId("status-count"),
+			).toHaveAttribute("data-revealed", "1");
+			await expect(
+				statusRow(page, 3).getByTestId("status-count"),
+			).toHaveAttribute("data-cut", "0");
 		});
 
 		await test.step("A successful 3-cut consumes Player 1's known copy", async () => {
@@ -114,6 +121,13 @@ test.describe("status view", () => {
 			await expect(statusRow(page, 3).getByTestId("status-holder")).toHaveCount(
 				0,
 			);
+			// consuming the copy drops it from revealed and marks it cut instead.
+			await expect(
+				statusRow(page, 3).getByTestId("status-count"),
+			).toHaveAttribute("data-revealed", "0");
+			await expect(
+				statusRow(page, 3).getByTestId("status-count"),
+			).toHaveAttribute("data-cut", "2");
 		});
 	});
 

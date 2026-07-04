@@ -73,6 +73,7 @@
 			gap: 3px;
 		}
 
+		/* Hidden copy (still unknown): a faint rest-step square. */
 		.pip {
 			inline-size: 10px;
 			block-size: 10px;
@@ -81,9 +82,16 @@
 			border: 1px solid var(--border-strong);
 		}
 
-		.pip[data-filled="true"] {
-			background-color: var(--danger);
-			border-color: var(--danger);
+		/* Cut copy: solid wire blue. */
+		.pip[data-fill="cut"] {
+			background-color: var(--wire-blue);
+			border-color: var(--wire-blue);
+		}
+
+		/* Uncut but revealed: half-transparent wire blue. */
+		.pip[data-fill="revealed"] {
+			background-color: color-mix(in oklch, var(--wire-blue) 50%, transparent);
+			border-color: var(--wire-blue-border);
 		}
 
 		.fraction {

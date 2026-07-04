@@ -335,6 +335,7 @@ describe("deriveWireStatus()", () => {
 		expect(status.blue).toHaveLength(12);
 		for (const r of status.blue) {
 			expect(r.cut).toBe(0);
+			expect(r.revealed).toBe(0);
 			expect(r.uncut).toBe(WIRE_COPIES);
 			expect(r.holders).toEqual([]);
 		}
@@ -490,6 +491,51 @@ describe("deriveWireStatus()", () => {
 				a: 5,
 			});
 			expect(holderNames(status, 5)).toEqual(["Alice", "Bob"]);
+		});
+	});
+
+	describe("revealed count", () => {
+		it("counts one revealed copy per starting info token", () => {
+			const status = derive([], { a: 3 });
+			expect(row(status, 3).revealed).toBe(1);
+			expect(row(status, 3).cut).toBe(0);
+		});
+
+		it("counts a failed-cut reveal as one uncut-but-revealed copy", () => {
+			const status = derive([dual(2, "fail", { targetId: "b", revealed: 8 })]);
+			expect(row(status, 8).revealed).toBe(1);
+		});
+
+		it("counts one revealed copy per distinct known holding", () => {
+			// two players each reveal a 5 → two uncut-but-revealed copies.
+			const status = derive([dual(1, "fail", { targetId: "b", revealed: 5 })], {
+				a: 5,
+			});
+			expect(row(status, 5).revealed).toBe(2);
+		});
+
+		it("drops the revealed count when a cut consumes the copy", () => {
+			// Alice's 9 is revealed, then a 9-cut against her consumes it.
+			const status = derive(
+				[dual(9, "success", { actorId: "b", targetId: "a" })],
+				{ a: 9 },
+			);
+			expect(row(status, 9).revealed).toBe(0);
+			expect(row(status, 9).cut).toBe(2);
+		});
+
+		it("never reveals more copies than remain uncut", () => {
+			// an inconsistent log: three fail-reveals pile three 5s onto Carol while a
+			// separate cut removes two 5s elsewhere. Only 4 - 2 = 2 copies can remain,
+			// so the revealed count is clamped to 2 despite three known holdings.
+			const status = derive([
+				dual(1, "fail", { targetId: "c", revealed: 5 }),
+				dual(1, "fail", { targetId: "c", revealed: 5 }),
+				dual(1, "fail", { targetId: "c", revealed: 5 }),
+				dual(5, "success", { actorId: "a", targetId: "b" }),
+			]);
+			expect(row(status, 5).cut).toBe(2);
+			expect(row(status, 5).revealed).toBe(2);
 		});
 	});
 

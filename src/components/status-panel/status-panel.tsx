@@ -12,19 +12,30 @@ import type { Player, WireValueOrUnknown } from "@/lib/types";
 import css from "./status-panel.module.css";
 
 /**
- * A value's cut/uncut fill, shown as four pips (filled = cut) with a compact
- * fraction. The accessible name carries the counts so the pips can stay
- * decorative — colour and fill are never the only signal.
+ * A value's fill, shown as four pips with a compact cut fraction. Pips read
+ * left to right: solid wire-blue for cut copies, half-transparent wire-blue for
+ * uncut-but-revealed copies, and faint for copies still hidden. The accessible
+ * name carries the counts so the pips can stay decorative — colour and fill are
+ * never the only signal.
  */
-function CutMeter({ cut, uncut }: { cut: number; uncut: number }): JSX.Element {
+function CutMeter({
+	cut,
+	revealed,
+	uncut,
+}: {
+	cut: number;
+	revealed: number;
+	uncut: number;
+}): JSX.Element {
 	return (
 		<span
 			role="img"
 			className={css.meter}
 			data-testid="status-count"
 			data-cut={cut}
+			data-revealed={revealed}
 			data-uncut={uncut}
-			aria-label={`${cut} of ${WIRE_COPIES} cut, ${uncut} still in play`}
+			aria-label={`${cut} of ${WIRE_COPIES} cut, ${revealed} revealed and uncut`}
 		>
 			<span className={css.pips} aria-hidden>
 				{Array.from({ length: WIRE_COPIES }, (_, i) => (
@@ -32,7 +43,9 @@ function CutMeter({ cut, uncut }: { cut: number; uncut: number }): JSX.Element {
 						// biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static pip row
 						key={i}
 						className={css.pip}
-						data-filled={i < cut}
+						data-fill={
+							i < cut ? "cut" : i < cut + revealed ? "revealed" : "hidden"
+						}
 					/>
 				))}
 			</span>
@@ -100,7 +113,11 @@ export function StatusPanel(): JSX.Element {
 							data-value={row.value}
 						>
 							<WireChip value={row.value} />
-							<CutMeter cut={row.cut} uncut={row.uncut} />
+							<CutMeter
+								cut={row.cut}
+								revealed={row.revealed}
+								uncut={row.uncut}
+							/>
 							<Holders holders={row.holders} />
 						</li>
 					))}
