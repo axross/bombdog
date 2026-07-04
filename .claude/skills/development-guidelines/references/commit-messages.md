@@ -1,6 +1,6 @@
 # Commit Messages
 
-Apply these rules whenever you author a Git commit or amend an existing one in this project. The project follows [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) — the normative rules below are summarized so no network fetch is required.
+Apply these rules whenever you author a Git commit or amend an existing one in this project. The same header format also governs **pull request titles** — see [Pull Request Titles](#pull-request-titles). The project follows [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) — the normative rules below are summarized so no network fetch is required.
 
 ## Overall Format
 
@@ -17,6 +17,16 @@ Apply these rules whenever you author a Git commit or amend an existing one in t
 - MUST prefix every commit with a `<type>`, followed by an OPTIONAL scope, an OPTIONAL `!` breaking-change marker, a REQUIRED colon, and a REQUIRED single space before the description.
 - MUST keep the first line (the header: `type(scope)!: description`) a single line with no trailing period.
 - MUST separate the header, body, and footers with exactly one blank line each when they are present.
+
+## Pull Request Titles
+
+The header format is not commit-only: a pull request title MUST follow the same `<type>[scope][!]: <description>` shape as a commit header. This project's default squash merge uses the pull request title as the resulting commit's subject on `main`, so a title without a type prefix silently lands a non-conforming commit on the default branch — this is the failure the rule prevents. The title carries only the header; the body/footer live in the pull request description, not the title.
+
+**Guidelines:**
+
+- MUST title every pull request with a Conventional Commits header (`<type>[scope][!]: <description>`), applying the Type, Scope, Description, and Breaking-Change rules below exactly as for a commit header.
+- SHOULD pick the type from the primary change the pull request delivers when it spans more than one type (e.g., a change that is mostly CI config with an incidental docs tweak is `ci`).
+- MUST NOT apply this rule to issue titles: an issue states a problem or deliverable in plain descriptive prose, and is never a commit subject.
 
 ## Type
 

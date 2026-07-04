@@ -92,7 +92,7 @@ test.describe("smoke", () => {
 		const setup = page.getByTestId("setup");
 		await expect(setup.getByTestId("start")).toBeVisible();
 		// the previous player count, names, and Captain are pre-filled.
-		await expect(setup.getByText("3")).toBeVisible();
+		await expect(setup.getByTestId("player-count")).toHaveText("3");
 		await expect(
 			setup.getByRole("textbox", { name: "Name of player 1" }),
 		).toHaveValue("Alice");

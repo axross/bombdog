@@ -31,6 +31,7 @@ beforeEach(() => {
 		players: [],
 		captainIndex: 0,
 		moves: [],
+		infoTokens: {},
 		redoStack: [],
 		previousPlayers: [],
 		previousCaptainIndex: 0,
@@ -42,6 +43,18 @@ describe("configurePlayers()", () => {
 		state().configurePlayers(players, 2);
 		expect(state().players).toHaveLength(3);
 		expect(state().captainIndex).toBe(2);
+	});
+
+	it("stores the starting info tokens passed at game start", () => {
+		state().configurePlayers(players, 1, { a: 9, c: 3 });
+		expect(state().infoTokens).toEqual({ a: 9, c: 3 });
+	});
+
+	it("defaults info tokens to an empty record when the phase is skipped", () => {
+		state().configurePlayers(players, 0, { a: 5 });
+		// starting a fresh game with no tokens (omitted arg) clears any prior ones.
+		state().configurePlayers(players, 0);
+		expect(state().infoTokens).toEqual({});
 	});
 });
 
@@ -228,9 +241,16 @@ describe("reset()", () => {
 		expect(state().previousPlayers).toEqual(players);
 		expect(state().previousCaptainIndex).toBe(2);
 	});
+
+	it("clears the starting info tokens", () => {
+		state().configurePlayers(players, 0, { a: 5, b: 8 });
+
+		state().reset();
+		expect(state().infoTokens).toEqual({});
+	});
 });
 
-describe("persist migration (v1 → v2)", () => {
+describe("persist migration (v1 → v3)", () => {
 	const { migrate } = useTrackerStore.persist.getOptions();
 
 	it("rewrites legacy double-detector moves into the unified detector shape", () => {
@@ -349,27 +369,58 @@ describe("persist migration (v1 → v2)", () => {
 	it("leaves already-current state untouched", () => {
 		const persisted = {
 			moves: [{ type: "detector", detector: "triple", values: [3] }],
+			infoTokens: { a: 7 },
 		};
 
-		const result = migrate?.(persisted, 2) as {
+		const result = migrate?.(persisted, 3) as {
 			moves: Record<string, unknown>[];
+			infoTokens: Record<string, unknown>;
 		};
 
 		expect(result.moves[0]).toMatchObject({
 			type: "detector",
 			detector: "triple",
 		});
+		expect(result.infoTokens).toEqual({ a: 7 });
+	});
+
+	it("defaults info tokens to an empty record for pre-v3 state", () => {
+		const persisted = { players, captainIndex: 0, moves: [] };
+
+		const result = migrate?.(persisted, 2) as { infoTokens?: unknown };
+
+		expect(result.infoTokens).toEqual({});
+	});
+
+	it("keeps info tokens already recorded on pre-v3 state", () => {
+		const persisted = {
+			players,
+			captainIndex: 0,
+			moves: [],
+			infoTokens: { a: 4 },
+		};
+
+		const result = migrate?.(persisted, 2) as { infoTokens?: unknown };
+
+		expect(result.infoTokens).toEqual({ a: 4 });
 	});
 
 	it("tolerates non-object state, a missing moves array, and odd entries", () => {
 		expect(migrate?.(null, 1)).toBeNull();
-		expect(migrate?.({ players }, 1)).toEqual({ players });
-		expect(migrate?.({ moves: "nope" }, 1)).toEqual({ moves: "nope" });
+		// the v3 step defaults the new info-tokens field on any surviving object.
+		expect(migrate?.({ players }, 1)).toEqual({ players, infoTokens: {} });
+		expect(migrate?.({ moves: "nope" }, 1)).toEqual({
+			moves: "nope",
+			infoTokens: {},
+		});
 
 		const withOddEntries = {
 			moves: [null, "x", { type: "solo-cut", value: 5 }],
 		};
-		expect(migrate?.(withOddEntries, 1)).toEqual(withOddEntries);
+		expect(migrate?.(withOddEntries, 1)).toEqual({
+			...withOddEntries,
+			infoTokens: {},
+		});
 	});
 });
 
