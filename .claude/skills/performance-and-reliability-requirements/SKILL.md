@@ -1,11 +1,22 @@
 ---
 name: performance-and-reliability-requirements
-description: Use this skill when reviewing runtime cost or failure-mode behavior of a code change. Covers data-access efficiency and N+1 risk, server/client boundary cost and async waterfalls, deferred/streamed loading splits, caching correctness (lifetime, scope, invalidation), asset/image optimization, client bundle and dependency weight, and error-handling/observability hooks. This is the reviewer's lens. Use for "fast", "cache", "scale", "slow", "bundle", or "what happens when this fails".
+description: Use this skill when reviewing runtime cost or failure-mode behavior of a code change. Live lenses for this client-only app: client bundle and dependency weight, asset/image optimization, server/client boundary and render cost, and error-propagation and boundary handling. The data-layer/N+1, server-side caching (lifetime, scope, invalidation), and error-reporting/observability lenses are dormant until the app adds a server data layer. This is the reviewer's lens. Use for "fast", "cache", "scale", "slow", "bundle", or "what happens when this fails".
 ---
 
 # Performance and Reliability Requirements
 
 Apply these rules when reviewing the runtime cost and failure-mode behavior of any code change. This is the reviewer's lens — flag risks and link to the developer-facing rule rather than restating it.
+
+## Current Architecture
+
+bombdog is a **client-only** Next.js app: state lives in a `zustand` store persisted to IndexedDB (`src/lib/tracker-store.ts`, `src/lib/idb-storage.ts`), with no server data layer, no server-side caching, no request handlers, and no error-reporting service. Several lenses below are therefore dormant until such infrastructure exists — each dormant reference file repeats this gate, so a reviewer never hunts for infrastructure that is not there.
+
+**Guidelines:**
+
+- MUST apply the **Server / Client Boundary Cost**, **Asset and Image Optimization**, and **Bundle and Dependency Weight** lenses to any change touching client code — these are live today.
+- MUST apply the **Error Handling** lens to client error-propagation and React/Next error boundaries, but treat its `reportError`/structured-logger rules as dormant (bombdog has no such service).
+- MUST treat **Data-Access Efficiency** and **Caching Correctness** as dormant: apply them only when a change adds a server data layer or server-side caching.
+- SHOULD remove the dormant gate from a reference file once the change that introduces its infrastructure lands, so the lens becomes unconditional.
 
 ## Data-Access Efficiency
 

@@ -2,6 +2,8 @@
 
 Apply these rules to verify that reads against the data layer are bounded and N+1-free.
 
+> **Dormant for bombdog today.** This app is client-only (zustand + IndexedDB, `src/lib/tracker-store.ts`), with no server data layer, so none of these checks fire on current changes. Apply them only when a change introduces server-side data access; until then this file is forward-looking.
+
 ## Mandatory Query Bounds
 
 Every read against the data layer should make its projection, relationship depth, result bound, and filter explicit:
