@@ -40,6 +40,7 @@ A checklist that needs far more than a handful of criteria is usually a sign the
 - SHOULD right-size the checklist to roughly three to seven criteria; treat materially more as a signal to reconsider the change's scope rather than padding restatements of the same behavior.
 - MUST include the verification gates the change requires (format/lint, unit/e2e suites, build) as trailing checklist items.
 - MUST NOT restate the same observable behavior across multiple bullets.
+- MUST write each criterion as a plain bullet (`-`), not a GitHub task-list checkbox (`- [ ]`) — nothing checks the boxes in this workflow, so checkboxes read as perpetually incomplete.
 
 ## Traceability
 

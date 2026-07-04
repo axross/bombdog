@@ -1,6 +1,6 @@
 ---
 name: project-structure
-description: Use this skill when navigating the bombdog repository, locating a file, deciding where a new module/route/component/test belongs, or checking stack and directory conventions. Covers the top-level layout, the Next.js App Router structure under src/app, where unit tests and Playwright e2e tests live, the tooling stack (npm, Biome, Vitest, Playwright), and the agent-harness files under .claude and .agents. Use even when the user only mentions "where does X go", file placement, the folder layout, or the project's stack.
+description: Use this skill when navigating the bombdog repository, locating a file, deciding where a new module/route/component/test belongs, or checking stack and directory conventions. Covers the top-level layout, the Next.js App Router structure under src/app, where unit tests and Playwright e2e tests live, the tooling stack (npm, Biome, Vitest, Playwright), and the agent-harness files under .claude. Use even when the user only mentions "where does X go", file placement, the folder layout, or the project's stack.
 ---
 
 # Project Structure
@@ -27,8 +27,8 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 | `e2e/tests/` | Playwright end-to-end specs (`*.test.ts`) |
 | `e2e/helpers/` | Reusable e2e helpers (page setup, chained-locator shortcuts) |
 | `public/` | Static assets served from the site root |
-| `.agents/skills/` | Agent-agnostic skill core routed from `AGENTS.md` |
-| `.claude/` | Claude Code harness binding (hooks + settings) |
+| `.claude/` | Claude Code harness binding (commands, hooks, settings) |
+| `.claude/skills/` | Project skill library, routed from `AGENTS.md` |
 | `biome.json`, `vitest.config.ts`, `playwright.config.ts`, `next.config.ts`, `tsconfig.json` | Tooling configuration |
 
 ## File Placement

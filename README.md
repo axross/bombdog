@@ -74,7 +74,7 @@ If you need to point Playwright at a system-provided Chromium instead of its man
 - `src/lib/` — domain types, the zustand store, IndexedDB storage adapter, helpers
 - `e2e/` — Playwright specs
 - `public/` — static assets
-- `AGENTS.md` + `.agents/skills/` — agent working agreement and skill index
+- `AGENTS.md` + `.claude/skills/` — agent working agreement and skill index
 - `.claude/` — Claude Code harness (hooks, settings, and slash commands)
 - `.github/workflows/` — CI (`merge-checks.yaml`) and the automated reviewer (`claude-review.yaml`)
 
@@ -82,7 +82,7 @@ If you need to point Playwright at a system-provided Chromium instead of its man
 
 This repo ships an [`AGENTS.md`](./AGENTS.md)-driven skill system (adapted from
 [axross/repo-agents](https://github.com/axross/repo-agents)). `AGENTS.md` is the
-routing index; detailed conventions live under `.agents/skills/`. Claude Code
+routing index; detailed conventions live under `.claude/skills/`. Claude Code
 loads it via [`CLAUDE.md`](./CLAUDE.md), and the hooks in `.claude/` provision
 the toolchain, format on edit, and run lint + unit tests before a task
 completes.
@@ -92,11 +92,13 @@ completes.
 Two Claude Code slash commands (in [`.claude/commands/`](./.claude/commands)) drive delivery:
 
 - **`/address <issue | pull request | prompt>`** — takes one unit of work from intake to a review-ready pull request in a single continuing session: plan → implement → request an independent review → respond to it. It polls CI and the review autonomously (via `send_later`, capped at 2 hours) and ends the turn at every human-gated decision; resume a paused run with **`/address continue`**. See [`.claude/commands/address.md`](./.claude/commands/address.md).
-- **`/review <pull request | ref-range | (empty)>`** — a comprehensive review against this repo's [Code Review Guideline](./.agents/skills/code-review-guideline/SKILL.md). It is the single source of truth for how review is done here: run it ad-hoc, and the CI reviewer invokes the same command. See [`.claude/commands/review.md`](./.claude/commands/review.md).
+- **`/review <pull request | ref-range | (empty)>`** — a comprehensive review against this repo's [Code Review Guideline](./.claude/skills/code-review-guideline/SKILL.md). It is the single source of truth for how review is done here: run it ad-hoc, and the CI reviewer invokes the same command. See [`.claude/commands/review.md`](./.claude/commands/review.md).
 
 ### Automated code review
 
-[`.github/workflows/claude-review.yaml`](./.github/workflows/claude-review.yaml) runs an **independent** review — a separate Claude Code session on a GitHub runner, under a bot identity distinct from the author — whenever a trusted user comments **`@claude review`** on a pull request. It invokes the `/review` command and posts findings as a single **COMMENT**-type GitHub review (inline comments anchored to the diff, plus a summary). It never approves or requests changes — GitHub rejects those from a pull request's own author — and never leaves loose conversation comments.
+[`.github/workflows/claude-review.yaml`](./.github/workflows/claude-review.yaml) runs an **independent** review — a separate Claude Code session on a GitHub runner, under a bot identity distinct from the author — whenever a trusted user comments **`@claude review`** on a pull request. It runs the official `code-review` plugin — the same practice `/review` runs locally — and posts findings as a single **COMMENT**-type GitHub review (inline comments anchored to the diff, plus a summary). It never approves or requests changes — GitHub rejects those from a pull request's own author — and never leaves loose conversation comments.
+
+Review **policy** — severity calibration, skip rules, repo-specific checks, and reporting format — lives in [`REVIEW.md`](./REVIEW.md) at the repository root. It's the same portable, review-only file that managed [Code Review](https://code.claude.com/docs/en/code-review) reads natively; the self-hosted workflow and `/review` bootstrap it via a system prompt, and the review methodology stays in [`code-review-guideline`](./.claude/skills/code-review-guideline/SKILL.md).
 
 Conventions the agents follow:
 

@@ -28,16 +28,16 @@ _(See problem-and-scope.md → Assumptions vs. Open Questions.)_
 
 ## Acceptance criteria
 
-- [ ] <One observable happy-path behavior, phrased so a reviewer can verify it from the
+- <One observable happy-path behavior, phrased so a reviewer can verify it from the
   diff or the running UI without reading implementation code.>
-- [ ] <One relevant edge/disabled/empty/error-state behavior.>
-- [ ] <An explicit "X is unaffected" criterion, when this change sits next to something
+- <One relevant edge/disabled/empty/error-state behavior.>
+- <An explicit "X is unaffected" criterion, when this change sits next to something
   that must stay untouched.>
-- [ ] <Additional criteria only for behavior the sections above actually specify — no
+- <Additional criteria only for behavior the sections above actually specify — no
   net-new scope introduced here. Right-size to roughly 3-7 criteria total; more is a
   signal to reconsider scope rather than pad restatements.>
 _(See acceptance-criteria.md → Coverage and Right-Sized Checklists.)_
-- [ ] <The verification gates this change requires — e.g. format/lint, unit tests, e2e
+- <The verification gates this change requires — e.g. format/lint, unit tests, e2e
   tests, build — as trailing items.>
 _(See acceptance-criteria.md → Right-Sized Checklists.)_
 ```

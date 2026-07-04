@@ -3,9 +3,9 @@ name: Claude Code Review
 # Independent pull-request review. Runs as a separate Claude Code session on a
 # GitHub-hosted runner — a different session, on different infrastructure, under
 # a bot identity distinct from the operator (@axross) — triggered by an
-# `@claude review` comment on a PR. It invokes the repo's `/review` command
-# (.claude/commands/review.md), the single source of truth for review behavior
-# that humans also run ad-hoc. This is the authoritative review for the
+# `@claude review` comment on a PR. It runs the official `code-review` plugin
+# (`code-review@claude-code-plugins`); the repo's `/review` command runs the same
+# code-review practice locally/ad-hoc. This is the authoritative review for the
 # `/address` flow (.claude/commands/address.md), which posts `@claude review`
 # after opening a PR and then addresses the findings this workflow leaves.
 #
@@ -34,10 +34,10 @@ permissions:
   pull-requests: write
   issues: write
   checks: write
-
-concurrency:
-  group: claude-review-${{ github.event.issue.number }}
-  cancel-in-progress: true
+  id-token: write # claude-code-action mints the Claude App token via OIDC
+  # No `actions: write`, so the action's optional bun-cache save is skipped
+  # ("Cache reservation failed: token has no writable scopes") — a benign warning,
+  # not an error. Add `actions: write` only if you want to silence it.
 
 jobs:
   review:
@@ -51,13 +51,20 @@ jobs:
       (github.event.comment.author_association == 'OWNER' ||
        github.event.comment.author_association == 'MEMBER' ||
        github.event.comment.author_association == 'COLLABORATOR')
+    # Job-level (not workflow-level) concurrency: only a job that passes the `if`
+    # gate joins the group, so an unrelated issue_comment — e.g. a Vercel
+    # deploy-preview bot comment — skips the job and cannot cancel an in-flight
+    # review. A fresh `@claude review` still supersedes a running one.
+    concurrency:
+      group: claude-review-${{ github.event.issue.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       # Check out the base ref (the default branch), never the PR head — the
       # review reads the diff through the GitHub API, so untrusted head code is
-      # never executed on the runner. The checkout supplies the `/review` command,
-      # CLAUDE.md / AGENTS.md, and the project skills as review context.
+      # never executed on the runner. The checkout supplies CLAUDE.md / AGENTS.md
+      # and the project skills as review context for the plugin.
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -65,11 +72,31 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Invoke the repo's /review command against this PR. The command file
-          # (checked out above) carries all review behavior — severity/evidence
-          # standards, COMMENT-only GitHub review posting, untrusted-input rules —
-          # so this workflow stays a thin trigger and behavior stays in one place.
-          prompt: "/review ${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          # Run the official code-review plugin against this PR. The plugin posts
+          # findings through the action's own review mechanism; a custom /review
+          # command that posts via mcp__github__ does not work inside the action
+          # (those tools are denied there). The /review command runs the same
+          # code-review practice locally.
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          # --allowedTools is REQUIRED: the action does not honor a plugin
+          # command's own `allowed-tools` frontmatter, so without this the plugin
+          # is denied the tools it needs and posts nothing. We check out the base
+          # ref (not the PR head), so the plugin reads the diff via `gh pr diff`
+          # and posts via `mcp__github_inline_comment__create_inline_comment` plus
+          # a `gh pr comment` summary — all of which must be allow-listed here.
+          # COMMENT-only (no APPROVE/REQUEST_CHANGES) is a CI-review choice made
+          # here, not portable review policy, so it lives in this prompt rather
+          # than in REVIEW.md.
           claude_args: >-
+            --append-system-prompt "Read REVIEW.md at the repository root and follow it as the highest-priority, review-only instructions for this review. Post your findings as a single COMMENT-type pull-request review — do not APPROVE or REQUEST_CHANGES; this reviewer is advisory and does not gate merges."
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*)"
             --disallowedTools "WebFetch,WebSearch"
-            --max-turns 30
+            # Turn count scales with PR size and is high-variance even on a tiny
+            # diff (a 9-line PR completed in 22 turns on one run yet blew past 30
+            # on another). A large multi-file PR needs far more, so size the cap
+            # for the worst case and let `timeout-minutes: 30` be the real
+            # backstop — at ~10s/turn, 200 turns can't finish before that timeout
+            # fires anyway, so the cap only guards against a pathological loop.
+            --max-turns 200
