@@ -441,6 +441,29 @@ test.describe("session flow", () => {
 		});
 	});
 
+	test("returns the action tab to Dual cut after logging a move", {
+		tag: [
+			"@scenario:session.reset-to-dual-cut",
+			"@area:session",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
+		await startTracking(page);
+
+		// log a solo cut, which leaves the composer on the Solo cut tab mid-log.
+		await logSoloCut(page, { wire: 5 });
+		await expect(moveRow(page, 1)).toBeVisible();
+
+		// after logging, the composer snaps back to Dual cut — the common move —
+		// so the tab is selected again and its Target control is shown, without any
+		// manual tab switch.
+		await expect(composer(page).getByTestId("tab-dual-cut")).toHaveAttribute(
+			"aria-selected",
+			"true",
+		);
+		await expect(composer(page).getByTestId("target")).toBeVisible();
+	});
+
 	test("collapses and expands the composer", {
 		tag: ["@scenario:session.collapse", "@area:session", "@priority:should"],
 	}, async ({ page }) => {
