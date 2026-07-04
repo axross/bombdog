@@ -4,10 +4,13 @@ import {
 	logDetector,
 	logDualCut,
 	logSoloCut,
+	moveLog,
+	openMovesTab,
 	openStatusTab,
 	placeInfoToken,
 	startFromSetup,
 	startTracking,
+	statusPanel,
 	statusRow,
 } from "../helpers/tracker";
 
@@ -16,6 +19,32 @@ import {
 // known to hold an uncut wire.
 
 test.describe("status view", () => {
+	test("shows only the active tab's panel, filling the content area", {
+		tag: ["@scenario:status.tab-switch", "@area:status", "@priority:should"],
+	}, async ({ page }) => {
+		await startTracking(page);
+
+		// Moves is default: the log is visible and the status panel is fully
+		// hidden (Radix keeps it mounted with `hidden`, so it must not take space).
+		await expect(moveLog(page)).toBeVisible();
+		await expect(statusPanel(page)).toBeHidden();
+
+		await openStatusTab(page);
+		await expect(statusPanel(page)).toBeVisible();
+		await expect(moveLog(page)).toBeHidden();
+
+		// the active panel fills the tab area rather than half of it: its height
+		// tracks its scroll container, so no dead space sits below it.
+		const panelBox = await page.getByTestId("tab-panel-status").boundingBox();
+		const innerBox = await statusPanel(page).boundingBox();
+		expect(panelBox?.height).toBeGreaterThan(0);
+		expect(innerBox?.height).toBeCloseTo(panelBox?.height ?? 0, 0);
+
+		await openMovesTab(page);
+		await expect(moveLog(page)).toBeVisible();
+		await expect(statusPanel(page)).toBeHidden();
+	});
+
 	test("tallies cut vs uncut copies per value", {
 		tag: ["@scenario:status.counts", "@area:status", "@priority:should"],
 	}, async ({ page }) => {

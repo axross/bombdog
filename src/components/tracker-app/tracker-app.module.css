@@ -86,15 +86,19 @@
 			}
 		}
 
-		.panel {
+		/* Radix keeps the inactive tab panel mounted with the `hidden` attribute;
+		   scope the flex-fill to the visible panel so the hidden one collapses to
+		   the UA `display: none`. Styling `.panel` unconditionally would override
+		   `hidden` and leave both panels splitting the content height. */
+		.panel:not([hidden]) {
 			flex: 1;
 			min-block-size: 0;
 			display: flex;
 			flex-direction: column;
+		}
 
-			&:focus-visible {
-				outline: none;
-			}
+		.panel:focus-visible {
+			outline: none;
 		}
 	}
 
