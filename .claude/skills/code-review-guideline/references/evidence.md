@@ -4,7 +4,7 @@ Apply these rules so every finding is verifiable, actionable, and traceable back
 
 ## Citation Requirements
 
-Citation Requirements sets the required project default: cite a `file:line` (or `file:line-line` for a range) for every finding. Use repo-relative paths from the project root (e.g., `src/lib/tracker-store.ts:42`).
+A finding the author cannot locate is one they cannot act on, so every finding is anchored to a precise, repo-relative `file:line`.
 
 **Guidelines:**
 
@@ -15,7 +15,7 @@ Citation Requirements sets the required project default: cite a `file:line` (or 
 
 ## Fix Snippet Format
 
-Fix Snippet Format sets the required project default: provide a concrete fix snippet for every Critical and Major finding. Minor findings SHOULD include a fix; Nits MAY omit it when the suggestion is self-evident.
+A concrete diff turns a finding into something the fixer can apply directly, instead of re-deriving the solution from a prose description.
 
 **Example:**
 
@@ -56,7 +56,7 @@ The reviewer MUST emit findings in this exact section order so downstream agents
 
 ## What Counts as Evidence
 
-What Counts as Evidence captures the project-specific context for the checklist below: A failing or missing-but-required check (e.g., npm run lint would error on the changed file) is evidence — the reviewer SHOULD state explicitly that the check was reasoned about and the expected outcome.
+Evidence is what lets a reader confirm a finding without taking the reviewer's word for it, which is what separates the items below from mere assertion.
 
 - A guideline rule citation is evidence. A vague appeal to "best practices" is not — replace it with a specific rule or remove the finding.
 - A reproduced failure path (e.g., "if `params.id` is an array then line 22 returns `true` and …") is evidence. A "smells wrong" hunch is not.
@@ -69,7 +69,7 @@ What Counts as Evidence captures the project-specific context for the checklist 
 
 ## When the Reviewer Cannot Verify
 
-When the Reviewer Cannot Verify sets the required project default: mark findings as "needs verification" and lower severity by one step when the reviewer cannot confirm the issue without running code (e.g., a perf claim without measurement).
+An issue the reviewer could not actually confirm can send the author chasing a non-bug if it is presented with full confidence.
 
 **Guidelines:**
 

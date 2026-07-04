@@ -62,7 +62,7 @@ The reviewer MUST emit one of these three verdicts in the report Summary, derive
 
 ## When in Doubt
 
-When in Doubt describes the preferred project default: escalate uncertain severity upward, not downward. A finding labeled Major that turns out to be Minor wastes the author's attention; a Critical mislabeled as Minor causes a production incident.
+The two directions of misclassification are not symmetric: an over-labeled finding costs a little of the author's attention, while an under-labeled one can ship a production incident.
 
 **Guidelines:**
 
