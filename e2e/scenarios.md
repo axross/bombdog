@@ -49,7 +49,7 @@ carries its `@scenario:<id>` tag. The reporter
 | session.edit-move | Edit a logged move in place | session | should |
 | session.edit-cancel | Cancel an edit leaves the logged move unchanged | session | should |
 | session.delete-move | Delete a logged move from its edit panel | session | should |
-| session.collapse | Collapse and expand the composer | session | should |
+| session.composer-sheet | Open the composer sheet from the bar and dismiss it back to the bar (staying open after logging) | session | should |
 | session.log-consecutive | Log two moves back-to-back reusing the same target | session | should |
 | session.reset-to-dual-cut | Logging a move returns the composer's action tab to Dual cut | session | should |
 | history.shows-moves | Logged moves appear in the history | history | must |

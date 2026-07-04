@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
+	closeComposer,
 	filterDialog,
 	header,
 	logDetector,
@@ -32,6 +33,8 @@ test.describe("move-log filter", () => {
 			values: [6],
 			outcome: "success",
 		});
+		// dismiss the composer so the header filter and the full log are reachable.
+		await closeComposer(page);
 		await expect(moveRow(page, 4)).toBeVisible();
 	});
 

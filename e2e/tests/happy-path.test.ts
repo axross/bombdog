@@ -1,5 +1,7 @@
 import { expect, type Locator, test } from "@playwright/test";
 import {
+	addMoveButton,
+	closeComposer,
 	composer,
 	gotoApp,
 	logDetector,
@@ -8,6 +10,7 @@ import {
 	logSoloCut,
 	moveLog,
 	moveRow,
+	openComposer,
 	pickTarget,
 	selectWire,
 	startTracking,
@@ -35,7 +38,7 @@ test.describe("setup", () => {
 		tag: ["@scenario:setup.min-players", "@area:setup", "@priority:should"],
 	}, async ({ page }) => {
 		await startTrackingWith(page, { names: ["Uno", "Dos"] });
-		await expect(composer(page)).toBeVisible();
+		await openComposer(page);
 		// the Captain (seat 1) takes the first turn, so the composer suggests Uno.
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
@@ -89,6 +92,7 @@ test.describe("setup", () => {
 			names: ["Ada", "Bo", "Cy", "Di", "Ed"],
 			captainIndex: 2,
 		});
+		await openComposer(page);
 		// the chosen Captain (Cy, seat 3) acts first, so the composer suggests Cy.
 		await expect(composer(page).getByTestId("acting")).toContainText("Cy");
 		// the custom names reached the composer's target control.
@@ -109,6 +113,7 @@ test.describe("logging each action type", () => {
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Player 1");
@@ -130,6 +135,7 @@ test.describe("logging each action type", () => {
 		],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 
 		await test.step("Compose the cut and verify Log move is blocked until the reveal", async () => {
 			await pickTarget(page, "Player 2");
@@ -151,6 +157,7 @@ test.describe("logging each action type", () => {
 
 		await test.step("Log it and verify the revealed value in the history", async () => {
 			await composer(page).getByTestId("log-move").click();
+			await closeComposer(page);
 			const badge = moveRow(page, 1).getByTestId("badge");
 			await expect(badge).toHaveAttribute("data-outcome", "fail");
 			await expect(badge).toHaveAttribute("data-revealed", "8");
@@ -162,6 +169,7 @@ test.describe("logging each action type", () => {
 	}, async ({ page }) => {
 		await startTracking(page);
 		await logSoloCut(page, { wire: 5 });
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Solo cut");
@@ -176,6 +184,7 @@ test.describe("logging each action type", () => {
 		await startTracking(page);
 		// the cut pads offer "?" for a wire whose value is unknown.
 		await logSoloCut(page, { wire: "unknown" });
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Solo cut");
@@ -195,6 +204,7 @@ test.describe("logging each action type", () => {
 		// Player 1 (the Captain) acts and targets itself — a rare but legal move
 		// reached through the target row's ⋯ overflow menu.
 		await logDualCut(page, { target: "Player 1", wire: 9, outcome: "success" });
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Player 1");
@@ -209,6 +219,7 @@ test.describe("logging each action type", () => {
 		tag: ["@scenario:log.double-detector", "@area:logging", "@priority:should"],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 		await composer(page).getByTestId("tab-detector").click();
 		// detectors read blue values only: no Yellow option is offered.
 		await expect(composer(page).getByTestId("wire-yellow")).toHaveCount(0);
@@ -218,6 +229,7 @@ test.describe("logging each action type", () => {
 			values: [6],
 			outcome: "success",
 		});
+		await closeComposer(page);
 		const row = moveRow(page, 1);
 		// the default detector card names itself in the log.
 		await expect(row).toContainText("Double Detector");
@@ -238,6 +250,7 @@ test.describe("logging each action type", () => {
 			values: [3, 11],
 			outcome: "success",
 		});
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("X or Y Ray (10)");
@@ -250,6 +263,7 @@ test.describe("logging each action type", () => {
 		tag: ["@scenario:log.detector.super", "@area:logging", "@priority:may"],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 		await composer(page).getByTestId("tab-detector").click();
 
 		await logDetector(page, {
@@ -258,6 +272,7 @@ test.describe("logging each action type", () => {
 			values: [8],
 			outcome: { reveal: 2 },
 		});
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Super Detector (5)");
@@ -274,6 +289,7 @@ test.describe("logging each action type", () => {
 			equipment: "Rewinder (6)",
 			note: "checked seat 4",
 		});
+		await closeComposer(page);
 
 		const row = moveRow(page, 1);
 		await expect(row).toContainText("Rewinder (6)");
@@ -286,6 +302,7 @@ test.describe("session flow", () => {
 		tag: ["@scenario:session.turn-advance", "@area:session", "@priority:must"],
 	}, async ({ page }) => {
 		await startTracking(page);
+		await openComposer(page);
 		// Captain (Player 1) starts, so the composer suggests Player 1.
 		await expect(composer(page).getByTestId("acting")).toContainText(
 			"Player 1",
@@ -353,32 +370,35 @@ test.describe("session flow", () => {
 	}, async ({ page }) => {
 		await startTracking(page);
 
-		await test.step("Log two moves", async () => {
+		await test.step("Log two moves, then close the sheet to reach the bar", async () => {
 			await logDualCut(page, {
 				target: "Player 2",
 				wire: 9,
 				outcome: "success",
 			});
 			await logSoloCut(page, { wire: 5 });
+			// undo/redo live in the bar behind the sheet — dismiss it to use them.
+			await closeComposer(page);
 			await expect(moveRow(page, 2)).toBeVisible();
 		});
 
 		await test.step("Undo both back to empty", async () => {
-			await composer(page).getByTestId("undo").click();
-			await composer(page).getByTestId("undo").click();
+			await page.getByTestId("undo").click();
+			await page.getByTestId("undo").click();
 			await expect(moveLog(page).getByText(/No moves yet/)).toBeVisible();
 		});
 
 		await test.step("Redo and verify only the first move returns", async () => {
-			await composer(page).getByTestId("redo").click();
+			await page.getByTestId("redo").click();
 			await expect(moveRow(page, 1)).toBeVisible();
 			await expect(moveRow(page, 2)).toHaveCount(0);
 		});
 
 		await test.step("Log a fresh move and verify redo is cleared", async () => {
 			await logSoloCut(page, { wire: 7 });
+			await closeComposer(page);
 			await expect(moveRow(page, 2)).toBeVisible();
-			await expect(composer(page).getByTestId("redo")).toBeDisabled();
+			await expect(page.getByTestId("redo")).toBeDisabled();
 		});
 	});
 
@@ -393,6 +413,7 @@ test.describe("session flow", () => {
 				wire: 9,
 				outcome: "success",
 			});
+			await closeComposer(page);
 			await expect(moveRow(page, 1).getByTestId("badge")).toHaveAttribute(
 				"data-outcome",
 				"success",
@@ -420,6 +441,7 @@ test.describe("session flow", () => {
 		await test.step("Log two solo cuts", async () => {
 			await logSoloCut(page, { wire: 5 });
 			await logSoloCut(page, { wire: 7 });
+			await closeComposer(page);
 			await expect(moveRow(page, 1)).toBeVisible();
 			await expect(moveRow(page, 2)).toBeVisible();
 		});
@@ -464,23 +486,41 @@ test.describe("session flow", () => {
 		await expect(composer(page).getByTestId("target")).toBeVisible();
 	});
 
-	test("collapses and expands the composer", {
-		tag: ["@scenario:session.collapse", "@area:session", "@priority:should"],
+	test("opens the composer sheet from the bar and dismisses it back", {
+		tag: [
+			"@scenario:session.composer-sheet",
+			"@area:session",
+			"@priority:should",
+		],
 	}, async ({ page }) => {
 		await startTracking(page);
 
-		await test.step("Collapse and verify the form and Log move hide while undo/redo stay", async () => {
-			await expect(composer(page).getByTestId("acting")).toBeVisible();
-			await composer(page).getByTestId("toggle-composer").click();
-			await expect(composer(page).getByTestId("acting")).toBeHidden();
-			await expect(composer(page).getByTestId("undo")).toBeVisible();
-			await expect(composer(page).getByTestId("log-move")).toBeHidden();
+		await test.step("The composer starts closed — only the bottom bar shows", async () => {
+			await expect(composer(page)).toBeHidden();
+			await expect(addMoveButton(page)).toBeVisible();
+			await expect(page.getByTestId("undo")).toBeVisible();
 		});
 
-		await test.step("Expand and verify the form and Log move return", async () => {
-			await composer(page).getByTestId("toggle-composer").click();
+		await test.step("Add move opens the sheet with the form and Log move", async () => {
+			await openComposer(page);
 			await expect(composer(page).getByTestId("acting")).toBeVisible();
 			await expect(composer(page).getByTestId("log-move")).toBeVisible();
+		});
+
+		await test.step("Logging keeps the sheet open for the next move", async () => {
+			await composer(page).getByTestId("tab-solo-cut").click();
+			await selectWire(page, 5);
+			await composer(page).getByTestId("log-move").click();
+			// the sheet stays up (form still mounted) and the move is in the log.
+			await expect(composer(page).getByTestId("acting")).toBeVisible();
+			await expect(moveRow(page, 1)).toBeVisible();
+		});
+
+		await test.step("Dismiss returns to the bar with the log visible", async () => {
+			await closeComposer(page);
+			await expect(composer(page)).toBeHidden();
+			await expect(addMoveButton(page)).toBeVisible();
+			await expect(moveRow(page, 1)).toBeVisible();
 		});
 	});
 

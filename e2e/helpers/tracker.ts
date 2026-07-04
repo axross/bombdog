@@ -12,9 +12,9 @@ export type Revealed = number | "yellow" | "unknown";
 /**
  * Navigate to the app and neutralise the Next.js dev-tools badge. Served by
  * `npm run dev`, that badge sits bottom-left inside a `<nextjs-portal>` and
- * intercepts pointer events on the composer's bottom controls (collapse /
- * undo / redo). Hiding it makes those clicks land reliably; it is a no-op
- * against a production build where the badge is absent.
+ * intercepts pointer events on the bottom bar's controls (undo / redo / Add
+ * move). Hiding it makes those clicks land reliably; it is a no-op against a
+ * production build where the badge is absent.
  */
 export async function gotoApp(page: Page): Promise<void> {
 	await page.goto("/");
@@ -27,7 +27,7 @@ export async function gotoApp(page: Page): Promise<void> {
 export async function startTracking(page: Page): Promise<void> {
 	await gotoApp(page);
 	await page.getByTestId("setup").getByTestId("start").click();
-	await expect(composer(page)).toBeVisible();
+	await expect(addMoveButton(page)).toBeVisible();
 }
 
 /**
@@ -70,7 +70,7 @@ export async function startTrackingWith(
 		.click();
 
 	await setup.getByTestId("start").click();
-	await expect(composer(page)).toBeVisible();
+	await expect(addMoveButton(page)).toBeVisible();
 }
 
 /**
@@ -104,7 +104,7 @@ export async function skipInfoTokens(page: Page): Promise<void> {
  */
 export async function startFromSetup(page: Page): Promise<void> {
 	await page.getByTestId("setup").getByTestId("start").click();
-	await expect(composer(page)).toBeVisible();
+	await expect(addMoveButton(page)).toBeVisible();
 }
 
 /**
@@ -115,10 +115,41 @@ export function startingInfo(page: Page): Locator {
 }
 
 /**
- * The bottom-half move composer.
+ * The move-composer sheet (a modal dialog). Absent from the layout until it is
+ * opened from the bottom bar's Add move button.
  */
 export function composer(page: Page): Locator {
 	return page.getByTestId("composer");
+}
+
+/**
+ * The bottom bar's Add move button, which opens the composer sheet. It lives in
+ * the resting (composer-closed) bottom bar alongside undo/redo.
+ */
+export function addMoveButton(page: Page): Locator {
+	return page.getByTestId("add-move");
+}
+
+/**
+ * Open the composer sheet from the bottom bar. Idempotent: a no-op when the
+ * sheet is already open (it stays open after logging), so the log helpers can
+ * call it before every move without reopening a sheet that is already up.
+ */
+export async function openComposer(page: Page): Promise<void> {
+	if (await composer(page).isVisible()) return;
+	await addMoveButton(page).click();
+	await expect(composer(page)).toBeVisible();
+}
+
+/**
+ * Dismiss the composer sheet with Escape, returning to the bottom bar so the
+ * move log, header, and undo/redo become reachable again. Idempotent: a no-op
+ * when the sheet is already closed.
+ */
+export async function closeComposer(page: Page): Promise<void> {
+	if (!(await composer(page).isVisible())) return;
+	await page.keyboard.press("Escape");
+	await expect(composer(page)).toBeHidden();
 }
 
 /**
@@ -266,6 +297,7 @@ interface CutOptions {
  * Compose and log a dual cut.
  */
 export async function logDualCut(page: Page, opts: CutOptions): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-dual-cut").click();
 	if (opts.actor) await setActor(page, opts.actor);
 	await pickTarget(page, opts.target);
@@ -298,6 +330,7 @@ export async function logDetector(
 	page: Page,
 	opts: DetectorOptions,
 ): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-detector").click();
 	if (opts.actor) await setActor(page, opts.actor);
 	if (opts.card) await chooseInComposer(page, "detector", opts.card);
@@ -314,6 +347,7 @@ export async function logSoloCut(
 	page: Page,
 	{ actor, wire }: { actor?: string; wire: Wire },
 ): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-solo-cut").click();
 	if (actor) await setActor(page, actor);
 	await selectWire(page, wire);
@@ -331,6 +365,7 @@ export async function logEquipment(
 		note,
 	}: { actor?: string; equipment: string; note?: string },
 ): Promise<void> {
+	await openComposer(page);
 	await composer(page).getByTestId("tab-equipment").click();
 	if (actor) await setActor(page, actor);
 	await chooseInComposer(page, "equipment", equipment);
