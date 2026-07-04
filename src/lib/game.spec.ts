@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
+	deriveWireStatus,
 	filterMoves,
 	formatWire,
 	getPlayerName,
@@ -7,13 +8,23 @@ import {
 	isMoveVisible,
 	nextActorId,
 	targetPlayerOrder,
+	WIRE_COPIES,
+	type WireStatus,
 	wireLabel,
 } from "./game";
 import {
+	type BlueWireValue,
+	type BlueWireValueOrUnknown,
+	type DetectorKind,
+	type DetectorMove,
 	type DualCutMove,
 	EMPTY_MOVE_FILTER,
 	type Move,
+	type Outcome,
 	type Player,
+	type RevealedWire,
+	type SoloCutMove,
+	type WireValueOrUnknown,
 } from "./types";
 
 const players: Player[] = [
@@ -241,5 +252,349 @@ describe("targetPlayerOrder()", () => {
 			"b",
 			"c",
 		]);
+	});
+});
+
+describe("deriveWireStatus()", () => {
+	let seq = 0;
+
+	function dual(
+		value: WireValueOrUnknown,
+		outcome: Outcome,
+		opts: { actorId?: string; targetId?: string; revealed?: RevealedWire } = {},
+	): DualCutMove {
+		seq += 1;
+		return {
+			id: `m${seq}`,
+			seq,
+			at: seq,
+			type: "dual-cut",
+			actorId: opts.actorId ?? "a",
+			targetId: opts.targetId ?? "b",
+			value,
+			outcome,
+			...(opts.revealed !== undefined ? { revealed: opts.revealed } : {}),
+		};
+	}
+
+	function detector(
+		detector: DetectorKind,
+		values: BlueWireValueOrUnknown[],
+		outcome: Outcome,
+		opts: {
+			actorId?: string;
+			targetId?: string;
+			revealed?: RevealedWire;
+			cutValue?: BlueWireValueOrUnknown;
+		} = {},
+	): DetectorMove {
+		seq += 1;
+		return {
+			id: `m${seq}`,
+			seq,
+			at: seq,
+			type: "detector",
+			detector,
+			actorId: opts.actorId ?? "a",
+			targetId: opts.targetId ?? "b",
+			values,
+			outcome,
+			...(opts.revealed !== undefined ? { revealed: opts.revealed } : {}),
+			...(opts.cutValue !== undefined ? { cutValue: opts.cutValue } : {}),
+		};
+	}
+
+	function solo(value: WireValueOrUnknown, actorId = "a"): SoloCutMove {
+		seq += 1;
+		return { id: `m${seq}`, seq, at: seq, type: "solo-cut", actorId, value };
+	}
+
+	function derive(
+		moves: Move[],
+		infoTokens: Record<string, BlueWireValue> = {},
+	): WireStatus {
+		return deriveWireStatus(players, moves, infoTokens);
+	}
+
+	function row(status: WireStatus, value: BlueWireValue) {
+		const found = status.blue.find((r) => r.value === value);
+		if (!found) throw new Error(`no row for ${value}`);
+		return found;
+	}
+
+	function holderNames(status: WireStatus, value: BlueWireValue): string[] {
+		return row(status, value).holders.map((p) => p.name);
+	}
+
+	beforeEach(() => {
+		seq = 0;
+	});
+
+	it("lists all twelve blue values fully uncut with no moves", () => {
+		const status = derive([]);
+		expect(status.blue).toHaveLength(12);
+		for (const r of status.blue) {
+			expect(r.cut).toBe(0);
+			expect(r.revealed).toBe(0);
+			expect(r.uncut).toBe(WIRE_COPIES);
+			expect(r.holders).toEqual([]);
+		}
+		expect(status.yellowHolders).toEqual([]);
+	});
+
+	describe("cut counts", () => {
+		it("counts a successful dual cut as two copies (actor + target)", () => {
+			const status = derive([dual(9, "success")]);
+			expect(row(status, 9).cut).toBe(2);
+			expect(row(status, 9).uncut).toBe(2);
+		});
+
+		it("does not count a failed dual cut", () => {
+			const status = derive([dual(9, "fail", { revealed: 3 })]);
+			expect(row(status, 9).cut).toBe(0);
+		});
+
+		it("ignores an unknown-value cut in the per-number counts", () => {
+			const status = derive([dual("unknown", "success")]);
+			for (const r of status.blue) expect(r.cut).toBe(0);
+		});
+
+		it("does not count a yellow cut against the blue numbers", () => {
+			const status = derive([dual("yellow", "success")]);
+			for (const r of status.blue) expect(r.cut).toBe(0);
+		});
+
+		it("counts double, triple, and super detectors as two copies each", () => {
+			for (const kind of ["double", "triple", "super"] as const) {
+				const status = derive([detector(kind, [6], "success")]);
+				expect(row(status, 6).cut).toBe(2);
+			}
+		});
+
+		it("counts an X-or-Y-Ray by its captured actual value, not the names", () => {
+			const status = derive([
+				detector("x-or-y-ray", [4, 7], "success", { cutValue: 7 }),
+			]);
+			expect(row(status, 7).cut).toBe(2);
+			expect(row(status, 4).cut).toBe(0);
+		});
+
+		it("ignores an X-or-Y-Ray success with no captured value", () => {
+			const status = derive([detector("x-or-y-ray", [4, 7], "success")]);
+			expect(row(status, 4).cut).toBe(0);
+			expect(row(status, 7).cut).toBe(0);
+		});
+
+		it("marks a solo cut's value fully cut", () => {
+			const status = derive([solo(5)]);
+			expect(row(status, 5).cut).toBe(WIRE_COPIES);
+			expect(row(status, 5).uncut).toBe(0);
+		});
+
+		it("completes a value when a solo cut takes the remaining pair", () => {
+			// a pair cut earlier (+2), then the last pair solo-cut → fully cut.
+			const status = derive([dual(5, "success"), solo(5)]);
+			expect(row(status, 5).cut).toBe(WIRE_COPIES);
+		});
+
+		it("clamps the cut count at the four copies that exist", () => {
+			const status = derive([
+				dual(7, "success"),
+				dual(7, "success"),
+				dual(7, "success"),
+			]);
+			expect(row(status, 7).cut).toBe(WIRE_COPIES);
+			expect(row(status, 7).uncut).toBe(0);
+		});
+	});
+
+	describe("possession", () => {
+		it("marks a starting info token holder", () => {
+			const status = derive([], { a: 3 });
+			expect(holderNames(status, 3)).toEqual(["Alice"]);
+		});
+
+		it("records both wires a failed dual cut reveals: actor's named, target's true", () => {
+			// Alice cuts at Bob naming a 4; it's actually a 5. Now the team knows
+			// Alice holds a 4 (still in hand) and Bob holds a 5.
+			const status = derive([
+				dual(4, "fail", { actorId: "a", targetId: "b", revealed: 5 }),
+			]);
+			expect(holderNames(status, 4)).toEqual(["Alice"]);
+			expect(holderNames(status, 5)).toEqual(["Bob"]);
+		});
+
+		it("records both wires a failed single-value detector reveals", () => {
+			const status = derive([
+				detector("double", [4], "fail", {
+					actorId: "a",
+					targetId: "b",
+					revealed: 5,
+				}),
+			]);
+			expect(holderNames(status, 4)).toEqual(["Alice"]);
+			expect(holderNames(status, 5)).toEqual(["Bob"]);
+		});
+
+		it("skips the actor on a failed X or Y Ray (which of the two is ambiguous)", () => {
+			const status = derive([
+				detector("x-or-y-ray", [4, 7], "fail", {
+					actorId: "a",
+					targetId: "b",
+					revealed: 5,
+				}),
+			]);
+			expect(holderNames(status, 4)).toEqual([]);
+			expect(holderNames(status, 7)).toEqual([]);
+			// only the target's revealed wire is recorded.
+			expect(holderNames(status, 5)).toEqual(["Bob"]);
+		});
+
+		it("records a yellow reveal among the yellow holders, not a blue row", () => {
+			// name "?" so no blue actor-holder is added — isolate the yellow reveal.
+			const status = derive([
+				dual("unknown", "fail", { targetId: "b", revealed: "yellow" }),
+			]);
+			expect(status.yellowHolders.map((p) => p.name)).toEqual(["Bob"]);
+			for (const r of status.blue) expect(r.holders).toEqual([]);
+		});
+
+		it("skips an unknown reveal (it can't be placed on a value)", () => {
+			const status = derive([
+				dual("unknown", "fail", { targetId: "b", revealed: "unknown" }),
+			]);
+			for (const r of status.blue) expect(r.holders).toEqual([]);
+			expect(status.yellowHolders).toEqual([]);
+		});
+
+		it("consumes a known copy from both actor and target on a success", () => {
+			// Alice and Bob each known to hold a 9; a successful 9-cut between them
+			// consumes one copy on each side, clearing both.
+			const status = derive(
+				[dual(9, "success", { actorId: "a", targetId: "b" })],
+				{
+					a: 9,
+					b: 9,
+				},
+			);
+			expect(holderNames(status, 9)).toEqual([]);
+		});
+
+		it("leaves an untouched holder in place after a success elsewhere", () => {
+			// Carol holds a 9; a 9-cut between Alice and Bob doesn't touch Carol.
+			const status = derive(
+				[dual(9, "success", { actorId: "a", targetId: "b" })],
+				{
+					c: 9,
+				},
+			);
+			expect(holderNames(status, 9)).toEqual(["Carol"]);
+		});
+
+		it("clears every known holder of a solo-cut value", () => {
+			const status = derive([solo(6)], { a: 6, b: 6 });
+			expect(holderNames(status, 6)).toEqual([]);
+		});
+
+		it("consumes the X-or-Y-Ray's captured value from both sides", () => {
+			const status = derive(
+				[
+					detector("x-or-y-ray", [4, 7], "success", {
+						actorId: "a",
+						targetId: "b",
+						cutValue: 7,
+					}),
+				],
+				{ a: 7, b: 7 },
+			);
+			expect(holderNames(status, 7)).toEqual([]);
+		});
+
+		it("lists holders once, in seat order", () => {
+			// Bob revealed a 5, then Alice's info token is a 5: deduped, seat order.
+			const status = derive([dual(1, "fail", { targetId: "b", revealed: 5 })], {
+				a: 5,
+			});
+			expect(holderNames(status, 5)).toEqual(["Alice", "Bob"]);
+		});
+	});
+
+	describe("revealed count", () => {
+		it("counts one revealed copy per starting info token", () => {
+			const status = derive([], { a: 3 });
+			expect(row(status, 3).revealed).toBe(1);
+			expect(row(status, 3).cut).toBe(0);
+		});
+
+		it("counts a failed-cut reveal as one uncut-but-revealed copy", () => {
+			const status = derive([dual(2, "fail", { targetId: "b", revealed: 8 })]);
+			expect(row(status, 8).revealed).toBe(1);
+		});
+
+		it("counts one revealed copy per distinct known holding", () => {
+			// two players each reveal a 5 → two uncut-but-revealed copies.
+			const status = derive([dual(1, "fail", { targetId: "b", revealed: 5 })], {
+				a: 5,
+			});
+			expect(row(status, 5).revealed).toBe(2);
+		});
+
+		it("drops the revealed count when a cut consumes the copy", () => {
+			// Alice's 9 is revealed, then a 9-cut against her consumes it.
+			const status = derive(
+				[dual(9, "success", { actorId: "b", targetId: "a" })],
+				{ a: 9 },
+			);
+			expect(row(status, 9).revealed).toBe(0);
+			expect(row(status, 9).cut).toBe(2);
+		});
+
+		it("counts a re-referenced wire once, not twice", () => {
+			// Alice cuts at Bob naming a 1; it's a 2 → Bob holds a 2. Next, Bob cuts
+			// at Carol naming that same 2; it's a 3 → Carol holds a 3. Bob's named 2
+			// is the wire revealed in the first move, so 2 is held once, not twice.
+			const status = derive([
+				dual(1, "fail", { actorId: "a", targetId: "b", revealed: 2 }),
+				dual(2, "fail", { actorId: "b", targetId: "c", revealed: 3 }),
+			]);
+			expect(holderNames(status, 1)).toEqual(["Alice"]);
+			expect(holderNames(status, 2)).toEqual(["Bob"]);
+			expect(holderNames(status, 3)).toEqual(["Carol"]);
+			expect(row(status, 1).revealed).toBe(1);
+			// the key assertion: the shared 2 is one revealed copy, not two.
+			expect(row(status, 2).revealed).toBe(1);
+			expect(row(status, 3).revealed).toBe(1);
+		});
+
+		it("tracks the same player once per value across repeated reveals", () => {
+			// two failed cuts both reveal Bob holds a 2 → still one known copy.
+			const status = derive([
+				dual(9, "fail", { actorId: "a", targetId: "b", revealed: 2 }),
+				dual(9, "fail", { actorId: "a", targetId: "b", revealed: 2 }),
+			]);
+			expect(holderNames(status, 2)).toEqual(["Bob"]);
+			expect(row(status, 2).revealed).toBe(1);
+		});
+
+		it("never reveals more copies than remain uncut", () => {
+			// Alice is revealed to hold a 2, but two separate cuts account for all
+			// four 2s. No copy can still be uncut, so revealed clamps to 0.
+			const status = derive([
+				dual(9, "fail", { actorId: "b", targetId: "a", revealed: 2 }),
+				dual(2, "success", { actorId: "b", targetId: "c" }),
+				dual(2, "success", { actorId: "b", targetId: "c" }),
+			]);
+			expect(row(status, 2).cut).toBe(WIRE_COPIES);
+			expect(row(status, 2).revealed).toBe(0);
+		});
+	});
+
+	it("orders replay by seq regardless of array order", () => {
+		// a reveal (seq 2) then a consuming success (seq 1) passed out of order:
+		// replayed by seq, the success precedes the reveal, so the holder remains.
+		const success = dual(9, "success", { actorId: "a", targetId: "b" });
+		const reveal = dual(1, "fail", { targetId: "b", revealed: 9 });
+		const status = derive([reveal, success], {});
+		expect(holderNames(status, 9)).toEqual(["Bob"]);
 	});
 });

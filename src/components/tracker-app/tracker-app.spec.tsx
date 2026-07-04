@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
@@ -93,17 +94,35 @@ describe("<TrackerApp>", () => {
 
 		const header = screen.getByTestId("header");
 		expect(within(header).getByText("Bombdog")).toBeInTheDocument();
-		// the filter trigger and reset now share the header.
-		expect(within(header).getByTestId("filter")).toBeInTheDocument();
 		expect(
 			within(header).getByRole("button", { name: "Reset" }),
 		).toBeInTheDocument();
-		// move history + the composer bar are mounted; the composer starts closed,
-		// so its resting-state control is the bar's Add move button.
+		// the filter now rides the tab bar (Moves view), not the header.
+		expect(within(header).queryByTestId("filter")).not.toBeInTheDocument();
+		expect(screen.getByTestId("filter")).toBeInTheDocument();
+		// the Moves view is default: move history + the composer bar are mounted;
+		// the composer starts closed, so its resting-state control is Add move.
 		expect(screen.getByTestId("move-log")).toBeInTheDocument();
 		expect(
 			screen.getByRole("button", { name: "Add move" }),
 		).toBeInTheDocument();
+	});
+
+	it("switches to the Status view and hides the move filter there", async () => {
+		const user = userEvent.setup();
+		seed({ hasHydrated: true, players, captainIndex: 1, moves });
+		render(<TrackerApp />);
+
+		// default view is Moves.
+		expect(screen.getByTestId("move-log")).toBeInTheDocument();
+		expect(screen.queryByTestId("status-panel")).not.toBeInTheDocument();
+
+		await user.click(screen.getByTestId("tab-status"));
+
+		expect(screen.getByTestId("status-panel")).toBeInTheDocument();
+		expect(screen.queryByTestId("move-log")).not.toBeInTheDocument();
+		// the filter only makes sense for the move list, so it's gone on Status.
+		expect(screen.queryByTestId("filter")).not.toBeInTheDocument();
 	});
 
 	it("triggers rehydration on mount", () => {

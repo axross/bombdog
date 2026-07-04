@@ -1,7 +1,15 @@
 // pure, UI-agnostic helpers for the tracker. kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
-import type { Move, MoveFilter, Player, WireValueOrUnknown } from "./types";
+import {
+	BLUE_WIRE_VALUES,
+	type BlueWireValue,
+	type DetectorMove,
+	type Move,
+	type MoveFilter,
+	type Player,
+	type WireValueOrUnknown,
+} from "./types";
 
 /**
  * Resolve a player's display name, tolerant of unknown ids.
@@ -106,4 +114,203 @@ export function nextActorId(
 	const lastSeat = players.findIndex((p) => p.id === lastTurnMove.actorId);
 	if (lastSeat === -1) return captainSeatId;
 	return players[(lastSeat + 1) % players.length].id;
+}
+
+/**
+ * The number of copies of every blue value in the game (the "4-of-each" fact
+ * that anchors all deduction).
+ */
+export const WIRE_COPIES = 4;
+
+/**
+ * One blue value's line in the status view: how many of its four copies are
+ * cut, how many are uncut-but-revealed (location known, not yet cut), and the
+ * players known to hold those uncut-but-revealed copies.
+ */
+export interface WireStatusRow {
+	value: BlueWireValue;
+	/**
+	 * Copies cut so far (0–4, clamped — a mis-logged over-cut cannot exceed 4).
+	 */
+	cut: number;
+	/**
+	 * Uncut copies whose location is known — a starting info token or a failed-cut
+	 * reveal exposed them. One per distinct {@link holders} entry (a player counts
+	 * once per value, since a wire we've already located and later see referenced
+	 * again is the same wire), clamped to the copies still uncut. The remaining
+	 * `uncut - revealed` copies are still hidden.
+	 */
+	revealed: number;
+	/**
+	 * Copies still in play (`WIRE_COPIES - cut`).
+	 */
+	uncut: number;
+	/**
+	 * Players known to hold an uncut-but-revealed copy, in seat order.
+	 * Deduplicated: a player appears once however many copies they are known to
+	 * hold.
+	 */
+	holders: Player[];
+}
+
+/**
+ * The derived status view: the twelve blue values plus the players known to
+ * hold an uncut yellow wire.
+ */
+export interface WireStatus {
+	blue: WireStatusRow[];
+	yellowHolders: Player[];
+}
+
+/**
+ * Map key for the possession multiset: a blue number or the shared "yellow".
+ * Unknown ("?") wires can't be attributed to a value, so they never key here.
+ */
+type HolderKey = BlueWireValue | "yellow";
+
+/**
+ * The value a *successful* detector cut, or `null` when it can't be pinned to a
+ * single value (an X or Y Ray whose actual cut value was never captured, or a
+ * detector with no named value). The X or Y Ray names two candidates, so its
+ * captured `cutValue` — not the named `values` — is the one that was cut; every
+ * other detector's single named value is the cut.
+ */
+function detectorCutValue(move: DetectorMove): WireValueOrUnknown | null {
+	return move.detector === "x-or-y-ray"
+		? (move.cutValue ?? null)
+		: (move.values[0] ?? null);
+}
+
+/**
+ * Derive the status view from the logged game state. Pure and best-effort: it
+ * mirrors what the moves imply without validating them, matching the app's
+ * pure-logger stance (an inconsistent manual log is reflected, not corrected).
+ *
+ * **Cut counts** (blue 1–12, out of {@link WIRE_COPIES}): a successful dual cut
+ * or detector cuts two copies of its value (the actor's wire and the target's);
+ * a solo cut removes a value's last copies, so it marks that value fully cut. A
+ * failed guess and an unknown ("?") value change no count.
+ *
+ * **Possession**: starting info tokens record a holder. A *failed* guess reveals
+ * two wires, both still uncut — the actor holds the value they named (they must
+ * hold a match to claim it) and the target's pointed-at wire is its now-known
+ * true value (the X or Y Ray's two names leave the actor's ambiguous, so only
+ * the target is recorded there). Each player is tracked at most once per value —
+ * re-referencing an already-located wire is the same wire, not a second copy. A
+ * successful cut clears the value from *both* the actor and the target; a solo
+ * cut clears every holder of the value.
+ */
+export function deriveWireStatus(
+	players: Player[],
+	moves: Move[],
+	infoTokens: Record<string, BlueWireValue>,
+): WireStatus {
+	const cut = new Map<BlueWireValue, number>();
+	// values fully cut by a solo cut, pinned to 4 regardless of prior partial cuts.
+	const complete = new Set<BlueWireValue>();
+	// possession as a set of player ids per value: a player is tracked at most
+	// once per value, since re-referencing a wire we've already located (e.g. a
+	// player naming a value they were earlier revealed to hold) is the same wire,
+	// not a second copy.
+	const holders = new Map<HolderKey, Set<string>>();
+
+	const addHolder = (key: HolderKey, playerId: string) => {
+		const set = holders.get(key);
+		if (set) set.add(playerId);
+		else holders.set(key, new Set([playerId]));
+	};
+	const consumeHolder = (key: HolderKey, playerId: string) => {
+		holders.get(key)?.delete(playerId);
+	};
+	const addCut = (value: WireValueOrUnknown | null) => {
+		if (typeof value !== "number") return;
+		cut.set(value, (cut.get(value) ?? 0) + 2);
+	};
+
+	// starting info tokens: each records that a player holds that blue value.
+	for (const [playerId, value] of Object.entries(infoTokens)) {
+		addHolder(value, playerId);
+	}
+
+	// replay moves in sequence order so consumption follows the reveals it relies on.
+	const ordered = [...moves].sort((a, b) => a.seq - b.seq);
+	for (const move of ordered) {
+		switch (move.type) {
+			case "equipment":
+				break;
+			case "solo-cut": {
+				// the last copies of this value leave play: mark it complete and drop
+				// every known holder of it (the actor held them; no one holds it now).
+				if (typeof move.value === "number") complete.add(move.value);
+				if (move.value !== "unknown") holders.delete(move.value);
+				break;
+			}
+			case "dual-cut": {
+				if (move.outcome === "success") {
+					addCut(move.value);
+					if (move.value !== "unknown") {
+						consumeHolder(move.value, move.actorId);
+						consumeHolder(move.value, move.targetId);
+					}
+				} else {
+					// a failed cut leaves both wires uncut and reveals both: the actor
+					// still holds the value they named (they must hold a match to claim
+					// it), and the target's pointed-at wire is its now-known true value.
+					if (move.value !== "unknown") addHolder(move.value, move.actorId);
+					if (move.revealed != null && move.revealed !== "unknown") {
+						addHolder(move.revealed, move.targetId);
+					}
+				}
+				break;
+			}
+			case "detector": {
+				if (move.outcome === "success") {
+					const value = detectorCutValue(move);
+					addCut(value);
+					if (value != null && value !== "unknown") {
+						consumeHolder(value, move.actorId);
+						consumeHolder(value, move.targetId);
+					}
+				} else {
+					// same as a failed dual cut: the actor holds the value they named
+					// (blue-only for detectors). The X or Y Ray names two values, so which
+					// one the actor holds is ambiguous — skip the actor there.
+					const named =
+						move.detector === "x-or-y-ray" ? "unknown" : move.values[0];
+					if (named != null && named !== "unknown") {
+						addHolder(named, move.actorId);
+					}
+					if (move.revealed != null && move.revealed !== "unknown") {
+						addHolder(move.revealed, move.targetId);
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	// resolve a holder set to its players in seat order.
+	const resolveHolders = (key: HolderKey): Player[] => {
+		const ids = holders.get(key);
+		return ids ? players.filter((p) => ids.has(p.id)) : [];
+	};
+
+	const blue: WireStatusRow[] = BLUE_WIRE_VALUES.map((value) => {
+		const cutCount = complete.has(value)
+			? WIRE_COPIES
+			: Math.min(WIRE_COPIES, cut.get(value) ?? 0);
+		// one revealed copy per distinct known holder, but never more than the
+		// copies still uncut (an inconsistent over-log can't reveal more than exist).
+		const knownUncut = holders.get(value)?.size ?? 0;
+		const revealed = Math.min(knownUncut, WIRE_COPIES - cutCount);
+		return {
+			value,
+			cut: cutCount,
+			revealed,
+			uncut: WIRE_COPIES - cutCount,
+			holders: resolveHolders(value),
+		};
+	});
+
+	return { blue, yellowHolders: resolveHolders("yellow") };
 }

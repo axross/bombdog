@@ -39,6 +39,11 @@ export interface DraftFields {
 	 * The wire's true value, chosen when the outcome is a failure.
 	 */
 	revealed: RevealedWire | null;
+	/**
+	 * The actual cut value chosen for a *successful* X or Y Ray, whose two named
+	 * values leave the cut ambiguous. Ignored by every other action.
+	 */
+	cutValue: BlueWireValueOrUnknown | null;
 	equipment: string;
 	note: string;
 }
@@ -57,6 +62,7 @@ export function emptyDraftFields(actorId = ""): DraftFields {
 		values: [],
 		outcome: null,
 		revealed: null,
+		cutValue: null,
 		equipment: "",
 		note: "",
 	};
@@ -97,6 +103,7 @@ export function fieldsFromMove(move: Move): DraftFields {
 				values: move.values,
 				outcome: move.outcome,
 				revealed: move.revealed ?? null,
+				cutValue: move.cutValue ?? null,
 			};
 		case "solo-cut":
 			return { ...base, value: move.value };
@@ -130,7 +137,7 @@ export function buildDraft(type: MoveType, f: DraftFields): MoveDraft | null {
 			if (!f.actorId || f.value === null) return null;
 			return { type, actorId: f.actorId, value: f.value };
 		case "detector": {
-			const { detector, values, revealed } = f;
+			const { detector, values, revealed, cutValue } = f;
 			if (!f.actorId || !f.targetId) return null;
 			// `values` is blue-only by type (the pad is `blueOnly`); require exactly
 			// the right number of distinct wires (one, or two for the X or Y Ray).
@@ -139,6 +146,11 @@ export function buildDraft(type: MoveType, f: DraftFields): MoveDraft | null {
 			if (new Set(values).size !== values.length) return null;
 			if (f.outcome === null) return null;
 			if (f.outcome === "fail" && revealed === null) return null;
+			// a successful X or Y Ray names two candidates, so the actual cut value
+			// must be recorded to disambiguate which one was cut.
+			const needsCutValue =
+				detector === "x-or-y-ray" && f.outcome === "success";
+			if (needsCutValue && cutValue === null) return null;
 			return {
 				type,
 				detector,
@@ -147,6 +159,7 @@ export function buildDraft(type: MoveType, f: DraftFields): MoveDraft | null {
 				values,
 				outcome: f.outcome,
 				...(f.outcome === "fail" && revealed !== null ? { revealed } : {}),
+				...(needsCutValue && cutValue !== null ? { cutValue } : {}),
 			};
 		}
 		case "equipment": {

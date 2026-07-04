@@ -161,6 +161,52 @@ describe("<MoveForm>", () => {
 		);
 	});
 
+	it("asks which named value a successful X or Y Ray cut, and reports it", async () => {
+		const user = userEvent.setup();
+		const onFieldsChange = vi.fn();
+		render(
+			<Harness
+				initialType="detector"
+				initialFields={{
+					...emptyDraftFields("a"),
+					detector: "x-or-y-ray",
+					targetId: "b",
+					values: [4, 9],
+					outcome: "success",
+				}}
+				onFieldsChangeSpy={onFieldsChange}
+			/>,
+		);
+
+		// the picker offers exactly the two named candidates.
+		const picker = screen.getByRole("group", { name: "Actual cut value" });
+		expect(within(picker).getByTestId("cut-value-4")).toBeInTheDocument();
+		expect(within(picker).getByTestId("cut-value-9")).toBeInTheDocument();
+
+		await user.click(within(picker).getByTestId("cut-value-9"));
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ cutValue: 9 }),
+		);
+	});
+
+	it("hides the actual-value picker unless the ray succeeded", () => {
+		render(
+			<Harness
+				initialType="detector"
+				initialFields={{
+					...emptyDraftFields("a"),
+					detector: "x-or-y-ray",
+					targetId: "b",
+					values: [4, 9],
+					outcome: "fail",
+				}}
+			/>,
+		);
+		expect(
+			screen.queryByRole("group", { name: "Actual cut value" }),
+		).not.toBeInTheDocument();
+	});
+
 	it("labels the target as a whole stand for the Super Detector", () => {
 		render(
 			<Harness

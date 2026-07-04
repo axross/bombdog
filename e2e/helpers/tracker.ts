@@ -115,6 +115,46 @@ export function startingInfo(page: Page): Locator {
 }
 
 /**
+ * The starting-info editor dialog (portaled to the body; open only after the
+ * strip's Edit control is activated).
+ */
+export function startingInfoEditor(page: Page): Locator {
+	return page.getByTestId("starting-info-editor");
+}
+
+/**
+ * Open the starting-info editor from the strip's Edit control.
+ */
+export async function openStartingInfoEditor(page: Page): Promise<void> {
+	await startingInfo(page).getByTestId("edit-starting-info").click();
+	await expect(startingInfoEditor(page)).toBeVisible();
+}
+
+/**
+ * In the open starting-info editor, set `playerName`'s token to a blue wire. The
+ * per-player row is scoped by its `data-player` so the shared `wire-<n>` buttons
+ * stay unambiguous across rows.
+ */
+export async function editInfoToken(
+	page: Page,
+	playerName: string,
+	wire: number,
+): Promise<void> {
+	await startingInfoEditor(page)
+		.locator(`[data-player="${playerName}"]`)
+		.getByTestId(`wire-${wire}`)
+		.click();
+}
+
+/**
+ * Save the starting-info editor and wait for it to close.
+ */
+export async function saveStartingInfo(page: Page): Promise<void> {
+	await startingInfoEditor(page).getByTestId("save-starting-info").click();
+	await expect(startingInfoEditor(page)).toBeHidden();
+}
+
+/**
  * The move-composer sheet (a modal dialog). Absent from the layout until it is
  * opened from the bottom bar's Add move button.
  */
@@ -189,10 +229,10 @@ export function moveRow(page: Page, seq: number): Locator {
 }
 
 /**
- * Open the move-log filter dialog from its header trigger.
+ * Open the move-log filter dialog from its trigger (in the Moves tab bar).
  */
 export async function openFilter(page: Page): Promise<void> {
-	await header(page).getByTestId("filter").click();
+	await page.getByTestId("filter").click();
 	await expect(page.getByTestId("filter-dialog")).toBeVisible();
 }
 
@@ -204,10 +244,42 @@ export function filterDialog(page: Page): Locator {
 }
 
 /**
- * The app header, which carries the brand, the filter trigger, and Reset.
+ * The app header, which carries the brand and Reset.
  */
 export function header(page: Page): Locator {
 	return page.getByTestId("header");
+}
+
+/**
+ * Switch the tracker to the Moves view (the move history).
+ */
+export async function openMovesTab(page: Page): Promise<void> {
+	await page.getByTestId("tab-moves").click();
+	await expect(moveLog(page)).toBeVisible();
+}
+
+/**
+ * Switch the tracker to the Status view (the derived wire status).
+ */
+export async function openStatusTab(page: Page): Promise<void> {
+	await page.getByTestId("tab-status").click();
+	await expect(statusPanel(page)).toBeVisible();
+}
+
+/**
+ * The Status view panel.
+ */
+export function statusPanel(page: Page): Locator {
+	return page.getByTestId("status-panel");
+}
+
+/**
+ * A Status row for a blue value 1–12.
+ */
+export function statusRow(page: Page, value: number): Locator {
+	return statusPanel(page).locator(
+		`[data-testid="status-row"][data-value="${value}"]`,
+	);
 }
 
 /**
@@ -343,6 +415,11 @@ interface DetectorOptions {
 	 */
 	values: Wire[];
 	outcome: "success" | { reveal: Revealed };
+	/**
+	 * The actual value a *successful* X or Y Ray turned out to be (one of the two
+	 * named values). Required for that case, ignored otherwise.
+	 */
+	cutValue?: number;
 }
 
 /**
@@ -359,6 +436,10 @@ export async function logDetector(
 	await pickTarget(page, opts.target);
 	for (const value of opts.values) await selectWire(page, value);
 	await setOutcome(page, opts.outcome);
+	// a successful X or Y Ray asks which of the two named values was cut.
+	if (opts.cutValue !== undefined) {
+		await composer(page).getByTestId(`cut-value-${opts.cutValue}`).click();
+	}
 	await logMove(page);
 }
 

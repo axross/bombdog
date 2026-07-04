@@ -4,7 +4,7 @@ Apply these rules whenever you write or modify code in this project.
 
 ## Check Sequence
 
-Check Sequence sets the required project default: always run checks in this order after making any code change:
+The order matters because the linter reports format problems the formatter alone does not resolve, so a passing format step is not proof the code is clean.
 
 - `npm run format` applies auto-fixable formatting. `npm run lint` enforces both lint rules and format rules. Some format violations are only caught by the lint step, so it may still report format issues even after running the formatter.
 
@@ -21,7 +21,7 @@ Check Sequence sets the required project default: always run checks in this orde
 
 ## Formatting
 
-Formatting sets the required project default: run `npm run format` after every set of code changes, before committing or considering the task done.
+Delegating whitespace and layout to Biome keeps diffs free of style noise and ends manual formatting debates in review.
 
 **Guidelines:**
 
@@ -31,7 +31,7 @@ Formatting sets the required project default: run `npm run format` after every s
 
 ## Linting
 
-Linting sets the required project default: run `npm run lint` after formatting to surface code quality issues.
+The linter catches correctness and quality problems the formatter cannot see, and re-flags any format issues that slipped past it.
 
 **Guidelines:**
 
@@ -87,7 +87,7 @@ Line comments (`// …`) are written in a lowercase style and kept to a minimum.
 
 ## Import Hygiene
 
-Import Hygiene is a project prohibition: do not leave unused imports in modified files. The linter will flag these, but resolve them proactively.
+Stale imports misrepresent a module's real dependencies and can drag dead code — or another runtime's code — into the bundle.
 
 **Guidelines:**
 

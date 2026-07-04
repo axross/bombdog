@@ -72,32 +72,49 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Run the official code-review plugin against this PR. The plugin posts
-          # findings through the action's own review mechanism; a custom /review
-          # command that posts via mcp__github__ does not work inside the action
-          # (those tools are denied there). The /review command runs the same
-          # code-review practice locally.
+          # Run the official code-review plugin against this PR. The plugin ONLY
+          # posts when invoked with `--comment` (see the prompt); without it, it
+          # analyzes and stops silently — that was the cause of the no-op
+          # reviewer. With `--comment` it posts inline comments via
+          # mcp__github_inline_comment__create_inline_comment plus one `gh pr
+          # comment` summary; it never submits a formal `gh pr review`. A custom
+          # /review command that posts via mcp__github__ does not work inside the
+          # action (those tools are denied there); /review runs the same practice
+          # locally.
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
-          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.issue.number }}"
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.issue.number }} --comment"
           # --allowedTools is REQUIRED: the action does not honor a plugin
           # command's own `allowed-tools` frontmatter, so without this the plugin
           # is denied the tools it needs and posts nothing. We check out the base
           # ref (not the PR head), so the plugin reads the diff via `gh pr diff`
           # and posts via `mcp__github_inline_comment__create_inline_comment` plus
           # a `gh pr comment` summary — all of which must be allow-listed here.
-          # Read/Grep/Glob let the reviewer inspect the checked-out base tree for
-          # context (conventions, sibling files, the modules a change touches) —
-          # a tiny diff needs none, but a multi-file PR does, and denying them was
-          # the likely cause of 18 permission denials + a no-op review on a large
-          # PR. The base tree is trusted `main`, never the PR head, so reading it
-          # is safe. COMMENT-only (no APPROVE/REQUEST_CHANGES) is a CI-review
-          # choice made here, not portable review policy, so it lives in this
-          # prompt rather than in REVIEW.md.
+          # Allow general `Bash`, not a narrow `Bash(gh <sub>:*)` allow-list: the
+          # plugin issues COMPOUND and non-gh shell commands to gather context —
+          # `git rev-parse`, `cd /tmp && for f in … gh api …`, `python3 -c …` —
+          # and the permission matcher can't match those to a single `gh` prefix,
+          # so they were denied (observed on a real multi-file PR) and the review
+          # posted nothing. The runner only ever holds the trusted base tree
+          # (`main`), never the PR head, so broad Bash executes no untrusted code;
+          # the token is contents:read (can't push). Read/Grep/Glob let it inspect
+          # that base tree for conventions/sibling files. Posting goes through the
+          # plugin's `--comment` path (inline comments + one `gh pr comment`
+          # summary) — no `gh pr review` verb, so the append-prompt must NOT ask
+          # for a formal "pull-request review". The append-prompt also tells the
+          # plugin to review DRAFT PRs: by default it skips them, which would make
+          # the /address flow (drafts + `@claude review`) a permanent no-op.
           claude_args: >-
-            --append-system-prompt "Read REVIEW.md at the repository root and follow it as the highest-priority, review-only instructions for this review. Post your findings as a single COMMENT-type pull-request review — do not APPROVE or REQUEST_CHANGES; this reviewer is advisory and does not gate merges."
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*),Bash(gh api:*)"
-            --disallowedTools "WebFetch,WebSearch"
+            --append-system-prompt "Read REVIEW.md at the repository root and follow it as the highest-priority, review-only instructions for this review. Review this pull request even if it is a draft — do not skip it for being a draft. Do the ENTIRE review within this single turn: run every check and review pass yourself, synchronously and in order. Do NOT kick off background or parallel work and then end your turn to wait for it — this is a one-shot job that terminates the instant your turn ends, so anything you defer is lost and no review is posted. You MUST post your findings (inline comments plus a summary via `gh pr comment`) before your turn ends. This reviewer is advisory and does not gate merges."
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Read,Grep,Glob,Bash"
+            # Disallow Task: the plugin otherwise fans review passes out to
+            # BACKGROUND sub-agents. In this single-shot action run, when the main
+            # agent ends its turn while those are still running, the run
+            # terminates and orphans them — nothing posts (observed on a larger PR
+            # that ended "waiting for the four background review agents"). Denying
+            # Task forces a synchronous review that completes and posts within the
+            # one turn. WebFetch/WebSearch stay disallowed (no external calls).
+            --disallowedTools "WebFetch,WebSearch,Task"
             # Turn count scales with PR size and is high-variance even on a tiny
             # diff (a 9-line PR completed in 22 turns on one run yet blew past 30
             # on another). A large multi-file PR needs far more, so size the cap
