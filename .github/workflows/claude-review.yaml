@@ -72,10 +72,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # TEMPORARY (diagnostic): surface the full SDK stream so the validation
-          # run can confirm zero permission denials and that findings actually
-          # post. Remove once verified (mirrors the #68 → #74 diagnostic cycle).
-          show_full_output: true
           # Run the official code-review plugin against this PR. The plugin ONLY
           # posts when invoked with `--comment` (see the prompt); without it, it
           # analyzes and stops silently — that was the cause of the no-op
