@@ -191,10 +191,12 @@ function detectorCutValue(move: DetectorMove): WireValueOrUnknown | null {
  * a solo cut removes a value's last copies, so it marks that value fully cut. A
  * failed guess and an unknown ("?") value change no count.
  *
- * **Possession**: starting info tokens and failed-guess reveals record that a
- * player holds a wire of a value (blue or yellow); a successful cut consumes one
- * known copy from *both* the actor and the target, and a solo cut clears the
- * value entirely (its last copies just left play).
+ * **Possession**: starting info tokens record a holder. A *failed* guess reveals
+ * two wires, both still uncut — the actor holds the value they named (they must
+ * hold a match to claim it) and the target's pointed-at wire is its now-known
+ * true value (the X or Y Ray's two names leave the actor's ambiguous, so only
+ * the target is recorded there). A successful cut consumes one known copy from
+ * *both* the actor and the target; a solo cut clears the value entirely.
  */
 export function deriveWireStatus(
 	players: Player[],
@@ -249,9 +251,14 @@ export function deriveWireStatus(
 						consumeHolder(move.value, move.actorId);
 						consumeHolder(move.value, move.targetId);
 					}
-				} else if (move.revealed != null && move.revealed !== "unknown") {
-					// a failed guess reveals the target's pointed-at wire (blue or yellow).
-					addHolder(move.revealed, move.targetId);
+				} else {
+					// a failed cut leaves both wires uncut and reveals both: the actor
+					// still holds the value they named (they must hold a match to claim
+					// it), and the target's pointed-at wire is its now-known true value.
+					if (move.value !== "unknown") addHolder(move.value, move.actorId);
+					if (move.revealed != null && move.revealed !== "unknown") {
+						addHolder(move.revealed, move.targetId);
+					}
 				}
 				break;
 			}
@@ -263,8 +270,18 @@ export function deriveWireStatus(
 						consumeHolder(value, move.actorId);
 						consumeHolder(value, move.targetId);
 					}
-				} else if (move.revealed != null && move.revealed !== "unknown") {
-					addHolder(move.revealed, move.targetId);
+				} else {
+					// same as a failed dual cut: the actor holds the value they named
+					// (blue-only for detectors). The X or Y Ray names two values, so which
+					// one the actor holds is ambiguous — skip the actor there.
+					const named =
+						move.detector === "x-or-y-ray" ? "unknown" : move.values[0];
+					if (named != null && named !== "unknown") {
+						addHolder(named, move.actorId);
+					}
+					if (move.revealed != null && move.revealed !== "unknown") {
+						addHolder(move.revealed, move.targetId);
+					}
 				}
 				break;
 			}

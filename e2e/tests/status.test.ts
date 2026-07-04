@@ -94,8 +94,14 @@ test.describe("status view", () => {
 			});
 
 			await openStatusTab(page);
+			// starting info token: Player 1 holds a 3.
 			await expect(
 				statusRow(page, 3).getByTestId("status-holder"),
+			).toHaveAttribute("data-player", "Player 1");
+			// the failed cut reveals BOTH wires: Player 1 (the actor) still holds the
+			// 6 they named, and Player 2 (the target) holds the 8 it turned out to be.
+			await expect(
+				statusRow(page, 6).getByTestId("status-holder"),
 			).toHaveAttribute("data-player", "Player 1");
 			await expect(
 				statusRow(page, 8).getByTestId("status-holder"),

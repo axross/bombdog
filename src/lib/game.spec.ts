@@ -414,21 +414,46 @@ describe("deriveWireStatus()", () => {
 			expect(holderNames(status, 3)).toEqual(["Alice"]);
 		});
 
-		it("records the target as holder on a failed dual cut", () => {
-			const status = derive([dual(2, "fail", { targetId: "c", revealed: 8 })]);
-			expect(holderNames(status, 8)).toEqual(["Carol"]);
+		it("records both wires a failed dual cut reveals: actor's named, target's true", () => {
+			// Alice cuts at Bob naming a 4; it's actually a 5. Now the team knows
+			// Alice holds a 4 (still in hand) and Bob holds a 5.
+			const status = derive([
+				dual(4, "fail", { actorId: "a", targetId: "b", revealed: 5 }),
+			]);
+			expect(holderNames(status, 4)).toEqual(["Alice"]);
+			expect(holderNames(status, 5)).toEqual(["Bob"]);
 		});
 
-		it("records a failed detector reveal against the target", () => {
+		it("records both wires a failed single-value detector reveals", () => {
 			const status = derive([
-				detector("double", [2], "fail", { targetId: "b", revealed: 10 }),
+				detector("double", [4], "fail", {
+					actorId: "a",
+					targetId: "b",
+					revealed: 5,
+				}),
 			]);
-			expect(holderNames(status, 10)).toEqual(["Bob"]);
+			expect(holderNames(status, 4)).toEqual(["Alice"]);
+			expect(holderNames(status, 5)).toEqual(["Bob"]);
+		});
+
+		it("skips the actor on a failed X or Y Ray (which of the two is ambiguous)", () => {
+			const status = derive([
+				detector("x-or-y-ray", [4, 7], "fail", {
+					actorId: "a",
+					targetId: "b",
+					revealed: 5,
+				}),
+			]);
+			expect(holderNames(status, 4)).toEqual([]);
+			expect(holderNames(status, 7)).toEqual([]);
+			// only the target's revealed wire is recorded.
+			expect(holderNames(status, 5)).toEqual(["Bob"]);
 		});
 
 		it("records a yellow reveal among the yellow holders, not a blue row", () => {
+			// name "?" so no blue actor-holder is added — isolate the yellow reveal.
 			const status = derive([
-				dual(2, "fail", { targetId: "b", revealed: "yellow" }),
+				dual("unknown", "fail", { targetId: "b", revealed: "yellow" }),
 			]);
 			expect(status.yellowHolders.map((p) => p.name)).toEqual(["Bob"]);
 			for (const r of status.blue) expect(r.holders).toEqual([]);
@@ -436,7 +461,7 @@ describe("deriveWireStatus()", () => {
 
 		it("skips an unknown reveal (it can't be placed on a value)", () => {
 			const status = derive([
-				dual(2, "fail", { targetId: "b", revealed: "unknown" }),
+				dual("unknown", "fail", { targetId: "b", revealed: "unknown" }),
 			]);
 			for (const r of status.blue) expect(r.holders).toEqual([]);
 			expect(status.yellowHolders).toEqual([]);

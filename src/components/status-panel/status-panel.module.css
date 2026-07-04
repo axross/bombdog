@@ -109,15 +109,16 @@
 			gap: var(--space-1);
 		}
 
+		/* Neutral gray pill — the holder is a plain player-name tag, not a wire. */
 		.holder {
 			display: inline-flex;
 			align-items: center;
 			padding: 2px var(--space-2);
 			font-size: 0.8rem;
 			font-weight: 600;
-			color: var(--wire-blue-text);
-			background-color: var(--wire-blue-soft);
-			border: 1px solid var(--wire-blue-border);
+			color: var(--text-muted);
+			background-color: var(--surface-3);
+			border: 1px solid var(--border);
 			border-radius: var(--radius-sm);
 		}
 
