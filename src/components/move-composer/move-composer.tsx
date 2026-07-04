@@ -98,7 +98,7 @@ export function MoveComposer(): JSX.Element {
 				</div>
 				<button
 					type="button"
-					className={css.primary}
+					className={css.addMove}
 					onClick={() => setOpen(true)}
 					data-testid="add-move"
 				>
