@@ -5,6 +5,7 @@ import {
 	type DualCutMove,
 	type EquipmentMove,
 	GENERAL_RADAR_EQUIPMENT,
+	type MoveType,
 	POST_IT_EQUIPMENT,
 	type SoloCutMove,
 } from "@/lib/types";
@@ -13,6 +14,7 @@ import {
 	detectorValues,
 	emptyDraftFields,
 	fieldsFromMove,
+	invalidFields,
 } from "./draft";
 
 describe("emptyDraftFields()", () => {
@@ -381,6 +383,167 @@ describe("buildDraft()", () => {
 				buildDraft("equipment", { ...base, value: 4, holderIds: ["b", "c"] }),
 			).toMatchObject({ value: 4, holderIds: ["b", "c"] });
 		});
+	});
+});
+
+describe("invalidFields()", () => {
+	it("flags actor, target, wire, and result for an empty dual cut", () => {
+		expect(invalidFields("dual-cut", emptyDraftFields(""))).toEqual([
+			"actor",
+			"target",
+			"wire",
+			"outcome",
+		]);
+	});
+
+	it("flags the result when a dual cut fails without a revealed wire", () => {
+		const failing = {
+			...emptyDraftFields("a"),
+			targetId: "b",
+			value: 9 as const,
+			outcome: "fail" as const,
+		};
+		expect(invalidFields("dual-cut", failing)).toEqual(["outcome"]);
+		expect(invalidFields("dual-cut", { ...failing, revealed: 8 })).toEqual([]);
+	});
+
+	it("flags actor and wire for a solo cut", () => {
+		expect(invalidFields("solo-cut", emptyDraftFields(""))).toEqual([
+			"actor",
+			"wire",
+		]);
+		expect(
+			invalidFields("solo-cut", { ...emptyDraftFields("a"), value: 7 }),
+		).toEqual([]);
+	});
+
+	it("flags the value pad until a detector names the right count", () => {
+		const base = { ...emptyDraftFields("a"), targetId: "b" };
+		// the X or Y Ray needs two distinct values.
+		const xy = { ...base, detector: "x-or-y-ray" as const };
+		expect(invalidFields("detector", xy)).toEqual(["values", "outcome"]);
+		expect(invalidFields("detector", { ...xy, values: [4] })).toEqual([
+			"values",
+			"outcome",
+		]);
+		expect(
+			invalidFields("detector", { ...xy, values: [4, 9], outcome: "success" }),
+		).toEqual(["cutValue"]);
+	});
+
+	it("flags the actual value only for a successful X or Y Ray", () => {
+		const ray = {
+			...emptyDraftFields("a"),
+			targetId: "b",
+			detector: "x-or-y-ray" as const,
+			values: [4, 9] as BlueWireValue[],
+		};
+		expect(invalidFields("detector", { ...ray, outcome: "success" })).toEqual([
+			"cutValue",
+		]);
+		expect(
+			invalidFields("detector", { ...ray, outcome: "success", cutValue: 9 }),
+		).toEqual([]);
+		// a fail needs its revealed wire, not a cut value.
+		expect(invalidFields("detector", { ...ray, outcome: "fail" })).toEqual([
+			"outcome",
+		]);
+	});
+
+	it("flags actor and equipment for a Misc action", () => {
+		expect(invalidFields("equipment", emptyDraftFields(""))).toEqual([
+			"actor",
+			"equipment",
+		]);
+		expect(
+			invalidFields("equipment", {
+				...emptyDraftFields("a"),
+				equipment: "  ",
+			}),
+		).toEqual(["equipment"]);
+	});
+
+	it("flags the Post-it's target and wire until both are chosen", () => {
+		const postIt = { ...emptyDraftFields("a"), equipment: POST_IT_EQUIPMENT };
+		expect(invalidFields("equipment", postIt)).toEqual(["target", "wire"]);
+		expect(invalidFields("equipment", { ...postIt, targetId: "b" })).toEqual([
+			"wire",
+		]);
+		expect(
+			invalidFields("equipment", { ...postIt, targetId: "b", value: 7 }),
+		).toEqual([]);
+	});
+
+	it("flags the General Radar's value but never its holders", () => {
+		const radar = {
+			...emptyDraftFields("a"),
+			equipment: GENERAL_RADAR_EQUIPMENT,
+		};
+		expect(invalidFields("equipment", radar)).toEqual(["wire"]);
+		// zero holders is a valid selection, so a chosen value clears the flags.
+		expect(invalidFields("equipment", { ...radar, value: 4 })).toEqual([]);
+	});
+
+	it("agrees with buildDraft: empty iff a draft can be built", () => {
+		// the two encode the same rules independently; this pins the invariant so a
+		// change to one that forgets the other is caught.
+		const types: MoveType[] = ["dual-cut", "solo-cut", "detector", "equipment"];
+		const fixtures = [
+			emptyDraftFields(""),
+			emptyDraftFields("a"),
+			{ ...emptyDraftFields("a"), targetId: "b", value: 9 as const },
+			{
+				...emptyDraftFields("a"),
+				targetId: "b",
+				value: 9 as const,
+				outcome: "success" as const,
+			},
+			{
+				...emptyDraftFields("a"),
+				targetId: "b",
+				outcome: "fail" as const,
+				revealed: 8 as const,
+			},
+			{
+				...emptyDraftFields("a"),
+				detector: "x-or-y-ray" as const,
+				targetId: "b",
+				values: [4, 9] as BlueWireValue[],
+				outcome: "success" as const,
+			},
+			{
+				...emptyDraftFields("a"),
+				detector: "x-or-y-ray" as const,
+				targetId: "b",
+				values: [4, 9] as BlueWireValue[],
+				outcome: "success" as const,
+				cutValue: 9 as const,
+			},
+			{ ...emptyDraftFields("a"), value: 7 as const },
+			{ ...emptyDraftFields("a"), equipment: "Radar" },
+			// the structured cards, in partial and complete states.
+			{ ...emptyDraftFields("a"), equipment: POST_IT_EQUIPMENT },
+			{
+				...emptyDraftFields("a"),
+				equipment: POST_IT_EQUIPMENT,
+				targetId: "b",
+				value: 7 as const,
+			},
+			{ ...emptyDraftFields("a"), equipment: GENERAL_RADAR_EQUIPMENT },
+			{
+				...emptyDraftFields("a"),
+				equipment: GENERAL_RADAR_EQUIPMENT,
+				value: 4 as const,
+				holderIds: ["b", "c"],
+			},
+		];
+		for (const type of types) {
+			for (const f of fixtures) {
+				const empty = invalidFields(type, f).length === 0;
+				const built = buildDraft(type, f) !== null;
+				expect(empty, `${type} ${JSON.stringify(f)}`).toBe(built);
+			}
+		}
 	});
 });
 

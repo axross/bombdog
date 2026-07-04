@@ -7,6 +7,8 @@ import {
 	buildDraft,
 	type DraftFields,
 	emptyDraftFields,
+	invalidFields,
+	type MoveFieldKey,
 } from "@/components/move-form/draft";
 import { MoveForm } from "@/components/move-form/move-form";
 import { nextActorId } from "@/lib/game";
@@ -15,11 +17,29 @@ import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
 
 /**
+ * Human labels for the fields a failed "Log move" can flag, used to announce
+ * what needs attention to screen-reader users.
+ */
+const FIELD_LABELS: Record<MoveFieldKey, string> = {
+	actor: "Acting",
+	target: "Target",
+	wire: "Wire",
+	values: "Values",
+	outcome: "Result",
+	cutValue: "Actual value",
+	equipment: "Equipment",
+};
+
+/**
  * The tracker's bottom area. A persistent bar carries undo/redo and an "Add
  * move" button; Add move opens the move composer as a modal bottom sheet (shared
  * {@link BottomSheet}, draggable to dismiss). Logging a move keeps the sheet open
  * and resets the form so the next move can be entered right away, while the bar
  * (behind the modal overlay) resurfaces once the sheet closes.
+ *
+ * Log move is always pressable: pressing it with an incomplete move flags the
+ * unselected/missing/invalid fields (a shake plus a persistent danger label,
+ * badge, and tint) and announces them, rather than logging.
  */
 export function MoveComposer(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
@@ -38,8 +58,40 @@ export function MoveComposer(): JSX.Element {
 	const [fields, setFields] = useState<DraftFields>(() =>
 		emptyDraftFields(suggestedActor),
 	);
+	// how many times Log move has been pressed with an incomplete move since the
+	// last successful log. 0 means "not attempted yet" (no fields flagged); each
+	// failed press bumps it to re-play the highlight shake on what's still invalid.
+	const [nudge, setNudge] = useState(0);
+	// assertive message naming the fields that blocked the last press, for the
+	// live region; cleared on a successful log or when the sheet closes.
+	const [alert, setAlert] = useState("");
 
 	const draft = buildDraft(type, fields);
+	// flag fields only after a failed press, and recompute live so each fix clears
+	// its own highlight (UI=F(state)).
+	const invalid =
+		nudge > 0
+			? new Set<MoveFieldKey>(invalidFields(type, fields))
+			: new Set<MoveFieldKey>();
+
+	// clear any validation flags/announcement — after a log, and when the sheet is
+	// dismissed so a reopen starts clean.
+	const clearValidation = () => {
+		setNudge(0);
+		setAlert("");
+	};
+
+	const handleTypeChange = (next: MoveType) => {
+		setType(next);
+		// a different action has different required fields, so clear any flags from
+		// the previous action rather than flagging the new tab's fields pre-emptively.
+		clearValidation();
+	};
+
+	const handleOpenChange = (next: boolean) => {
+		setOpen(next);
+		if (!next) clearValidation();
+	};
 
 	/**
 	 * Log the built draft, then reset the form for the next move. The sheet stays
@@ -49,10 +101,30 @@ export function MoveComposer(): JSX.Element {
 	 */
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
-		// defensive: the submit button is disabled whenever `draft` is null.
-		/* v8 ignore next */
-		if (!draft) return;
+		// Log move is always pressable, so validate on press: an incomplete move
+		// flags its missing fields (a bumped `nudge` re-shakes them) and announces
+		// them, rather than logging.
+		if (!draft) {
+			const missing = invalidFields(type, fields);
+			const next = nudge + 1;
+			setNudge(next);
+			// Re-announce on every failed press. A repeat press with the same missing
+			// fields would set an identical string — React bails on the no-op state
+			// update, the live region's DOM text never changes, and assertive screen
+			// readers stay silent (regressing #26's "hears which fields need
+			// attention"). A trailing zero-width space toggled per press keeps the
+			// text changing while leaving the spoken wording untouched.
+			const marker = next % 2 === 1 ? "\u200B" : "";
+			setAlert(
+				`Can't log yet — check: ${missing
+					.map((key) => FIELD_LABELS[key])
+					.join(", ")}.${marker}`,
+			);
+			return;
+		}
 		addMove(draft);
+		// a successful log clears any prior validation flags/announcement.
+		clearValidation();
 		// suggest the next actor with the same rule the log rehydrates through:
 		// append the just-logged move and ask nextActorId. it ignores equipment
 		// (so the turn stays put) and advances clockwise for every other move —
@@ -108,7 +180,7 @@ export function MoveComposer(): JSX.Element {
 
 			<BottomSheet
 				open={open}
-				onOpenChange={setOpen}
+				onOpenChange={handleOpenChange}
 				title="New move"
 				data-testid="composer"
 			>
@@ -116,15 +188,23 @@ export function MoveComposer(): JSX.Element {
 					<MoveForm
 						players={players}
 						type={type}
-						onTypeChange={setType}
+						onTypeChange={handleTypeChange}
 						fields={fields}
 						onFieldsChange={setFields}
+						invalid={invalid}
+						nudge={nudge}
 					/>
+					{/* announces which fields blocked a failed Log move press; the shake
+					    highlights carry the same information visually. */}
+					<p role="status" aria-live="assertive" className={css.srOnly}>
+						{alert}
+					</p>
 					<div className={css.actions}>
+						{/* always pressable: an incomplete move is caught in handleSubmit,
+						    which flags the missing fields instead of logging. */}
 						<button
 							type="submit"
 							className={css.logButton}
-							disabled={!draft}
 							data-testid="log-move"
 						>
 							Log move

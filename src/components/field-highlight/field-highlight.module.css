@@ -1,0 +1,86 @@
+@layer components {
+	@scope (.wrap) {
+		:where(:scope) {
+			/* a constant inset — present whether or not the field is flagged, so the
+			   invalid tint below reads as a soft padded frame around the control
+			   without the layout shifting when the flag toggles. */
+			padding: var(--space-2);
+			border-radius: var(--radius-sm);
+		}
+
+		/* Label-led invalid marker (calmer than a bold ring): the field's own label
+		   turns danger and gains a small "!" badge, with a whisper of danger tint
+		   behind the control. Colour is never the only cue — the field also shakes
+		   (below) and the composer's live region announces which fields need fixing.
+		   The tint uses no border/outline, so toggling it never shifts layout. */
+		:where(:scope)[data-invalid] {
+			background: color-mix(in oklch, var(--danger) 10%, transparent);
+			/* duration and easing compose from the shared motion tokens; the shake's
+			   snappy feel comes from the keyframe offsets below, and the emphasized
+			   curve suits the quick settle. two motion beats give it room to decay. */
+			animation: field-highlight-shake calc(var(--motion) * 2)
+				var(--ease-emphasized) both;
+		}
+
+		/* Recolour the field's label. Every field component (PlayerPicker,
+		   SelectField, WirePad, OutcomeToggle, and the cut-value fieldset) renders
+		   its label as the first child <span> of its root element, and that root is
+		   the wrap's only child — so this reaches the label without each component
+		   needing to know it is being flagged. */
+		:where(:scope)[data-invalid] > * > span:first-child {
+			color: var(--danger-text);
+		}
+
+		/* A small "!" badge after the label — a non-colour cue for the danger state,
+		   so it reads for colour-blind users too. */
+		:where(:scope)[data-invalid] > * > span:first-child::after {
+			content: "!";
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			inline-size: 1.15em;
+			block-size: 1.15em;
+			margin-inline-start: 0.4em;
+			font-size: 0.85em;
+			font-weight: 800;
+			line-height: 1;
+			color: var(--accent-contrast);
+			background: var(--danger);
+			border-radius: 50%;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			/* no lateral motion (a vestibular trigger); the danger label, badge, and
+			   tint mark the field, reinforced by the live-region announcement. */
+			:where(:scope)[data-invalid] {
+				animation: none;
+			}
+		}
+	}
+
+	/* A short "no" head-shake: a few decaying horizontal nudges, settling to rest. */
+	@keyframes field-highlight-shake {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		12% {
+			transform: translateX(-6px);
+		}
+		26% {
+			transform: translateX(5px);
+		}
+		40% {
+			transform: translateX(-4px);
+		}
+		54% {
+			transform: translateX(3px);
+		}
+		68% {
+			transform: translateX(-2px);
+		}
+		82% {
+			transform: translateX(1px);
+		}
+	}
+}

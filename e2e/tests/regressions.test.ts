@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 import {
 	composer,
 	logDualCut,
+	logMove,
 	moveRow,
+	openComposer,
 	pickTarget,
 	selectWire,
 	setActor,
@@ -39,5 +41,40 @@ test("re-enables Log move for the next dual cut without re-toggling target", {
 		await expect(composer(page).getByTestId("log-move")).toBeEnabled();
 		await composer(page).getByTestId("log-move").click();
 		await expect(moveRow(page, 2)).toBeVisible();
+	});
+});
+
+// pressing Log move with an incomplete move must flag the missing fields (rather
+// than log nothing silently), and each field's flag must clear as it is filled.
+test("flags incomplete composer fields on Log move, then logs once complete", {
+	tag: ["@scenario:log.invalid-highlight", "@area:logging", "@priority:should"],
+}, async ({ page }) => {
+	await startTracking(page);
+	await openComposer(page);
+	const target = composer(page).getByTestId("highlight-target");
+	const wire = composer(page).getByTestId("highlight-wire");
+	const outcome = composer(page).getByTestId("highlight-outcome");
+
+	await test.step("Press Log move with an empty dual cut", async () => {
+		await logMove(page);
+		// nothing is logged…
+		await expect(moveRow(page, 1)).toBeHidden();
+		// …and the incomplete fields are flagged (the actor defaults to the Captain).
+		await expect(target).toHaveAttribute("data-invalid", "true");
+		await expect(wire).toHaveAttribute("data-invalid", "true");
+		await expect(outcome).toHaveAttribute("data-invalid", "true");
+	});
+
+	await test.step("Filling a field clears its own flag", async () => {
+		await pickTarget(page, "Player 2");
+		await expect(target).not.toHaveAttribute("data-invalid", "true");
+		await expect(wire).toHaveAttribute("data-invalid", "true");
+	});
+
+	await test.step("Completing the move logs it", async () => {
+		await selectWire(page, 9);
+		await setOutcome(page, "success");
+		await logMove(page);
+		await expect(moveRow(page, 1)).toBeVisible();
 	});
 });

@@ -44,6 +44,7 @@ carries its `@scenario:<id>` tag. The reporter
 | log.equipment | Log an equipment action with a note | logging | should |
 | log.equipment.post-it | Log a Post-it revealing a target's wire and count it in Status possession | logging | should |
 | log.equipment.radar | Log a General Radar (with and without holders) and count them in Status possession | logging | should |
+| log.invalid-highlight | Pressing Log move with an incomplete move flags the missing fields | logging | should |
 | session.turn-advance | The turn indicator advances to the next seat after a cut | session | must |
 | session.equipment-no-advance | Logging equipment keeps the turn on the same actor | session | should |
 | session.off-turn-equipment | Off-turn equipment returns the suggestion to the turn-holder | session | should |
