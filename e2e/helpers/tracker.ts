@@ -158,7 +158,7 @@ export async function closeComposer(page: Page): Promise<void> {
  * so `pointermove` fires along the way.
  */
 export async function dragComposerToDismiss(page: Page): Promise<void> {
-	const handle = composer(page).getByTestId("composer-handle");
+	const handle = composer(page).getByTestId("sheet-handle");
 	// hover() waits for the open animation to settle (Playwright's stability
 	// check) before we read coordinates, so the press lands on the handle rather
 	// than on whatever sits under its mid-animation position.

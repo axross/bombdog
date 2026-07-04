@@ -536,7 +536,7 @@ test.describe("session flow", () => {
 		await openComposer(page);
 		// the sheet exposes a grab handle; dragging it down past the threshold
 		// dismisses the sheet back to the bottom bar.
-		await expect(composer(page).getByTestId("composer-handle")).toBeVisible();
+		await expect(composer(page).getByTestId("sheet-handle")).toBeVisible();
 		await dragComposerToDismiss(page);
 		await expect(addMoveButton(page)).toBeVisible();
 	});

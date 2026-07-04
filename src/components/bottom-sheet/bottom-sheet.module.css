@@ -1,0 +1,156 @@
+/* Drag offset for the sheet, driven by the handle's pointer gesture. Registered
+   so it interpolates: the snap-back transition and the drag-aware exit keyframe
+   both animate this length. Global (not scoped) by nature, so it carries a
+   component-specific name to avoid collisions. */
+@property --sheet-drag-y {
+	syntax: "<length>";
+	inherits: false;
+	initial-value: 0px;
+}
+
+@layer components {
+	/* Overlay + content are portaled to <body>, so each is its own scope. */
+	@scope (.overlay) {
+		:where(:scope) {
+			position: fixed;
+			inset: 0;
+			background-color: color-mix(in oklch, var(--slate-1) 55%, transparent);
+			backdrop-filter: blur(2px);
+			z-index: 40;
+
+			&[data-state="open"] {
+				animation: overlay-in var(--motion-fast) var(--ease-standard);
+			}
+
+			&[data-state="closed"] {
+				animation: overlay-out var(--motion-fast) var(--ease-standard);
+			}
+		}
+	}
+
+	@scope (.content) {
+		:where(:scope) {
+			position: fixed;
+			inset-inline-start: 50%;
+			inset-block-end: 0;
+			/* Rest position is the live drag offset (0 at rest). The handle's
+			   pointer gesture writes --sheet-drag-y; releasing either springs it
+			   back to 0 (this transition) or dismisses (the exit keyframe below). */
+			translate: -50% var(--sheet-drag-y);
+			transition: --sheet-drag-y var(--motion) var(--ease-emphasized);
+			inline-size: min(100vw, var(--app-max-width));
+			max-block-size: 90dvh;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+			padding: var(--space-3) var(--space-4)
+				max(var(--space-5), env(safe-area-inset-bottom));
+			background-color: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+			z-index: 50;
+
+			/* Slides up on open; slides down on close, continuing from wherever the
+			   drag left it (the exit keyframe reads --sheet-drag-y). */
+			&[data-state="open"] {
+				animation: sheet-in var(--motion) var(--ease-emphasized);
+			}
+
+			&[data-state="closed"] {
+				animation: sheet-out var(--motion-fast) var(--ease-standard);
+			}
+		}
+
+		/* Grab handle + title: the drag region. `touch-action: none` keeps a
+		   vertical drag from scrolling the sheet body instead of moving the sheet.
+		   Children stretch full-width (so the title keeps its leading alignment);
+		   only the handle pill is centered. */
+		.grabber {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-2);
+			padding-block-end: var(--space-1);
+			touch-action: none;
+			user-select: none;
+			cursor: grab;
+
+			&:active {
+				cursor: grabbing;
+			}
+		}
+
+		.handle {
+			align-self: center;
+			inline-size: 2.25rem;
+			block-size: 4px;
+			border-radius: var(--radius-sm);
+			background-color: var(--border);
+		}
+
+		.title {
+			font-size: 1.1rem;
+			font-weight: 700;
+		}
+
+		.hint {
+			color: var(--text-muted);
+			font-size: 0.9rem;
+		}
+	}
+
+	/* Keyframes are scoped to this module by CSS Modules, so the names above
+	   resolve to these definitions. */
+	@keyframes overlay-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes overlay-out {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes sheet-in {
+		from {
+			translate: -50% 100%;
+		}
+		to {
+			translate: -50% 0;
+		}
+	}
+
+	/* Starts from the current drag offset so a drag-to-dismiss continues smoothly
+	   downward instead of snapping back to 0 first. */
+	@keyframes sheet-out {
+		from {
+			translate: -50% var(--sheet-drag-y);
+		}
+		to {
+			translate: -50% 100%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		@scope (.overlay) {
+			:where(:scope) {
+				animation: none;
+			}
+		}
+
+		@scope (.content) {
+			:where(:scope) {
+				animation: none;
+				transition: none;
+			}
+		}
+	}
+}
