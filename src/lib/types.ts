@@ -165,12 +165,37 @@ export interface DetectorMove extends BaseMove {
 }
 
 /**
- * Equipment: actor uses a shared single-use tool.
+ * Equipment: actor uses a shared single-use tool. Most cards are logged as the
+ * card name plus an optional free-text note; the two possession-revealing
+ * cards additionally record structured facts so the status view can count
+ * them:
+ *
+ * - **Post-it** — `targetId` + `value`: the target revealed that they hold a
+ *   copy of the value.
+ * - **General Radar** — `value` + `holderIds`: every listed player declared
+ *   holding the announced value (the list may be empty — nobody had it).
+ *
+ * Both cards deal in numbered wires only, so `value` is blue-only. Moves
+ * logged before these cards became structured carry none of the extra fields.
  */
 export interface EquipmentMove extends BaseMove {
 	type: "equipment";
 	equipment: string;
 	note?: string;
+	/**
+	 * Post-it: the player whose wire was revealed.
+	 */
+	targetId?: string;
+	/**
+	 * The revealed blue value (Post-it) or the announced blue value (General
+	 * Radar).
+	 */
+	value?: BlueWireValue;
+	/**
+	 * General Radar: the players who declared holding {@link value}. An empty
+	 * array is meaningful — the radar found no one.
+	 */
+	holderIds?: string[];
 }
 
 /**
@@ -204,7 +229,15 @@ export type MoveDraft =
 			revealed?: RevealedWire;
 			cutValue?: BlueWireValueOrUnknown;
 	  }
-	| { type: "equipment"; actorId: string; equipment: string; note?: string };
+	| {
+			type: "equipment";
+			actorId: string;
+			equipment: string;
+			note?: string;
+			targetId?: string;
+			value?: BlueWireValue;
+			holderIds?: string[];
+	  };
 
 /**
  * View-only filter for the move log. Each flag hides its matching moves from
@@ -265,6 +298,19 @@ export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 5;
 
 /**
+ * The Post-it card's label: the composer key that switches the Misc panel to
+ * the structured target-plus-wire fields, and the log's display name.
+ */
+export const POST_IT_EQUIPMENT = "Post-it (4)";
+
+/**
+ * The General Radar card's label: the composer key that switches the Misc
+ * panel to the structured value-plus-holders fields, and the log's display
+ * name.
+ */
+export const GENERAL_RADAR_EQUIPMENT = "General Radar (8)";
+
+/**
  * The equipment cards, in unlock-number order. The number in each label is the
  * wire value whose pair unlocks that equipment. The composer also offers a
  * free-text note for anything mission-specific.
@@ -276,10 +322,10 @@ export const MAX_PLAYERS = 5;
 export const EQUIPMENT_OPTIONS = [
 	"Label ≠ (1)",
 	"Walkie-Talkies (2)",
-	"Post-it (4)",
+	POST_IT_EQUIPMENT,
 	"Rewinder (6)",
 	"Emergency Batteries (7)",
-	"General Rader (8)",
+	GENERAL_RADAR_EQUIPMENT,
 	"Stabilizer (9)",
 	"Coffee Mag (11)",
 	"Label ＝ (12)",

@@ -339,7 +339,7 @@ test.describe("session flow", () => {
 		);
 
 		// Player 2 uses equipment: it doesn't end the turn, so it stays on Player 2.
-		await logEquipment(page, { equipment: "Post-it (4)" });
+		await logEquipment(page, { equipment: "Stabilizer (9)" });
 		await expect(composer(page).getByTestId("acting")).toContainText(
 			"Player 2",
 		);
@@ -368,7 +368,10 @@ test.describe("session flow", () => {
 		// Player 4 fires equipment off-turn (overriding the Acting dropdown). it
 		// doesn't take the turn, so the suggestion snaps back to Player 2 — not to
 		// Player 4 and not clockwise from it.
-		await logEquipment(page, { actor: "Player 4", equipment: "Post-it (4)" });
+		await logEquipment(page, {
+			actor: "Player 4",
+			equipment: "Stabilizer (9)",
+		});
 		await expect(composer(page).getByTestId("acting")).toContainText(
 			"Player 2",
 		);

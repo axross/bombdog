@@ -2,7 +2,12 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type JSX, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { MoveType, Player } from "@/lib/types";
+import {
+	GENERAL_RADAR_EQUIPMENT,
+	type MoveType,
+	type Player,
+	POST_IT_EQUIPMENT,
+} from "@/lib/types";
 import { type DraftFields, emptyDraftFields, type MoveFieldKey } from "./draft";
 import { MoveForm } from "./move-form";
 
@@ -300,6 +305,161 @@ describe("<MoveForm>", () => {
 		expect(onFieldsChange).toHaveBeenCalledWith(
 			expect.objectContaining({ outcome: "success", revealed: null }),
 		);
+	});
+
+	it("shows the Post-it's target picker and blue-only wire pad", () => {
+		render(
+			<Harness
+				initialType="equipment"
+				initialFields={{
+					...emptyDraftFields("a"),
+					equipment: POST_IT_EQUIPMENT,
+				}}
+			/>,
+		);
+
+		// every seat is a one-tap radio — self included, no overflow menu.
+		const target = screen.getByRole("radiogroup", { name: "Target" });
+		for (const name of ["Alice", "Bob", "Carol"]) {
+			expect(within(target).getByRole("radio", { name })).toBeInTheDocument();
+		}
+		// the pad is blue-only: no yellow and no "?" option.
+		const pad = screen.getByRole("radiogroup", { name: "Wire" });
+		expect(
+			within(pad).getByRole("radio", { name: "Wire 7" }),
+		).toBeInTheDocument();
+		expect(
+			within(pad).queryByRole("radio", { name: "Yellow wire" }),
+		).not.toBeInTheDocument();
+		expect(
+			within(pad).queryByRole("radio", { name: "Unknown wire" }),
+		).not.toBeInTheDocument();
+	});
+
+	it("picking the Post-it's target and wire reports them via onFieldsChange", async () => {
+		const user = userEvent.setup();
+		const onFieldsChange = vi.fn();
+		render(
+			<Harness
+				initialType="equipment"
+				initialFields={{
+					...emptyDraftFields("a"),
+					equipment: POST_IT_EQUIPMENT,
+				}}
+				onFieldsChangeSpy={onFieldsChange}
+			/>,
+		);
+
+		await user.click(
+			within(screen.getByRole("radiogroup", { name: "Target" })).getByRole(
+				"radio",
+				{ name: "Bob" },
+			),
+		);
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ targetId: "b" }),
+		);
+
+		await user.click(
+			within(screen.getByRole("radiogroup", { name: "Wire" })).getByRole(
+				"radio",
+				{ name: "Wire 7" },
+			),
+		);
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ value: 7 }),
+		);
+	});
+
+	it("picking the General Radar's value reports it via onFieldsChange", async () => {
+		const user = userEvent.setup();
+		const onFieldsChange = vi.fn();
+		render(
+			<Harness
+				initialType="equipment"
+				initialFields={{
+					...emptyDraftFields("a"),
+					equipment: GENERAL_RADAR_EQUIPMENT,
+				}}
+				onFieldsChangeSpy={onFieldsChange}
+			/>,
+		);
+
+		await user.click(
+			within(screen.getByRole("radiogroup", { name: "Value" })).getByRole(
+				"radio",
+				{ name: "Wire 4" },
+			),
+		);
+
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ value: 4 }),
+		);
+	});
+
+	it("shows the General Radar's value pad and holders multi-select", () => {
+		render(
+			<Harness
+				initialType="equipment"
+				initialFields={{
+					...emptyDraftFields("a"),
+					equipment: GENERAL_RADAR_EQUIPMENT,
+				}}
+			/>,
+		);
+
+		expect(
+			screen.getByRole("radiogroup", { name: "Value" }),
+		).toBeInTheDocument();
+		const holders = screen.getByRole("toolbar", { name: "Holders" });
+		for (const name of ["Alice", "Bob", "Carol"]) {
+			expect(within(holders).getByRole("button", { name })).toBeInTheDocument();
+		}
+	});
+
+	it("toggling a radar holder reports the subset via onFieldsChange", async () => {
+		const user = userEvent.setup();
+		const onFieldsChange = vi.fn();
+		render(
+			<Harness
+				initialType="equipment"
+				initialFields={{
+					...emptyDraftFields("a"),
+					equipment: GENERAL_RADAR_EQUIPMENT,
+				}}
+				onFieldsChangeSpy={onFieldsChange}
+			/>,
+		);
+
+		await user.click(
+			within(screen.getByRole("toolbar", { name: "Holders" })).getByRole(
+				"button",
+				{ name: "Bob" },
+			),
+		);
+
+		expect(onFieldsChange).toHaveBeenCalledWith(
+			expect.objectContaining({ holderIds: ["b"] }),
+		);
+	});
+
+	it("hides the structured controls for a free-text equipment card", () => {
+		render(
+			<Harness
+				initialType="equipment"
+				initialFields={{ ...emptyDraftFields("a"), equipment: "Rewinder (6)" }}
+			/>,
+		);
+
+		expect(
+			screen.queryByRole("radiogroup", { name: "Target" }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("radiogroup", { name: "Wire" }),
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole("toolbar", { name: "Holders" }),
+		).not.toBeInTheDocument();
 	});
 
 	it("typing a note reports it via onFieldsChange in Misc mode", async () => {

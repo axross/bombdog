@@ -9,12 +9,13 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { idbStorage, STORAGE_KEY } from "./idb-storage";
-import type {
-	BlueWireValue,
-	Move,
-	MoveDraft,
-	Player,
-	TrackerState,
+import {
+	type BlueWireValue,
+	GENERAL_RADAR_EQUIPMENT,
+	type Move,
+	type MoveDraft,
+	type Player,
+	type TrackerState,
 } from "./types";
 
 /**
@@ -181,6 +182,29 @@ function rewriteLegacyDoubleDetector(move: unknown): unknown {
 	};
 }
 
+/**
+ * The General Radar's label as it was misspelled before v4 ("Rader"). Kept
+ * only so the migration can recognise and rewrite old logs.
+ */
+const LEGACY_RADAR_EQUIPMENT = "General Rader (8)";
+
+/**
+ * Rewrite a pre-v4 equipment move carrying the misspelled General Radar label
+ * to the corrected one, so old logs keep matching the renamed option (the
+ * label drives the editor's structured fields). Any other move passes through.
+ */
+function renameLegacyRadarEquipment(move: unknown): unknown {
+	if (
+		!move ||
+		typeof move !== "object" ||
+		(move as { type?: unknown }).type !== "equipment" ||
+		(move as { equipment?: unknown }).equipment !== LEGACY_RADAR_EQUIPMENT
+	) {
+		return move;
+	}
+	return { ...move, equipment: GENERAL_RADAR_EQUIPMENT };
+}
+
 export const useTrackerStore = create<TrackerStore>()(
 	persist(
 		(set, get) => ({
@@ -267,7 +291,7 @@ export const useTrackerStore = create<TrackerStore>()(
 		{
 			name: STORAGE_KEY,
 			storage: createJSONStorage(() => idbStorage),
-			version: 3,
+			version: 4,
 			// v1 → v2, detectors became first-class. two fixups on persisted moves:
 			//   1. rewrite the standalone "double-detector" move into the unified
 			//      "detector" shape (a `detector` kind plus a `values` array).
@@ -292,6 +316,15 @@ export const useTrackerStore = create<TrackerStore>()(
 						state.infoTokens === null
 					) {
 						state.infoTokens = {};
+					}
+				}
+				// v3 -> v4: the misspelled "General Rader (8)" equipment label was
+				// corrected to "General Radar (8)"; rewrite persisted moves so old
+				// logs keep matching the renamed option.
+				if (version < 4 && persisted && typeof persisted === "object") {
+					const state = persisted as { moves?: unknown };
+					if (Array.isArray(state.moves)) {
+						state.moves = state.moves.map(renameLegacyRadarEquipment);
 					}
 				}
 				return persisted as TrackerStore;

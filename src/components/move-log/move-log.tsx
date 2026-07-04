@@ -102,9 +102,17 @@ function OutcomeBadge({
 
 /**
  * The move-type-specific detail: wire chip(s) plus, for guess-based moves, an
- * outcome badge; equipment shows its name and optional note instead.
+ * outcome badge; equipment shows its name and optional note, and the
+ * structured cards add their facts — the Post-it's revealed wire chip, the
+ * General Radar's announced chip plus holder names (or "no one").
  */
-function MoveDetail({ move }: { move: Move }): JSX.Element {
+function MoveDetail({
+	move,
+	players,
+}: {
+	move: Move;
+	players: Player[];
+}): JSX.Element {
 	switch (move.type) {
 		case "dual-cut":
 			return (
@@ -130,10 +138,20 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 			return <WireChip value={move.value} />;
 		case "equipment":
 			return (
-				<span className={css.equipment}>
-					{move.equipment}
-					{move.note ? ` — ${move.note}` : ""}
-				</span>
+				<>
+					<span className={css.equipment}>{move.equipment}</span>
+					{move.value !== undefined && <WireChip value={move.value} />}
+					{move.holderIds !== undefined && (
+						<span className={css.equipment} data-testid="equipment-holders">
+							{move.holderIds.length > 0
+								? move.holderIds
+										.map((id) => getPlayerName(players, id))
+										.join(", ")
+								: "no one"}
+						</span>
+					)}
+					{move.note && <span className={css.equipment}>— {move.note}</span>}
+				</>
 			);
 	}
 }
@@ -170,7 +188,9 @@ function MoveRow({
 	players: Player[];
 	onEdit: () => void;
 }): JSX.Element {
-	const hasTarget = move.type === "dual-cut" || move.type === "detector";
+	// the row shows a target for moves that record one: cuts and detectors
+	// always do; equipment does only for the structured Post-it.
+	const targetId = move.type === "solo-cut" ? undefined : move.targetId;
 	return (
 		<div
 			className={css.row}
@@ -184,18 +204,18 @@ function MoveRow({
 					<span className={css.actor}>
 						{getPlayerName(players, move.actorId)}
 					</span>
-					{hasTarget && (
+					{targetId !== undefined && (
 						<>
 							<ArrowRight className={css.arrow} size={16} aria-hidden />
 							<span className={css.actor}>
-								{getPlayerName(players, move.targetId)}
+								{getPlayerName(players, targetId)}
 							</span>
 						</>
 					)}
 					<span className={css.kind}>{kindLabel(move)}</span>
 				</div>
 				<div className={css.detail}>
-					<MoveDetail move={move} />
+					<MoveDetail move={move} players={players} />
 				</div>
 			</div>
 			<button

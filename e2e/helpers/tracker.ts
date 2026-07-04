@@ -460,7 +460,10 @@ export async function logSoloCut(
 }
 
 /**
- * Compose and log an equipment action, optionally with a note.
+ * Compose and log an equipment action, optionally with a note. The structured
+ * cards take their extra facts here too: the Post-it's `target` + `wire`, and
+ * the General Radar's `wire` (the announced value) + `holders` (pass an empty
+ * array explicitly for a no-one-has-it radar; the toggles default untouched).
  */
 export async function logEquipment(
 	page: Page,
@@ -468,12 +471,31 @@ export async function logEquipment(
 		actor,
 		equipment,
 		note,
-	}: { actor?: string; equipment: string; note?: string },
+		target,
+		wire,
+		holders,
+	}: {
+		actor?: string;
+		equipment: string;
+		note?: string;
+		target?: string;
+		wire?: number;
+		holders?: string[];
+	},
 ): Promise<void> {
 	await openComposer(page);
 	await composer(page).getByTestId("tab-equipment").click();
 	if (actor) await setActor(page, actor);
 	await chooseInComposer(page, "equipment", equipment);
+	if (target) await pickTarget(page, target);
+	if (wire !== undefined) await selectWire(page, wire);
+	for (const holder of holders ?? []) {
+		// the holders row is a multi-select of toggle buttons, one per player.
+		await composer(page)
+			.getByTestId("holders")
+			.getByRole("button", { name: holder, exact: true })
+			.click();
+	}
 	if (note) {
 		await composer(page)
 			.getByRole("textbox", { name: "Note (optional)" })

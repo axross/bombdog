@@ -17,8 +17,10 @@ import {
 	type DetectorKind,
 	detectorOption,
 	EQUIPMENT_OPTIONS,
+	GENERAL_RADAR_EQUIPMENT,
 	type MoveType,
 	type Player,
+	POST_IT_EQUIPMENT,
 } from "@/lib/types";
 import { type DraftFields, detectorValues, type MoveFieldKey } from "./draft";
 import css from "./move-form.module.css";
@@ -118,6 +120,14 @@ function MoveFields({
 		.map((p) => ({ value: p.id, label: `${p.name} (self)` }));
 	const update = (patch: Partial<DraftFields>) =>
 		onFieldsChange({ ...fields, ...patch });
+
+	// the structured equipment cards pick from every seat inline (no overflow
+	// menu): a Post-it usually reveals the actor's own wire, and the radar's
+	// holder subset can include anyone, so no choice is rare enough to fold.
+	const seatOptions: SelectOption[] = players.map((p) => ({
+		value: p.id,
+		label: p.name,
+	}));
 
 	const isDetector = type === "detector";
 	const detector = detectorOption(fields.detector);
@@ -268,6 +278,54 @@ function MoveFields({
 							data-testid="equipment"
 						/>
 					</FieldHighlight>
+					{fields.equipment === POST_IT_EQUIPMENT && (
+						<>
+							{/* the target revealed one of their wires; blue-only pad, since
+							    the card deals in numbered wires. */}
+							<FieldHighlight {...flag("target")}>
+								<PlayerPicker
+									label="Target"
+									value={fields.targetId}
+									onValueChange={(targetId) => update({ targetId })}
+									options={seatOptions}
+									data-testid="target"
+								/>
+							</FieldHighlight>
+							<FieldHighlight {...flag("wire")}>
+								<WirePad
+									label="Wire"
+									value={fields.value}
+									onValueChange={(value) => update({ value })}
+									blueOnly
+									data-testid="wire-pad"
+								/>
+							</FieldHighlight>
+						</>
+					)}
+					{fields.equipment === GENERAL_RADAR_EQUIPMENT && (
+						<>
+							{/* the announced value plus everyone who declared holding it —
+							    any subset of seats, including none (the radar found no one),
+							    so the holders row itself is never flagged invalid. */}
+							<FieldHighlight {...flag("wire")}>
+								<WirePad
+									label="Value"
+									value={fields.value}
+									onValueChange={(value) => update({ value })}
+									blueOnly
+									data-testid="wire-pad"
+								/>
+							</FieldHighlight>
+							<PlayerPicker
+								label="Holders"
+								multiple
+								values={fields.holderIds}
+								onValuesChange={(holderIds) => update({ holderIds })}
+								options={seatOptions}
+								data-testid="holders"
+							/>
+						</>
+					)}
 					<label className={css.noteField}>
 						<span className={css.noteLabel}>Note (optional)</span>
 						<input

@@ -268,7 +268,7 @@ describe("reset()", () => {
 	});
 });
 
-describe("persist migration (v1 → v3)", () => {
+describe("persist migration (v1 → v4)", () => {
 	const { migrate } = useTrackerStore.persist.getOptions();
 
 	it("rewrites legacy double-detector moves into the unified detector shape", () => {
@@ -390,7 +390,7 @@ describe("persist migration (v1 → v3)", () => {
 			infoTokens: { a: 7 },
 		};
 
-		const result = migrate?.(persisted, 3) as {
+		const result = migrate?.(persisted, 4) as {
 			moves: Record<string, unknown>[];
 			infoTokens: Record<string, unknown>;
 		};
@@ -400,6 +400,44 @@ describe("persist migration (v1 → v3)", () => {
 			detector: "triple",
 		});
 		expect(result.infoTokens).toEqual({ a: 7 });
+	});
+
+	it("renames the misspelled General Radar label on pre-v4 equipment moves", () => {
+		const persisted = {
+			moves: [
+				{
+					id: "1",
+					seq: 1,
+					at: 0,
+					type: "equipment",
+					actorId: "a",
+					equipment: "General Rader (8)",
+					note: "swept for 4s",
+				},
+				{
+					id: "2",
+					seq: 2,
+					at: 0,
+					type: "equipment",
+					actorId: "b",
+					equipment: "Rewinder (6)",
+				},
+				{ id: "3", seq: 3, at: 0, type: "solo-cut", actorId: "a", value: 5 },
+			],
+		};
+
+		const result = migrate?.(persisted, 3) as {
+			moves: Record<string, unknown>[];
+		};
+
+		// the misspelled label is corrected, keeping the move's other fields.
+		expect(result.moves[0]).toMatchObject({
+			equipment: "General Radar (8)",
+			note: "swept for 4s",
+		});
+		// other equipment and non-equipment moves pass through untouched.
+		expect(result.moves[1]).toMatchObject({ equipment: "Rewinder (6)" });
+		expect(result.moves[2]).toMatchObject({ type: "solo-cut", value: 5 });
 	});
 
 	it("defaults info tokens to an empty record for pre-v3 state", () => {

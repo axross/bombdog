@@ -2,7 +2,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTrackerStore } from "@/lib/tracker-store";
-import { EMPTY_MOVE_FILTER, type Move, type Player } from "@/lib/types";
+import {
+	EMPTY_MOVE_FILTER,
+	GENERAL_RADAR_EQUIPMENT,
+	type Move,
+	type Player,
+	POST_IT_EQUIPMENT,
+} from "@/lib/types";
 import { MoveLog } from "./move-log";
 
 const players: Player[] = [
@@ -203,6 +209,70 @@ describe("<MoveLog>", () => {
 		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
 
 		expect(screen.getByLabelText("Unknown wire")).toHaveTextContent("?");
+	});
+
+	it("renders a Post-it row with its target and revealed wire", () => {
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "equipment",
+				actorId: "a",
+				equipment: POST_IT_EQUIPMENT,
+				targetId: "b",
+				value: 7,
+			},
+		]);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
+
+		// the headline shows actor → target, like a dual cut.
+		expect(screen.getByText("Alice")).toBeInTheDocument();
+		expect(screen.getByText("Bob")).toBeInTheDocument();
+		expect(screen.getByText(POST_IT_EQUIPMENT)).toBeInTheDocument();
+		expect(screen.getByLabelText("Wire 7")).toBeInTheDocument();
+		// no radar holders on a Post-it row.
+		expect(screen.queryByTestId("equipment-holders")).not.toBeInTheDocument();
+	});
+
+	it("renders a General Radar row with its value and holder names", () => {
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "equipment",
+				actorId: "a",
+				equipment: GENERAL_RADAR_EQUIPMENT,
+				value: 4,
+				holderIds: ["a", "b"],
+			},
+		]);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
+
+		expect(screen.getByText(GENERAL_RADAR_EQUIPMENT)).toBeInTheDocument();
+		expect(screen.getByLabelText("Wire 4")).toBeInTheDocument();
+		expect(screen.getByTestId("equipment-holders")).toHaveTextContent(
+			"Alice, Bob",
+		);
+	});
+
+	it('renders "no one" when a General Radar found no holders', () => {
+		seed([
+			{
+				id: "1",
+				seq: 1,
+				at: 1,
+				type: "equipment",
+				actorId: "a",
+				equipment: GENERAL_RADAR_EQUIPMENT,
+				value: 4,
+				holderIds: [],
+			},
+		]);
+		render(<MoveLog filter={EMPTY_MOVE_FILTER} />);
+
+		expect(screen.getByTestId("equipment-holders")).toHaveTextContent("no one");
 	});
 
 	it("opens the move editor when an edit control is used", async () => {
