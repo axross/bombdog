@@ -18,6 +18,7 @@ You are the only long-lived actor. Advance the work as far as you can autonomous
 
 - MUST poll autonomously ONLY for machine events (CI, the review workflow); never keep a session alive polling for a human.
 - MUST end the turn at every human-gated stop and rely on `/address continue`, rather than scheduling a wake-up to re-check for human input.
+- MUST clear the [Phase 1](#phase-1--plan) clarify-before-building gate before implementing: surface every spec ambiguity that needs a human decision and get it answered, rather than coding against an unstated assumption.
 - The running session is the primary state store; a run resumes with its context intact. Write durable status to GitHub as a safety net (see [GitHub as Lightweight State](#github-as-lightweight-state)), not as the mechanism of record.
 - Keep each externally observable step idempotent, so a re-run of `/address continue` re-reads state and continues rather than duplicating work.
 
@@ -35,17 +36,21 @@ Resolve `$ARGUMENTS` first, then enter the matching phase.
 
 - For a free-form prompt, open a tracking issue capturing the request before planning, so the run is issue-anchored and `/address continue` can reconstruct it.
 - For `continue`, re-read the target's current state — the open pull request, its CI status, the independent review's comments, unresolved threads, and your pinned status comment — before acting, and resume the single pending step rather than restarting.
-- Run full-auto by default and yield only on genuinely blocking questions; add a human approval gate after the plan only when invoked with `--review-plan`.
+- Run full-auto by default, but treat any unresolved product, UX, scope, or edge-case decision as blocking — clarify it before Code (see the required gate in [Phase 1](#phase-1--plan)) rather than proceeding on an unstated assumption. Add a further plan-approval gate only when invoked with `--review-plan`.
 
 ## Phase 1 — Plan
 
 Turn the target into a buildable specification recorded in the issue.
 
 - Read the issue (or the tracking issue opened for a prompt) and its full thread, classify the work — UI-bearing, implementation-only, exploratory, or mixed — per the [Response Approach](../../AGENTS.md), and investigate the smallest useful code and documentation context before proposing a plan. Consult every project skill whose routing condition matches the surface, and research current external docs per [current-docs.md](../skills/development-guidelines/references/current-docs.md) when behavior depends on Next.js, React, Vercel, Playwright, Vitest, or Biome.
-- Post blocking questions as one marked comment that @mentions `@axross`, stating the assumption you would otherwise make, then end the turn — reserved for product, scope, privacy, platform, or design decisions the thread cannot resolve. Do NOT ask what local investigation can answer.
+- **Clarify before building — required gate.** Investigation resolves *how* to build; it does not resolve *what the product should do*. Before finalizing the plan and entering Code, list every open question the spec leaves and sort each one:
+  - **Settle-and-note** — anything code, project conventions, or docs can answer: decide it and record the choice as a stated assumption in the plan.
+  - **Must-ask** — anything needing human judgment: a product outcome, a UX or interaction choice, a scope boundary or non-goal, empty/error/edge-case behavior, a data-model or persistence/migration decision, or anything privacy-, platform-, or compatibility-sensitive that the issue and its thread do not pin down.
+
+  If any must-ask question remains, you **MUST NOT** start implementing. Post them as one marked comment that @mentions `@axross` — each question with the **default you would otherwise assume** and a one-line recommendation — then **end the turn** and resume from the answers on `/address continue`. Ask only genuine spec gaps, never what local investigation already answers; but when a detail is genuinely ambiguous, asking is required, not optional. Prefer asking several related questions in the single comment over dribbling them out across rounds.
 - Rewrite the issue body into a comprehensive plan with these sections, omitting any that genuinely do not apply and saying why, per [Product Requirement Guidelines](../skills/product-requirement-guidelines/SKILL.md): (1) **Product requirement** — the user-facing outcome and constraints; (2) **UI design** — hierarchy, states, responsive and accessibility intent, and copy constraints, when UI-bearing (per [UI and Components](../skills/ui-and-components/SKILL.md)); (3) **System design / architecture** — data flow, state, routes, module placement, when applicable (per [Project Structure](../skills/project-structure/SKILL.md)); (4) **Testing strategy** — the E2E and unit coverage to add or update (per [E2E Testing Guidelines](../skills/e2e-testing-guidelines/SKILL.md) and [Unit Test Guidelines](../skills/unit-test-guidelines/SKILL.md)); (5) **Acceptance criteria** — a plain bullet list (not GitHub `- [ ]` checkboxes, which nothing checks and so read as perpetually incomplete) the reviewer can verify against the finished pull request.
 - Refine the issue title to the concrete deliverable and move the original description into a collapsed `<details>` section, in a single `issue_write`.
-- With `--review-plan`, stop after writing the plan, @mention `@axross` for approval, and end the turn; without the flag, proceed directly to Code.
+- The clarify-before-building gate above always applies. `--review-plan` adds a *further* gate: stop after writing the plan, @mention `@axross` for approval, and end the turn. Without the flag, proceed to Code once no must-ask question remains.
 
 ## Phase 2 — Code + Verify
 
@@ -59,7 +64,7 @@ Turn the target into a buildable specification recorded in the issue.
 Review is **not** done by you. It runs as a separate Claude Code session on a GitHub-hosted runner — different session, different infrastructure, a bot identity distinct from the operator — via the [`claude-review.yaml`](../../.github/workflows/claude-review.yaml) workflow, which runs the repo's [`/review`](review.md) command. That separation is the whole point: the code's author never certifies its own work.
 
 - Open the pull request in **draft** with `Closes #<n>`, structured from any repository PR template, summarizing the change, the verification evidence, and the acceptance criteria with their status.
-- Request the review by posting a top-level `@claude review` comment on the pull request (a marked comment). This fires the review workflow, which submits its findings as a **GitHub pull-request review** — inline comments anchored to the diff, tagged by severity, with a summary in the review body — not as loose conversation comments.
+- Request the review by posting a top-level comment whose body is exactly `@claude review` (plus the `<!-- address-agent -->` marker line) — nothing else. This fires the review workflow, which submits its findings as a **GitHub pull-request review** — inline comments anchored to the diff, tagged by severity, with a summary — not as loose conversation comments. Do not repeat the phrase in status or summary comments (see [GitHub as Lightweight State](#github-as-lightweight-state)), or you will fire duplicate reviews.
 - The review is a machine event that completes on its own in minutes — poll for it in the tail alongside CI. Do NOT review the diff yourself in place of it.
 
 ## Phase 4 — Address
@@ -68,6 +73,7 @@ Review is **not** done by you. It runs as a separate Claude Code session on a Gi
 - Address and resolve each blocking finding (Important / Critical / Major) and every unmet acceptance criterion, pushing fixes to the same branch and re-running the relevant verification after each batch.
 - For every review comment a commit resolves, reply on that comment's thread with a marked comment (the `<!-- address-agent -->` marker line, then a line beginning **`Resolved in <short-hash>`** — the 7-character hash of the commit that fixed it — followed by a one-sentence summary of what changed), then resolve the thread. When one commit resolves several comments, reference that same hash on each. This ties each resolution to the exact commit for the reviewer and for `/address continue`.
 - Re-request review by posting `@claude review` again after a batch of fixes, and repeat up to the 4-round cap (see [Termination Guard](#termination-guard)).
+- Keep the branch mergeable into its base. When the base branch has moved and the pull request conflicts (GitHub marks it not mergeable, or an update/rebase fails), bring `main` into the branch and resolve the conflicts, then re-run the verification the touched surface requires and note it in the pull request. Resolve mechanical conflicts yourself — imports, independent or adjacent edits, regenerated lockfiles — but when the correct resolution is genuinely unclear (both sides changed the same logic on purpose, or keeping both sides matters and how to reconcile them is a judgment call), post the specific conflict as a marked comment @mentioning `@axross` and end the turn rather than guessing.
 - Escalate — a marked comment mentioning `@axross`, then end the turn — when a finding or human comment is ambiguous or needs a product or architecture decision, rather than guessing.
 - Gate the draft→ready flip on a **clean independent review** (no blocking findings) plus green CI — never on your own assessment of your code. On convergence, flip the pull request to ready for review and @mention `@axross`. Merging remains the human's decision.
 - When a human leaves comments on a ready pull request, treat `/address continue` as the resume: re-read the new threads, address or escalate each, convert back to draft if needed, request a fresh `@claude review`, and re-enter this loop as a new round.
@@ -88,6 +94,7 @@ After you push and request review, two machine events run on their own: `merge-c
 State lives in this running session; GitHub carries a thin, human-visible breadcrumb so a resumed or reclaimed session can recover.
 
 - Maintain a single pinned status comment on the issue (and, once open, the pull request) recording the current phase, the review-round count, and what the run is waiting on. Update it in place; do not post a new comment per step.
+- Never write the literal `@claude review` phrase in a status, breadcrumb, or any comment other than the dedicated review request — the review workflow fires on that phrase appearing **anywhere** in a comment body, so embedding it even in prose spuriously starts a review (and muddies the run). Refer to it as "the independent review" everywhere except the request itself, per [GitHub Operations](../skills/github-operations/SKILL.md).
 - On `/address continue`, reconstruct state from GitHub before acting — the open pull request, its CI status, the independent review's comments, unresolved threads, and the pinned status comment — and resume the one pending step the comment names, not restart from Plan.
 - Labels are optional and purely informational; the run does not depend on a label state machine.
 
