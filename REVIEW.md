@@ -55,12 +55,16 @@ a miss that breaks the requirement is **Important**, a gap that does not is a
   keyboard support, per
   [`ui-and-components`](.claude/skills/ui-and-components/SKILL.md). A regression
   or a missing affordance on an interactive element is Important.
-- **Type safety** — no `any`, unchecked cast, or unjustified non-null assertion
-  (`!`) introduced, per
+- **Type safety** — no unchecked cast or unjustified non-null assertion (`!`)
+  introduced, per
   [`development-guidelines`](.claude/skills/development-guidelines/SKILL.md).
-  Unjustified type-unsafety is Important.
+  Unjustified type-unsafety is Important. (An introduced `any` is CI-enforced
+  Biome lint — `noExplicitAny` — so it is out of scope here per **Do not report**
+  below.)
 - **Dead code** — no unused export, unreachable branch, or commented-out code
-  left in the diff (Important only if it hides a bug).
+  left in the diff, per
+  [`maintainable-code-guidelines`](.claude/skills/maintainable-code-guidelines/SKILL.md)
+  (Important only if it hides a bug).
 - **Boundaries & styling** — correct Server/Client component boundaries (an
   unsafe cross is Important) and CSS Modules for styling, no Tailwind, per
   [`ui-and-components`](.claude/skills/ui-and-components/SKILL.md).

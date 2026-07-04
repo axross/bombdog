@@ -41,6 +41,15 @@ The linter catches correctness and quality problems the formatter cannot see, an
 - MUST NOT suppress lint rules with Biome's inline suppression directive unless there is a clear, documented reason why the rule cannot be satisfied.
   - When suppression is genuinely necessary, add an inline comment on the same line explaining the reason.
 
+## Type Safety
+
+TypeScript's guarantees only hold when the code does not quietly opt out of them. An unchecked cast or a non-null assertion silences the compiler at the exact spot a bug would surface, trading a compile-time check for a runtime risk. The linter already forbids the `any` type; casts and `!` are not lint-caught, so they are a discipline the author owns.
+
+**Guidelines:**
+
+- MUST NOT introduce an unchecked type cast (`as SomeType`) or a non-null assertion (`!`) without a justification the surrounding code makes obvious or a line comment states. Prefer narrowing that proves the type to the compiler — a type guard, an early return, or a `typeof`/`in` check — over asserting it.
+- SHOULD keep any unavoidable unsafe assertion as small and local as possible, and never use one to paper over a type error that a correct type or narrowing would resolve.
+
 ## Comments
 
 This project distinguishes two kinds of comment, each with its own required style: **doc-comments** (`/** … */`, TSDoc) that describe an API, and **line comments** (`// …`) that explain a specific spot in the code. `src/lib/types.ts` and `src/lib/game.ts` are the reference for both — read them before writing comments and match their voice.
