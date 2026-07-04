@@ -109,7 +109,7 @@ export function MoveComposer(): JSX.Element {
 			<BottomSheet
 				open={open}
 				onOpenChange={setOpen}
-				title="Log a move"
+				title="New move"
 				data-testid="composer"
 			>
 				<form className={css.form} onSubmit={handleSubmit}>
