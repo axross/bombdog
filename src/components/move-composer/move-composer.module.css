@@ -1,3 +1,13 @@
+/* Drag offset for the bottom sheet, driven by the handle's pointer gesture.
+   Registered so it interpolates: the snap-back transition and the drag-aware
+   exit keyframe both animate this length. Global (not scoped) by nature, so it
+   carries a component-specific name to avoid collisions. */
+@property --composer-drag-y {
+	syntax: "<length>";
+	inherits: false;
+	initial-value: 0px;
+}
+
 @layer components {
 	/* Persistent bottom bar: undo/redo on the leading edge, Add move on the
 	   trailing edge. A normal in-flow element with no stacking context, so any
@@ -58,9 +68,9 @@
 		}
 	}
 
-	/* Composer sheet, mirroring the reveal/editor sheets: a bottom sheet on
-	   mobile and a centered dialog on wide viewports. Overlay and content are
-	   portaled to <body>, so each is its own scope. */
+	/* Composer bottom sheet: anchored to the bottom edge at every width (a
+	   draggable sheet, not a centered dialog). Overlay + content are portaled to
+	   <body>, so each is its own scope. */
 	@scope (.overlay) {
 		:where(:scope) {
 			position: fixed;
@@ -84,21 +94,26 @@
 			position: fixed;
 			inset-inline-start: 50%;
 			inset-block-end: 0;
-			translate: -50% 0;
+			/* Rest position is the live drag offset (0 at rest). The handle's
+			   pointer gesture writes --composer-drag-y; releasing either springs it
+			   back to 0 (this transition) or dismisses (the exit keyframe below). */
+			translate: -50% var(--composer-drag-y);
+			transition: --composer-drag-y var(--motion) var(--ease-emphasized);
 			inline-size: min(100vw, var(--app-max-width));
 			max-block-size: 90dvh;
 			overflow-y: auto;
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-4);
-			padding: var(--space-5) var(--space-4)
+			padding: var(--space-3) var(--space-4)
 				max(var(--space-5), env(safe-area-inset-bottom));
 			background-color: var(--surface);
 			border: 1px solid var(--border);
 			border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 			z-index: 50;
 
-			/* Mobile: bottom sheet slides up from the bottom edge. */
+			/* Slides up on open; slides down on close, continuing from wherever the
+			   drag left it (the exit keyframe reads --composer-drag-y). */
 			&[data-state="open"] {
 				animation: sheet-in var(--motion) var(--ease-emphasized);
 			}
@@ -106,22 +121,30 @@
 			&[data-state="closed"] {
 				animation: sheet-out var(--motion-fast) var(--ease-standard);
 			}
+		}
 
-			@container (width >= 30rem) {
-				inset-block-start: 50%;
-				inset-block-end: auto;
-				translate: -50% -50%;
-				border-radius: var(--radius-lg);
+		/* Grab handle + title: the drag region. `touch-action: none` keeps a
+		   vertical drag from scrolling the sheet body instead of moving the sheet. */
+		.grabber {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: var(--space-2);
+			padding-block-end: var(--space-1);
+			touch-action: none;
+			user-select: none;
+			cursor: grab;
 
-				/* Wide: centered dialog fades and zooms in. */
-				&[data-state="open"] {
-					animation: dialog-in var(--motion-fast) var(--ease-standard);
-				}
-
-				&[data-state="closed"] {
-					animation: dialog-out var(--motion-fast) var(--ease-standard);
-				}
+			&:active {
+				cursor: grabbing;
 			}
+		}
+
+		.handle {
+			inline-size: 2.25rem;
+			block-size: 4px;
+			border-radius: var(--radius-sm);
+			background-color: var(--border);
 		}
 
 		.title {
@@ -190,38 +213,14 @@
 		}
 	}
 
+	/* Starts from the current drag offset so a drag-to-dismiss continues smoothly
+	   downward instead of snapping back to 0 first. */
 	@keyframes sheet-out {
 		from {
-			translate: -50% 0;
+			translate: -50% var(--composer-drag-y);
 		}
 		to {
 			translate: -50% 100%;
-		}
-	}
-
-	@keyframes dialog-in {
-		from {
-			opacity: 0;
-			translate: -50% -48%;
-			scale: 0.96;
-		}
-		to {
-			opacity: 1;
-			translate: -50% -50%;
-			scale: 1;
-		}
-	}
-
-	@keyframes dialog-out {
-		from {
-			opacity: 1;
-			translate: -50% -50%;
-			scale: 1;
-		}
-		to {
-			opacity: 0;
-			translate: -50% -48%;
-			scale: 0.96;
 		}
 	}
 
@@ -235,6 +234,7 @@
 		@scope (.content) {
 			:where(:scope) {
 				animation: none;
+				transition: none;
 			}
 		}
 	}

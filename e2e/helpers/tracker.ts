@@ -153,6 +153,28 @@ export async function closeComposer(page: Page): Promise<void> {
 }
 
 /**
+ * Dismiss the composer sheet by dragging its handle down past the threshold —
+ * the bottom-sheet drag gesture, as opposed to Escape/backdrop. Drags in steps
+ * so `pointermove` fires along the way.
+ */
+export async function dragComposerToDismiss(page: Page): Promise<void> {
+	const handle = composer(page).getByTestId("composer-handle");
+	// hover() waits for the open animation to settle (Playwright's stability
+	// check) before we read coordinates, so the press lands on the handle rather
+	// than on whatever sits under its mid-animation position.
+	await handle.hover();
+	const box = await handle.boundingBox();
+	if (!box) throw new Error("composer handle is not visible");
+	const startX = box.x + box.width / 2;
+	const startY = box.y + box.height / 2;
+	await page.mouse.down();
+	// well past the dismissal threshold (~a third of the sheet, capped at 200px).
+	await page.mouse.move(startX, startY + 400, { steps: 12 });
+	await page.mouse.up();
+	await expect(composer(page)).toBeHidden();
+}
+
+/**
  * The top-half move history.
  */
 export function moveLog(page: Page): Locator {

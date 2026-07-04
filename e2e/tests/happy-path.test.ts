@@ -3,6 +3,7 @@ import {
 	addMoveButton,
 	closeComposer,
 	composer,
+	dragComposerToDismiss,
 	gotoApp,
 	logDetector,
 	logDualCut,
@@ -522,6 +523,22 @@ test.describe("session flow", () => {
 			await expect(addMoveButton(page)).toBeVisible();
 			await expect(moveRow(page, 1)).toBeVisible();
 		});
+	});
+
+	test("dismisses the composer by dragging the handle down", {
+		tag: [
+			"@scenario:session.composer-drag-dismiss",
+			"@area:session",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
+		await startTracking(page);
+		await openComposer(page);
+		// the sheet exposes a grab handle; dragging it down past the threshold
+		// dismisses the sheet back to the bottom bar.
+		await expect(composer(page).getByTestId("composer-handle")).toBeVisible();
+		await dragComposerToDismiss(page);
+		await expect(addMoveButton(page)).toBeVisible();
 	});
 
 	test("persists the full session across a reload", {
