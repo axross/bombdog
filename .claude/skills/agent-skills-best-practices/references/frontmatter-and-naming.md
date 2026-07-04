@@ -32,7 +32,8 @@ Optional spec fields are useful only when they carry real runtime or distributio
 - MAY include `license` when the skill is licensed differently from the surrounding project.
 - MAY include `compatibility` when the skill has concrete environment requirements.
 - MAY include `metadata` as a string-to-string map for client-specific extensions.
-- MAY include `allowed-tools` as advisory metadata only when the host supports it.
+- MAY include `allowed-tools` to pre-approve tools; under this repo's host (Claude Code) it is enforced after the workspace-trust prompt, not merely advisory.
+- MAY include Claude Code's own optional fields — `argument-hint`, `disable-model-invocation`, `user-invocable` — when a skill needs autocomplete hints or invocation control; omit them otherwise.
 - SHOULD omit optional fields that do not change how the skill is discovered, distributed, or executed.
 
 ## Host-Project Harness Fields

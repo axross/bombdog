@@ -48,12 +48,9 @@ npm run test:e2e
 
 ## Test Against a Deployed Environment
 
-Set the framework's base-URL env var to target a deployed environment (bombdog) instead of the local app:
-
-```bash
-E2E_BASE_URL=https://example.com npm run test:e2e
-```
+There is no supported deployed-target flow yet: `playwright.config.ts` hardcodes `baseURL` to the local dev server (`http://localhost:${PORT}`) and starts it via `webServer`, and it reads no base-URL override env var. Targeting a deployed URL requires wiring the config first.
 
 **Guidelines:**
 
-- SHOULD set the base-URL env var only when intentionally testing a deployed environment instead of the local app.
+- MUST NOT assume an env var repoints the suite at a deployed URL; the config ignores one today.
+- SHOULD, to add deployed-target support, make `baseURL` read an override (e.g. `process.env.E2E_BASE_URL ?? \`http://localhost:${PORT}\``) and guard `webServer` off when it is set, then document the command here.

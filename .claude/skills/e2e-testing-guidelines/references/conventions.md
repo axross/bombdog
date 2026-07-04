@@ -1,52 +1,42 @@
 # E2E Test Conventions
 
+Conventions for writing Playwright specs in bombdog. The suite drives the real UI through shared helpers in `e2e/helpers/tracker.ts`; bombdog is a client-only app, so there is no backend, API, or auth to script against.
+
 ## Locator Usage
 
-Locator Usage sets the required project default: use the framework's stable test-id locator for locators.
-
-**Guidelines:**
-
-- MUST use the framework's test-id locator for locators.
-- MUST use kebab-case for test IDs.
-- MUST use chained/scoped locators to narrow down the scope of the locator.
-  - For example, scope a header lookup to its page container instead of querying the header globally.
-- SHOULD fall back to a generic CSS/structural locator only for cases that cannot be expressed with a test-id locator.
-- MUST NOT use text-matching locators (locating by visible text).
+Elements are targeted by stable `data-testid` hooks scoped through their container, never by visible text, so copy changes never break a spec.
 
 **Example:**
 
 ```ts
-import { expect, type Locator, test } from "Playwright";
+import { expect, type Locator, test } from "@playwright/test";
 
-test("Item summary section", async ({ page }) => {
-	const itemPage = page.getByTestId("page");
-	let summary: Locator;
+test("logs a move into the history", async ({ page }) => {
+	const log = page.getByTestId("move-log");
 
-	await test.step("Verify the title", async () => {
-		summary = itemPage.getByTestId("summary");
-
-		await expect(summary.getByTestId("title")).toBeVisible();
+	await test.step("Verify the empty state", async () => {
+		await expect(log.getByText(/No moves yet/)).toBeVisible();
 	});
 
-	await test.step("Verify the action links", async () => {
-		const actions = summary.getByTestId("actions");
-
-		await test.step("Verify the primary action", async () => {
-			await expect(actions.getByTestId("primary")).toBeVisible();
-		});
-
-		await test.step("Verify the secondary action", async () => {
-			await expect(actions.getByTestId("secondary")).toBeVisible();
-		});
+	await test.step("Verify the first row appears", async () => {
+		const row: Locator = log.locator('[data-testid="move"][data-seq="1"]');
+		await expect(row).toBeVisible();
 	});
 });
 ```
 
+**Guidelines:**
+
+- MUST locate elements with `getByTestId` (kebab-case ids), scoping through the container locator instead of querying globally (`moveLog(page).locator(...)`).
+- MUST use `getByRole` for accessible controls (buttons, radios, portaled `option`/`menuitemradio` items) that have no test id, matching by accessible name.
+- MUST NOT locate by visible text (`getByText`) except when asserting copy such as the empty-state message.
+- SHOULD add a new `data-testid` to the component when no stable hook exists rather than reaching for a structural CSS selector.
+
 ## Assertions
 
-Assertions sets the required project default: prefer the framework's native auto-waiting assertions (visibility, focus, attribute, class, text, count) over pulling DOM state back into the test for manual comparison. Native assertions auto-wait and produce clearer failure messages; e.g., assert focus directly on the locator instead of reading `document.activeElement` and comparing it yourself.
+Prefer the framework's native auto-waiting assertions (visibility, focus, attribute, class, text, count) over pulling DOM state back into the test for manual comparison. Native assertions auto-wait and produce clearer failure messages; e.g., assert focus directly on the locator instead of reading `document.activeElement` and comparing it yourself.
 
-- To assert state that no native assertion covers (such as a computed style or a pseudo-element property), read it inside an in-browser evaluation on the host locator and wrap the call in a polling helper so scroll-driven or transition-driven changes have time to settle.
+To assert state that no native assertion covers (such as a computed style or a pseudo-element property), read it inside an in-browser evaluation on the host locator and wrap the call in a polling helper so scroll-driven or transition-driven changes have time to settle.
 
 **Guidelines:**
 
@@ -54,137 +44,53 @@ Assertions sets the required project default: prefer the framework's native auto
 - MUST NOT use fixed sleeps to "let the animation finish" (see [flakiness-tolerance.md](../../quality-assurance-guidelines/references/flakiness-tolerance.md)).
 - MUST use a polling / wait-for-condition helper to re-sample state until the expected value is reached when no native assertion covers it, such as scroll position, computed styles, scroll-driven animations, transitions, or intersection-observer-driven classes.
 
-## Hooks Usage
+## Setup and Hooks
 
-Hooks Usage describes the preferred project default: use a before-each hook for setup that is not dependent on the test case.
-
-**Guidelines:**
-
-- SHOULD use a before-each hook for setup that is not dependent on the test case.
-- SHOULD use an after-each hook for cleanup that is not dependent on the test case.
+Navigation and setup go through the shared helpers so every spec boots the app the same way. `gotoApp` also neutralises the Next.js dev-tools badge that otherwise intercepts pointer events on the composer.
 
 **Example:**
 
 ```ts
-import { expect, test } from "Playwright";
+import { expect, test } from "@playwright/test";
+import { composer, gotoApp, startTracking } from "../helpers/tracker";
 
 test.beforeEach(async ({ page }) => {
-	await test.step("Navigate to the index route", async () => {
-		await page.goto("/");
+	await test.step("Open the app on the setup screen", async () => {
+		await gotoApp(page);
 	});
 });
-```
 
-## API Calls
-
-### Authentication
-
-Authentication describes the preferred project default: reuse authenticated storage state when using API call functions, so each test does not re-authenticate.
-
-**Guidelines:**
-
-- SHOULD reuse authenticated storage state when using API call functions.
-
-**Example:**
-
-```ts
-import { test } from "Playwright";
-import { authenticatedStorageState } from "@/e2e//helpers/api/auth";
-
-test.use({ storageState: authenticatedStorageState });
-
-test.beforeEach(async ({ page }) => {
-	await test.step("Navigate to the index route", async () => {
-		await page.goto("/");
-	});
+test("starts a game", async ({ page }) => {
+	await startTracking(page);
+	await expect(composer(page)).toBeVisible();
 });
-```
-
-### API Call Usage
-
-API Call Usage describes the preferred project default: use API call functions to retrieve data to compare with the UI.
-
-**Guidelines:**
-
-- SHOULD use API call functions to retrieve data to compare with the UI.
-- SHOULD use API call functions in each test case.
-- SHOULD use API call functions in the before-each hook instead of within the test case if it is not dependent on the test case.
-
-**Example:**
-
-```ts
-import { expect, test } from "Playwright";
-import { getExampleItem } from "@/e2e//helpers/api/item";
-import { authenticatedStorageState } from "@/e2e//helpers/api/auth";
-
-test.use({ storageState: authenticatedStorageState });
-
-test("Item header", async ({ page }, testInfo) => {
-	let item: Awaited<ReturnType<typeof getExampleItem>>;
-
-	await test.step("Retrieve the example item record", async () => {
-		item = await getExampleItem({ page, testInfo });
-	});
-
-	const header = page.getByTestId("page").getByTestId("header");
-
-	await test.step("Verify the item title", async () => {
-		await expect(header.getByTestId("title")).toHaveText(item.title);
-	});
-
-	await test.step("Verify the item owner", async () => {
-		await expect(header.getByTestId("owner")).toHaveText(item.owner.name);
-	});
-});
-```
-
-### API Call Function Definitions
-
-**Example:**
-
-```ts
-import type { Page, TestInfo } from "Playwright";
-import type z from "zod";
-import { ItemSchema } from "@/repositories/schema";
-
-export const exampleItemId = "example-item";
-
-export async function getExampleItem({
-	page,
-	testInfo,
-}: {
-	page: Page;
-	testInfo: TestInfo;
-}): Promise<z.infer<typeof ItemSchema>> {
-	const url = new URL("/api/items", testInfo.project.use.baseURL);
-	url.searchParams.set("where[id][equals]", exampleItemId);
-	url.searchParams.set("limit", "1");
-
-	// use the framework's request fixture for API calls so it shares the test's auth state
-	const response = await page.request.get(`${url}`);
-
-	if (!response.ok()) {
-		throw new Error(
-			"Failed to get the example item due to non-200 response.",
-		);
-	}
-
-	const json = await response.json();
-	const docs = json.docs;
-
-	if (Array.isArray(docs) && docs.length > 0) {
-		// parse with the project's schema parser to validate the response shape
-		return ItemSchema.parse(docs[0]);
-	}
-
-	throw new Error("Failed to get the example item because it was not found.");
-}
 ```
 
 **Guidelines:**
 
-- MUST define API call functions in `@/e2e//helpers/api/`.
-- SHOULD use kebab-case for file names.
-- SHOULD named-export the function.
-- SHOULD take `page` and `testInfo` as arguments.
-- MUST use the framework's request fixture to make API calls so they share the test's authenticated state.
+- SHOULD use a before-each hook for setup that does not depend on the test case, and an after-each hook for case-independent cleanup.
+- MUST navigate through the `gotoApp` helper rather than a bare `page.goto("/")`, so the dev-tools-badge workaround applies.
+
+## Reusable Helpers
+
+Domain actions live in `e2e/helpers/tracker.ts` as named-exported functions that drive the UI (`startTracking`, `logDualCut`, `logDetector`, `moveRow`, `composer`, `moveLog`). Specs import them by relative path and compose them, keeping test cases readable and the UI wiring in one place.
+
+**Example:**
+
+```ts
+import { expect, test } from "@playwright/test";
+import { logDualCut, moveRow, startTracking } from "../helpers/tracker";
+
+test("logging a move adds it to the history", async ({ page }) => {
+	await startTracking(page);
+	await logDualCut(page, { target: "Player 2", wire: 9, outcome: "success" });
+	await expect(moveRow(page, 1)).toBeVisible();
+});
+```
+
+**Guidelines:**
+
+- MUST place reusable e2e helpers in `e2e/helpers/` and import them by relative path (`../helpers/tracker`); the `@/*` alias maps to `src/*` and does not resolve `e2e/` paths.
+- SHOULD named-export each helper, take `page` as the first argument, and use kebab-case file names.
+- SHOULD reuse an existing helper rather than re-driving the same UI flow inline in a spec.
+- MUST NOT introduce API/network or authentication helpers; bombdog persists to IndexedDB in the browser and exposes no server API to call.
