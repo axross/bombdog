@@ -5,7 +5,7 @@ instructions. Read natively by managed [Code Review](https://code.claude.com/doc
 and by the self-hosted reviewer ([`.github/workflows/claude-review.yaml`](.github/workflows/claude-review.yaml))
 and the local `/review` command via a system-prompt bootstrap. This file
 overrides defaults and complements the review **methodology** in
-[`code-review-guideline`](.agents/skills/code-review-guideline/SKILL.md).
+[`code-review-guideline`](.claude/skills/code-review-guideline/SKILL.md).
 
 ## Methodology
 
