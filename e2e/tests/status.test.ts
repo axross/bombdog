@@ -24,25 +24,31 @@ test.describe("status view", () => {
 	}, async ({ page }) => {
 		await startTracking(page);
 
-		// Moves is default: the log is visible and the status panel is fully
-		// hidden (Radix keeps it mounted with `hidden`, so it must not take space).
-		await expect(moveLog(page)).toBeVisible();
-		await expect(statusPanel(page)).toBeHidden();
+		await test.step("Moves is default: only the log shows, status is hidden", async () => {
+			// Radix keeps the status panel mounted with `hidden`, so it must take
+			// no layout space.
+			await expect(moveLog(page)).toBeVisible();
+			await expect(statusPanel(page)).toBeHidden();
+		});
 
-		await openStatusTab(page);
-		await expect(statusPanel(page)).toBeVisible();
-		await expect(moveLog(page)).toBeHidden();
+		await test.step("Status fills the content area, hiding the log", async () => {
+			await openStatusTab(page);
+			await expect(statusPanel(page)).toBeVisible();
+			await expect(moveLog(page)).toBeHidden();
 
-		// the active panel fills the tab area rather than half of it: its height
-		// tracks its scroll container, so no dead space sits below it.
-		const panelBox = await page.getByTestId("tab-panel-status").boundingBox();
-		const innerBox = await statusPanel(page).boundingBox();
-		expect(panelBox?.height).toBeGreaterThan(0);
-		expect(innerBox?.height).toBeCloseTo(panelBox?.height ?? 0, 0);
+			// the active panel fills the tab area rather than half of it: the inner
+			// section tracks its panel's height, so no dead space sits below it.
+			const panelBox = await page.getByTestId("tab-panel-status").boundingBox();
+			const innerBox = await statusPanel(page).boundingBox();
+			expect(panelBox?.height).toBeGreaterThan(0);
+			expect(innerBox?.height).toBeCloseTo(panelBox?.height ?? 0, 0);
+		});
 
-		await openMovesTab(page);
-		await expect(moveLog(page)).toBeVisible();
-		await expect(statusPanel(page)).toBeHidden();
+		await test.step("Switching back to Moves hides status again", async () => {
+			await openMovesTab(page);
+			await expect(moveLog(page)).toBeVisible();
+			await expect(statusPanel(page)).toBeHidden();
+		});
 	});
 
 	test("tallies cut vs uncut copies per value", {
@@ -74,38 +80,41 @@ test.describe("status view", () => {
 	test("shows known holders and consumes them on a successful cut", {
 		tag: ["@scenario:status.possession", "@area:status", "@priority:should"],
 	}, async ({ page }) => {
-		// Player 1 places a starting info token on a 3.
-		await gotoApp(page);
-		await placeInfoToken(page, 0, 3);
-		await startFromSetup(page);
+		await test.step("Reveal two holders (info token + failed cut)", async () => {
+			// Player 1 places a starting info token on a 3.
+			await gotoApp(page);
+			await placeInfoToken(page, 0, 3);
+			await startFromSetup(page);
 
-		// a failed dual cut reveals that Player 2 holds an 8.
-		await logDualCut(page, {
-			target: "Player 2",
-			wire: 6,
-			outcome: { reveal: 8 },
+			// a failed dual cut reveals that Player 2 holds an 8.
+			await logDualCut(page, {
+				target: "Player 2",
+				wire: 6,
+				outcome: { reveal: 8 },
+			});
+
+			await openStatusTab(page);
+			await expect(
+				statusRow(page, 3).getByTestId("status-holder"),
+			).toHaveAttribute("data-player", "Player 1");
+			await expect(
+				statusRow(page, 8).getByTestId("status-holder"),
+			).toHaveAttribute("data-player", "Player 2");
 		});
 
-		await openStatusTab(page);
-		await expect(
-			statusRow(page, 3).getByTestId("status-holder"),
-		).toHaveAttribute("data-player", "Player 1");
-		await expect(
-			statusRow(page, 8).getByTestId("status-holder"),
-		).toHaveAttribute("data-player", "Player 2");
+		await test.step("A successful 3-cut consumes Player 1's known copy", async () => {
+			await logDualCut(page, {
+				actor: "Player 2",
+				target: "Player 1",
+				wire: 3,
+				outcome: "success",
+			});
 
-		// a successful 3-cut against Player 1 consumes their known copy.
-		await logDualCut(page, {
-			actor: "Player 2",
-			target: "Player 1",
-			wire: 3,
-			outcome: "success",
+			await openStatusTab(page);
+			await expect(statusRow(page, 3).getByTestId("status-holder")).toHaveCount(
+				0,
+			);
 		});
-
-		await openStatusTab(page);
-		await expect(statusRow(page, 3).getByTestId("status-holder")).toHaveCount(
-			0,
-		);
 	});
 
 	test("records the actual value a successful X or Y Ray cut", {

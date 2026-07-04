@@ -77,7 +77,7 @@
 			inline-size: 10px;
 			block-size: 10px;
 			border-radius: 2px;
-			background-color: var(--surface-hover);
+			background-color: var(--surface-3);
 			border: 1px solid var(--border-strong);
 		}
 
