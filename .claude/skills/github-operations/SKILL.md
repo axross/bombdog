@@ -26,6 +26,7 @@ Because the agent shares the operator's identity, a reader cannot tell an agent 
 - MUST begin every comment the agent posts with an HTML marker line (e.g. `<!-- address-agent -->`) chosen by the calling workflow, so the agent's own output is never re-read as human input.
 - MUST treat any comment carrying the workflow's marker as agent output, and any comment without it as human input, when reconstructing a thread's state.
 - MUST tell a **separate bot identity** — a CI reviewer or App that posts under its own login, distinct from the operator — apart by that **author login**, not the marker; the marker only disambiguates the operator-shared agent from a human under the single operator identity.
+- MUST NOT embed another automation's trigger phrase (e.g. the review workflow's `@claude review`) in a status, breadcrumb, or summary comment. Comment-triggered workflows match the phrase **anywhere** in the body, so naming it in prose spuriously fires the automation. Reserve the literal phrase for the comment that intends to trigger it, and refer to the automation by name elsewhere (e.g. "the independent review").
 
 ## Issue vs. Pull Request Are Distinct Targets
 

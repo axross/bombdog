@@ -64,7 +64,7 @@ Turn the target into a buildable specification recorded in the issue.
 Review is **not** done by you. It runs as a separate Claude Code session on a GitHub-hosted runner — different session, different infrastructure, a bot identity distinct from the operator — via the [`claude-review.yaml`](../../.github/workflows/claude-review.yaml) workflow, which runs the repo's [`/review`](review.md) command. That separation is the whole point: the code's author never certifies its own work.
 
 - Open the pull request in **draft** with `Closes #<n>`, structured from any repository PR template, summarizing the change, the verification evidence, and the acceptance criteria with their status.
-- Request the review by posting a top-level `@claude review` comment on the pull request (a marked comment). This fires the review workflow, which submits its findings as a **GitHub pull-request review** — inline comments anchored to the diff, tagged by severity, with a summary in the review body — not as loose conversation comments.
+- Request the review by posting a top-level comment whose body is exactly `@claude review` (plus the `<!-- address-agent -->` marker line) — nothing else. This fires the review workflow, which submits its findings as a **GitHub pull-request review** — inline comments anchored to the diff, tagged by severity, with a summary — not as loose conversation comments. Do not repeat the phrase in status or summary comments (see [GitHub as Lightweight State](#github-as-lightweight-state)), or you will fire duplicate reviews.
 - The review is a machine event that completes on its own in minutes — poll for it in the tail alongside CI. Do NOT review the diff yourself in place of it.
 
 ## Phase 4 — Address
@@ -94,6 +94,7 @@ After you push and request review, two machine events run on their own: `merge-c
 State lives in this running session; GitHub carries a thin, human-visible breadcrumb so a resumed or reclaimed session can recover.
 
 - Maintain a single pinned status comment on the issue (and, once open, the pull request) recording the current phase, the review-round count, and what the run is waiting on. Update it in place; do not post a new comment per step.
+- Never write the literal `@claude review` phrase in a status, breadcrumb, or any comment other than the dedicated review request — the review workflow fires on that phrase appearing **anywhere** in a comment body, so embedding it even in prose spuriously starts a review (and muddies the run). Refer to it as "the independent review" everywhere except the request itself, per [GitHub Operations](../skills/github-operations/SKILL.md).
 - On `/address continue`, reconstruct state from GitHub before acting — the open pull request, its CI status, the independent review's comments, unresolved threads, and the pinned status comment — and resume the one pending step the comment names, not restart from Plan.
 - Labels are optional and purely informational; the run does not depend on a label state machine.
 
