@@ -100,10 +100,11 @@ describe("<TrackerApp>", () => {
 		// the filter now rides the tab bar (Moves view), not the header.
 		expect(within(header).queryByTestId("filter")).not.toBeInTheDocument();
 		expect(screen.getByTestId("filter")).toBeInTheDocument();
-		// the Moves view is default: move history + composer are mounted.
+		// the Moves view is default: move history + the composer bar are mounted;
+		// the composer starts closed, so its resting-state control is Add move.
 		expect(screen.getByTestId("move-log")).toBeInTheDocument();
 		expect(
-			screen.getByRole("button", { name: "Log move" }),
+			screen.getByRole("button", { name: "Add move" }),
 		).toBeInTheDocument();
 	});
 

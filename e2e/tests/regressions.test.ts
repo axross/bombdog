@@ -4,6 +4,7 @@ import {
 	logDualCut,
 	logMove,
 	moveRow,
+	openComposer,
 	pickTarget,
 	selectWire,
 	setActor,
@@ -49,6 +50,7 @@ test("flags incomplete composer fields on Log move, then logs once complete", {
 	tag: ["@scenario:log.invalid-highlight", "@area:logging", "@priority:should"],
 }, async ({ page }) => {
 	await startTracking(page);
+	await openComposer(page);
 	const target = composer(page).getByTestId("highlight-target");
 	const wire = composer(page).getByTestId("highlight-wire");
 	const outcome = composer(page).getByTestId("highlight-outcome");

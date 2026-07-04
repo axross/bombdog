@@ -1,8 +1,9 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { AlertDialog, Dialog } from "radix-ui";
+import { AlertDialog } from "radix-ui";
 import { type JSX, useState } from "react";
+import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
 import { buildDraft, fieldsFromMove } from "@/components/move-form/draft";
 import { MoveForm } from "@/components/move-form/move-form";
 import { useTrackerStore } from "@/lib/tracker-store";
@@ -22,7 +23,10 @@ interface MoveEditorProps {
 }
 
 /**
- * Modal editor that corrects a logged move in place (action kind is fixed).
+ * Modal bottom sheet that corrects a logged move in place (action kind is
+ * fixed). Closing (Save, Cancel, Escape, backdrop, or drag-to-dismiss) plays the
+ * sheet's exit animation before the parent unmounts us, via
+ * {@link BottomSheet}'s `onCloseComplete`.
  */
 export function MoveEditor({
 	move,
@@ -33,8 +37,8 @@ export function MoveEditor({
 	const removeMove = useTrackerStore((s) => s.removeMove);
 	const [fields, setFields] = useState(() => fieldsFromMove(move));
 	// drive `open` locally so closing plays the exit animation before the parent
-	// unmounts us: Radix keeps the content mounted while data-state="closed"
-	// animates, and onAnimationEnd then hands control back to the parent.
+	// unmounts us: onCloseComplete hands control back once the sheet has animated
+	// out.
 	const [open, setOpen] = useState(true);
 
 	const draft = buildDraft(move.type, fields);
@@ -51,101 +55,81 @@ export function MoveEditor({
 	};
 
 	return (
-		<Dialog.Root
+		<BottomSheet
 			open={open}
 			onOpenChange={(next) => {
 				if (!next) setOpen(false);
 			}}
+			title={`Edit move #${move.seq}`}
+			data-testid="move-editor"
+			onCloseComplete={onClose}
 		>
-			<Dialog.Portal>
-				<Dialog.Overlay className={css.overlay} />
-				<Dialog.Content
-					className={css.content}
-					aria-describedby={undefined}
-					data-testid="move-editor"
-					onAnimationEnd={(event) => {
-						// unmount only after the exit animation on the content itself
-						// (guard against the enter animation and bubbled child events).
-						// the close path runs on the exit animation, which jsdom never
-						// fires (Radix unmounts synchronously); it's covered by e2e.
-						/* v8 ignore next */
-						if (!open && event.target === event.currentTarget) onClose();
-					}}
-				>
-					<Dialog.Title className={css.title}>
-						Edit move #{move.seq}
-					</Dialog.Title>
+			<MoveForm
+				players={players}
+				type={move.type}
+				fields={fields}
+				onFieldsChange={setFields}
+			/>
 
-					<MoveForm
-						players={players}
-						type={move.type}
-						fields={fields}
-						onFieldsChange={setFields}
-					/>
-
-					<div className={css.footer}>
-						<AlertDialog.Root>
-							<AlertDialog.Trigger asChild>
-								<button
-									type="button"
-									className={css.danger}
-									data-testid="delete"
-								>
-									<Trash2 size={15} aria-hidden />
-									Delete
-								</button>
-							</AlertDialog.Trigger>
-							<AlertDialog.Portal>
-								<AlertDialog.Overlay className={css.confirmOverlay} />
-								<AlertDialog.Content
-									className={css.confirmContent}
-									data-testid="delete-dialog"
-								>
-									<AlertDialog.Title className={css.confirmTitle}>
-										Delete move #{move.seq}?
-									</AlertDialog.Title>
-									<AlertDialog.Description className={css.confirmDescription}>
-										This removes the move from the history. It can't be undone.
-									</AlertDialog.Description>
-									<div className={css.confirmActions}>
-										<AlertDialog.Cancel asChild>
-											<button type="button" className={css.confirmCancel}>
-												Cancel
-											</button>
-										</AlertDialog.Cancel>
-										<AlertDialog.Action asChild>
-											<button
-												type="button"
-												className={css.confirmDelete}
-												onClick={handleDelete}
-												data-testid="delete-confirm"
-											>
-												Delete
-											</button>
-										</AlertDialog.Action>
-									</div>
-								</AlertDialog.Content>
-							</AlertDialog.Portal>
-						</AlertDialog.Root>
-						<div className={css.actions}>
-							<Dialog.Close asChild>
-								<button type="button" className={css.secondary}>
-									Cancel
-								</button>
-							</Dialog.Close>
-							<button
-								type="button"
-								className={css.primary}
-								onClick={handleSave}
-								disabled={!draft}
-								data-testid="save"
-							>
-								Save
-							</button>
-						</div>
-					</div>
-				</Dialog.Content>
-			</Dialog.Portal>
-		</Dialog.Root>
+			<div className={css.footer}>
+				<AlertDialog.Root>
+					<AlertDialog.Trigger asChild>
+						<button type="button" className={css.danger} data-testid="delete">
+							<Trash2 size={15} aria-hidden />
+							Delete
+						</button>
+					</AlertDialog.Trigger>
+					<AlertDialog.Portal>
+						<AlertDialog.Overlay className={css.confirmOverlay} />
+						<AlertDialog.Content
+							className={css.confirmContent}
+							data-testid="delete-dialog"
+						>
+							<AlertDialog.Title className={css.confirmTitle}>
+								Delete move #{move.seq}?
+							</AlertDialog.Title>
+							<AlertDialog.Description className={css.confirmDescription}>
+								This removes the move from the history. It can't be undone.
+							</AlertDialog.Description>
+							<div className={css.confirmActions}>
+								<AlertDialog.Cancel asChild>
+									<button type="button" className={css.confirmCancel}>
+										Cancel
+									</button>
+								</AlertDialog.Cancel>
+								<AlertDialog.Action asChild>
+									<button
+										type="button"
+										className={css.confirmDelete}
+										onClick={handleDelete}
+										data-testid="delete-confirm"
+									>
+										Delete
+									</button>
+								</AlertDialog.Action>
+							</div>
+						</AlertDialog.Content>
+					</AlertDialog.Portal>
+				</AlertDialog.Root>
+				<div className={css.actions}>
+					<button
+						type="button"
+						className={css.secondary}
+						onClick={() => setOpen(false)}
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						className={css.primary}
+						onClick={handleSave}
+						disabled={!draft}
+						data-testid="save"
+					>
+						Save
+					</button>
+				</div>
+			</div>
+		</BottomSheet>
 	);
 }
