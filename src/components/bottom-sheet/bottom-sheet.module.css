@@ -16,7 +16,13 @@
 			inset: 0;
 			background-color: color-mix(in oklch, var(--slate-1) 55%, transparent);
 			backdrop-filter: blur(2px);
-			z-index: 40;
+			/* Deeper sheets stack above shallower ones (content one step higher). */
+			z-index: calc(40 + var(--sheet-depth, 0) * 20);
+			/* Crossfade the dim when a nested sheet takes over (or hands back), so
+			   the stack's total darkening stays roughly constant — no flash. */
+			transition:
+				background-color var(--motion-fast) var(--ease-standard),
+				backdrop-filter var(--motion-fast) var(--ease-standard);
 
 			&[data-state="open"] {
 				animation: overlay-in var(--motion-fast) var(--ease-standard);
@@ -24,6 +30,13 @@
 
 			&[data-state="closed"] {
 				animation: overlay-out var(--motion-fast) var(--ease-standard);
+			}
+
+			/* A nested sheet is open above this one: stop dimming so the topmost
+			   overlay darkens the whole stack once (this sheet becomes background). */
+			&.quiet {
+				background-color: transparent;
+				backdrop-filter: none;
 			}
 		}
 	}
@@ -49,7 +62,7 @@
 			background-color: var(--surface);
 			border: 1px solid var(--border);
 			border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-			z-index: 50;
+			z-index: calc(50 + var(--sheet-depth, 0) * 20);
 
 			/* Slides up on open; slides down on close, continuing from wherever the
 			   drag left it (the exit keyframe reads --sheet-drag-y). */
@@ -143,6 +156,7 @@
 		@scope (.overlay) {
 			:where(:scope) {
 				animation: none;
+				transition: none;
 			}
 		}
 

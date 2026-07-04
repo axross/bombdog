@@ -144,11 +144,17 @@ test.describe("logging each action type", () => {
 			await composer(page).getByTestId("outcome-fail").click();
 			// a fail can't be logged until the actual wire value is recorded.
 			await expect(composer(page).getByTestId("log-move")).toBeDisabled();
+			// the reveal sheet nests over the composer, which becomes background
+			// (its overlay quiets so the reveal's overlay dims the whole stack).
+			await expect(page.getByTestId("reveal-dialog")).toBeVisible();
+			await expect(composer(page)).toHaveAttribute("data-sheet-nested", "true");
 		});
 
 		await test.step("Record the actual wire (8) in the popup", async () => {
 			await page.getByTestId("reveal-dialog").getByTestId("reveal-8").click();
 			await expect(page.getByTestId("reveal-dialog")).toBeHidden();
+			// with the reveal gone, the composer is no longer backgrounded.
+			await expect(composer(page)).not.toHaveAttribute("data-sheet-nested");
 			// the chosen value is echoed on the Fail button and unblocks logging.
 			await expect(composer(page).getByTestId("outcome-fail")).toContainText(
 				"(8)",

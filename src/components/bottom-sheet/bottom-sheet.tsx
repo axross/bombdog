@@ -1,8 +1,34 @@
 "use client";
 
+import { clsx } from "clsx";
 import { Dialog } from "radix-ui";
-import { type JSX, type ReactNode, useRef } from "react";
+import {
+	type CSSProperties,
+	createContext,
+	type JSX,
+	type ReactNode,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import css from "./bottom-sheet.module.css";
+
+/**
+ * Nesting link between a sheet and any sheet opened from within it: the child
+ * reports its open state so the parent can quiet its own overlay, and inherits a
+ * deeper stacking level so it renders above the parent.
+ */
+interface BottomSheetNesting {
+	depth: number;
+	onNestedOpenChange: (open: boolean) => void;
+}
+
+const BottomSheetContext = createContext<BottomSheetNesting>({
+	depth: 0,
+	onNestedOpenChange: () => {},
+});
 
 /**
  * Props for {@link BottomSheet}.
@@ -31,6 +57,11 @@ interface BottomSheetProps {
  * of its height; otherwise it springs back). Escape and the backdrop remain the
  * keyboard/click dismissal paths. Shared by the composer, the reveal picker, the
  * move-log filter, and the move editor so they read as one surface.
+ *
+ * Sheets nest: a sheet opened from within another (e.g. the Fail reveal over the
+ * composer) stacks one level deeper, and the sheet beneath it stops dimming so
+ * the topmost overlay darkens and blurs the whole stack uniformly — the
+ * under-sheet reads as background, just like the app behind it.
  */
 export function BottomSheet({
 	open,
@@ -41,6 +72,27 @@ export function BottomSheet({
 	"data-testid": dataTestId,
 	onCloseComplete,
 }: BottomSheetProps): JSX.Element {
+	const { depth, onNestedOpenChange: notifyParent } =
+		useContext(BottomSheetContext);
+
+	// whether a sheet opened from within this one is currently up. While it is,
+	// this sheet's overlay stops dimming so only the topmost overlay dims the
+	// stack (no double-darkening of the app background beneath).
+	const [nestedOpen, setNestedOpen] = useState(false);
+
+	// tell the parent sheet (if any) whether this one is open, so it can quiet its
+	// overlay while we sit on top of it.
+	useEffect(() => {
+		if (!open) return;
+		notifyParent(true);
+		return () => notifyParent(false);
+	}, [open, notifyParent]);
+
+	const nesting = useMemo<BottomSheetNesting>(
+		() => ({ depth: depth + 1, onNestedOpenChange: setNestedOpen }),
+		[depth],
+	);
+
 	// Sheet drag state lives in refs and is written straight to the DOM (a CSS
 	// custom property) so dragging never re-renders the sheet body under the finger.
 	const contentRef = useRef<HTMLDivElement>(null);
@@ -101,14 +153,23 @@ export function BottomSheet({
 		setDragOffset(0);
 	};
 
+	// Deeper sheets sit above shallower ones; the exact z-indices are 40/50 at
+	// depth 0, 60/70 at depth 1, and so on (see the module's calc()).
+	const depthStyle = { "--sheet-depth": depth } as CSSProperties;
+
 	return (
 		<Dialog.Root open={open} onOpenChange={onOpenChange}>
 			<Dialog.Portal>
-				<Dialog.Overlay className={css.overlay} />
+				<Dialog.Overlay
+					className={clsx(css.overlay, nestedOpen && css.quiet)}
+					style={depthStyle}
+				/>
 				<Dialog.Content
 					ref={contentRef}
 					className={css.content}
+					style={depthStyle}
 					data-testid={dataTestId}
+					data-sheet-nested={nestedOpen ? "true" : undefined}
 					// with a description we let Radix wire aria-describedby to it;
 					// without one, silence the "missing description" warning.
 					{...(description == null ? { "aria-describedby": undefined } : {})}
@@ -140,7 +201,9 @@ export function BottomSheet({
 							{description}
 						</Dialog.Description>
 					)}
-					{children}
+					<BottomSheetContext.Provider value={nesting}>
+						{children}
+					</BottomSheetContext.Provider>
 				</Dialog.Content>
 			</Dialog.Portal>
 		</Dialog.Root>
