@@ -7,12 +7,14 @@ import {
 	openMovesTab,
 	openStatusTab,
 	startTracking,
-	statusRow,
+	statusCell,
+	statusPlayer,
+	statusWire,
 } from "../helpers/tracker";
 
 // the structured equipment cards: a Post-it reveals one wire of its target and
 // a General Radar reveals who holds an announced value. both feed the Status
-// view's possession column, unlike the free-text Misc cards.
+// view's per-player possession cards, unlike the free-text Misc cards.
 
 test.describe("structured equipment", () => {
 	test("a Post-it counts its target as a holder until the wire is cut", {
@@ -40,14 +42,11 @@ test.describe("structured equipment", () => {
 			await expect(row.getByRole("img", { name: "Wire 7" })).toBeVisible();
 		});
 
-		await test.step("Status counts Player 2 as a known 7 holder", async () => {
+		await test.step("Status marks Player 2 as a known 7 holder", async () => {
 			await openStatusTab(page);
 			await expect(
-				statusRow(page, 7).getByTestId("status-holder"),
-			).toHaveAttribute("data-player", "Player 2");
-			await expect(
-				statusRow(page, 7).getByTestId("status-count"),
-			).toHaveAttribute("data-revealed", "1");
+				statusCell(statusPlayer(page, "Player 2"), 7),
+			).toHaveAttribute("data-held", "true");
 		});
 
 		await test.step("A successful 7-cut consumes the revealed copy", async () => {
@@ -60,12 +59,10 @@ test.describe("structured equipment", () => {
 			await closeComposer(page);
 
 			await openStatusTab(page);
-			await expect(statusRow(page, 7).getByTestId("status-holder")).toHaveCount(
-				0,
-			);
 			await expect(
-				statusRow(page, 7).getByTestId("status-count"),
-			).toHaveAttribute("data-cut", "2");
+				statusCell(statusPlayer(page, "Player 2"), 7),
+			).toHaveAttribute("data-held", "false");
+			await expect(statusWire(page, 7)).toHaveAttribute("data-cut", "2");
 		});
 	});
 
@@ -90,15 +87,17 @@ test.describe("structured equipment", () => {
 			);
 		});
 
-		await test.step("Status counts both declared holders of the 4", async () => {
+		await test.step("Status marks both declared holders of the 4", async () => {
 			await openStatusTab(page);
-			const holders = statusRow(page, 4).getByTestId("status-holder");
-			await expect(holders).toHaveCount(2);
-			await expect(holders.nth(0)).toHaveAttribute("data-player", "Player 2");
-			await expect(holders.nth(1)).toHaveAttribute("data-player", "Player 3");
 			await expect(
-				statusRow(page, 4).getByTestId("status-count"),
-			).toHaveAttribute("data-revealed", "2");
+				statusCell(statusPlayer(page, "Player 2"), 4),
+			).toHaveAttribute("data-held", "true");
+			await expect(
+				statusCell(statusPlayer(page, "Player 3"), 4),
+			).toHaveAttribute("data-held", "true");
+			await expect(
+				statusCell(statusPlayer(page, "Player 1"), 4),
+			).toHaveAttribute("data-held", "false");
 		});
 
 		await test.step("Log a radar for 6 that no one declared", async () => {
@@ -117,12 +116,12 @@ test.describe("structured equipment", () => {
 
 		await test.step("Status records no possession for the empty radar", async () => {
 			await openStatusTab(page);
-			await expect(statusRow(page, 6).getByTestId("status-holder")).toHaveCount(
-				0,
-			);
-			await expect(
-				statusRow(page, 6).getByTestId("status-count"),
-			).toHaveAttribute("data-revealed", "0");
+			for (const name of ["Player 1", "Player 2", "Player 3", "Player 4"]) {
+				await expect(statusCell(statusPlayer(page, name), 6)).toHaveAttribute(
+					"data-held",
+					"false",
+				);
+			}
 		});
 	});
 });

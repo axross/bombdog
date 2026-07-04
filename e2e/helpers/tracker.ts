@@ -276,12 +276,31 @@ export function statusPanel(page: Page): Locator {
 }
 
 /**
- * A Status row for a blue value 1–12.
+ * A wire-count tile in the Status view's Wires strip, for a blue value 1–12.
+ * Carries the cut state as `data-cut` / `data-uncut` counts and a
+ * `data-state` of `uncut`, `half-cut`, or `full-cut`.
  */
-export function statusRow(page: Page, value: number): Locator {
+export function statusWire(page: Page, value: number): Locator {
 	return statusPanel(page).locator(
-		`[data-testid="status-row"][data-value="${value}"]`,
+		`[data-testid="status-wire"][data-value="${value}"]`,
 	);
+}
+
+/**
+ * A player's possession card in the Status view's Players section.
+ */
+export function statusPlayer(page: Page, playerName: string): Locator {
+	return statusPanel(page).locator(
+		`[data-testid="status-player"][data-player="${playerName}"]`,
+	);
+}
+
+/**
+ * A value chip inside a player's possession card. `data-held` reflects whether
+ * the player is known to hold the value.
+ */
+export function statusCell(card: Locator, value: number | "yellow"): Locator {
+	return card.locator(`[data-testid="status-cell"][data-value="${value}"]`);
 }
 
 /**
