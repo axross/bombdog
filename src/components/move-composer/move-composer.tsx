@@ -7,12 +7,28 @@ import {
 	buildDraft,
 	type DraftFields,
 	emptyDraftFields,
+	invalidFields,
+	type MoveFieldKey,
 } from "@/components/move-form/draft";
 import { MoveForm } from "@/components/move-form/move-form";
 import { nextActorId } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
+
+/**
+ * Human labels for the fields a failed "Log move" can flag, used to announce
+ * what needs attention to screen-reader users.
+ */
+const FIELD_LABELS: Record<MoveFieldKey, string> = {
+	actor: "Acting",
+	target: "Target",
+	wire: "Wire",
+	values: "Values",
+	outcome: "Result",
+	cutValue: "Actual value",
+	equipment: "Equipment",
+};
 
 /**
  * Bottom-half form to log the next move, with undo/redo.
@@ -34,11 +50,28 @@ export function MoveComposer(): JSX.Element {
 	const [fields, setFields] = useState<DraftFields>(() =>
 		emptyDraftFields(suggestedActor),
 	);
+	// how many times Log move has been pressed with an incomplete move since the
+	// last successful log. 0 means "not attempted yet" (no fields flagged); each
+	// failed press bumps it to re-play the highlight pulse on what's still invalid.
+	const [nudge, setNudge] = useState(0);
+	// assertive message naming the fields that blocked the last press, for the
+	// live region; cleared on a successful log.
+	const [alert, setAlert] = useState("");
 
 	const draft = buildDraft(type, fields);
+	// flag fields only after a failed press, and recompute live so each fix clears
+	// its own highlight (UI=F(state)).
+	const invalid =
+		nudge > 0
+			? new Set<MoveFieldKey>(invalidFields(type, fields))
+			: new Set<MoveFieldKey>();
 
 	const handleTypeChange = (next: MoveType) => {
 		setType(next);
+		// a different action has different required fields, so clear any flags from
+		// the previous action rather than flagging the new tab's fields pre-emptively.
+		setNudge(0);
+		setAlert("");
 	};
 
 	/**
@@ -48,10 +81,23 @@ export function MoveComposer(): JSX.Element {
 	 */
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
-		// defensive: the submit button is disabled whenever `draft` is null.
-		/* v8 ignore next */
-		if (!draft) return;
+		// Log move is always pressable now, so validate on press: an incomplete move
+		// flags its missing fields (a bumped `nudge` re-pulses them) and announces
+		// them, rather than logging.
+		if (!draft) {
+			const missing = invalidFields(type, fields);
+			setNudge((n) => n + 1);
+			setAlert(
+				`Can't log yet — check: ${missing
+					.map((key) => FIELD_LABELS[key])
+					.join(", ")}.`,
+			);
+			return;
+		}
 		addMove(draft);
+		// a successful log clears any prior validation flags/announcement.
+		setNudge(0);
+		setAlert("");
 		// suggest the next actor with the same rule the log rehydrates through:
 		// append the just-logged move and ask nextActorId. it ignores equipment
 		// (so the turn stays put) and advances clockwise for every other move —
@@ -90,9 +136,17 @@ export function MoveComposer(): JSX.Element {
 						onTypeChange={handleTypeChange}
 						fields={fields}
 						onFieldsChange={setFields}
+						invalid={invalid}
+						nudge={nudge}
 					/>
 				</div>
 			</div>
+
+			{/* announces which fields blocked a failed Log move press; the pulse
+			    highlights carry the same information visually. */}
+			<p role="status" aria-live="assertive" className={css.srOnly}>
+				{alert}
+			</p>
 
 			<div className={css.actions}>
 				<div className={css.history}>
@@ -131,10 +185,11 @@ export function MoveComposer(): JSX.Element {
 						<Redo2 size={20} aria-hidden />
 					</button>
 				</div>
+				{/* always pressable: an incomplete move is caught in handleSubmit,
+				    which flags the missing fields instead of logging. */}
 				<button
 					type="submit"
 					className={clsx(css.primary, collapsed && css.hidden)}
-					disabled={!draft}
 					inert={collapsed}
 					data-testid="log-move"
 				>

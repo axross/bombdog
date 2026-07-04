@@ -1,0 +1,47 @@
+@layer components {
+	@scope (.wrap) {
+		:where(:scope) {
+			/* anchor the absolutely-positioned pulse overlay, and lay out the single
+			   wrapped field as-is. no padding, so the ring hugs the field. */
+			position: relative;
+			border-radius: var(--radius-sm);
+		}
+
+		/* Persistent invalid marker: a static ring that stays until the field is
+		   fixed. box-shadow (not border/outline) so toggling it never shifts layout.
+		   Also the sole indicator under reduced motion, where the pulse is off. */
+		:where(:scope)[data-invalid] {
+			box-shadow: 0 0 0 2px var(--danger);
+		}
+
+		/* Decorative pulse layered over the ring; remounted per `nudge` to replay. */
+		.pulse {
+			position: absolute;
+			inset: 0;
+			border-radius: inherit;
+			pointer-events: none;
+			box-shadow: 0 0 0 2px var(--danger);
+			animation: field-highlight-pulse var(--motion) var(--ease-standard) 3;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.pulse {
+				animation: none;
+			}
+		}
+	}
+
+	/* A ring that flashes out and fades on each iteration, drawing the eye to the
+	   field that needs attention. */
+	@keyframes field-highlight-pulse {
+		from {
+			box-shadow: 0 0 0 2px var(--danger);
+			opacity: 1;
+		}
+
+		to {
+			box-shadow: 0 0 0 7px color-mix(in oklch, var(--danger), transparent 100%);
+			opacity: 0;
+		}
+	}
+}
