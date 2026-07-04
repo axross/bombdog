@@ -68,7 +68,6 @@ export function StartingInfo(): JSX.Element | null {
 					data-testid="edit-starting-info"
 				>
 					<Pencil size={15} aria-hidden />
-					<span className={css.editText}>Edit</span>
 				</button>
 			</section>
 
