@@ -154,6 +154,23 @@ export function PlayerSetup(): JSX.Element {
 				</div>
 			</div>
 
+			<div className={css.infoToggle}>
+				<label className={css.skip}>
+					<input
+						type="checkbox"
+						checked={skipInfoTokens}
+						onChange={(e) => setSkipInfoTokens(e.target.checked)}
+						data-testid="skip-info-tokens"
+					/>
+					Skip starting info tokens
+				</label>
+				{!skipInfoTokens && (
+					<p className={css.infoHint}>
+						Tap the wire each player marked with their info token.
+					</p>
+				)}
+			</div>
+
 			<RadioGroup.Root
 				className={css.seats}
 				value={String(captainIndex)}
@@ -165,73 +182,43 @@ export function PlayerSetup(): JSX.Element {
 					// (the Captain is tracked by index), so an index key is correct.
 					// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
 					<div key={i} className={css.seat}>
-						<RadioGroup.Item
-							className={css.radio}
-							value={String(i)}
-							id={`captain-${i}`}
-							aria-label={`Make player ${i + 1} the Captain`}
-						>
-							<RadioGroup.Indicator className={css.radioDot} />
-						</RadioGroup.Item>
-						<input
-							className={css.nameInput}
-							type="text"
-							value={names[i]}
-							onChange={(e) => setName(i, e.target.value)}
-							// select the whole name on focus so typing replaces it
-							// outright — players rarely tweak the default, they retype it.
-							onFocus={(e) => e.target.select()}
-							aria-label={`Name of player ${i + 1}`}
-							maxLength={24}
-						/>
-						{captainIndex === i && (
-							<span className={css.captainTag}>Captain</span>
+						<div className={css.seatMain}>
+							<RadioGroup.Item
+								className={css.radio}
+								value={String(i)}
+								id={`captain-${i}`}
+								aria-label={`Make player ${i + 1} the Captain`}
+							>
+								<RadioGroup.Indicator className={css.radioDot} />
+							</RadioGroup.Item>
+							<input
+								className={css.nameInput}
+								type="text"
+								value={names[i]}
+								onChange={(e) => setName(i, e.target.value)}
+								// select the whole name on focus so typing replaces it
+								// outright — players rarely tweak the default, they retype it.
+								onFocus={(e) => e.target.select()}
+								aria-label={`Name of player ${i + 1}`}
+								maxLength={24}
+							/>
+							{captainIndex === i && (
+								<span className={css.captainTag}>Captain</span>
+							)}
+						</div>
+						{!skipInfoTokens && (
+							<WirePad
+								label="Info token"
+								value={infoTokenBySeat[i] ?? null}
+								onValueChange={(value) => setInfoToken(i, value)}
+								blueOnly
+								className={css.infoPad}
+								data-testid={`info-token-${i}`}
+							/>
 						)}
 					</div>
 				))}
 			</RadioGroup.Root>
-
-			<section className={css.infoTokens} aria-label="Starting info tokens">
-				<div className={css.infoHeader}>
-					<span className={css.infoTitle}>Starting info tokens</span>
-					<label className={css.skip}>
-						<input
-							type="checkbox"
-							checked={skipInfoTokens}
-							onChange={(e) => setSkipInfoTokens(e.target.checked)}
-							data-testid="skip-info-tokens"
-						/>
-						Skip starting info tokens
-					</label>
-				</div>
-
-				{!skipInfoTokens && (
-					<>
-						<p className={css.infoHint}>
-							Tap the wire each player marked with their info token.
-						</p>
-						<div className={css.infoList}>
-							{Array.from({ length: count }, (_, i) => (
-								<WirePad
-									// seats are positional; the seat index is the stable identity
-									// here (names/tokens are held per seat), so an index key is
-									// correct.
-									// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
-									key={i}
-									label={
-										captainIndex === i ? `${names[i]} (Captain)` : names[i]
-									}
-									value={infoTokenBySeat[i] ?? null}
-									onValueChange={(value) => setInfoToken(i, value)}
-									blueOnly
-									className={css.infoPad}
-									data-testid={`info-token-${i}`}
-								/>
-							))}
-						</div>
-					</>
-				)}
-			</section>
 
 			<button
 				type="button"

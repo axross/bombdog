@@ -90,12 +90,20 @@
 
 		.seat {
 			display: flex;
-			align-items: center;
+			flex-direction: column;
 			gap: var(--space-3);
-			padding: var(--space-2) var(--space-3);
+			padding: var(--space-3);
 			background-color: var(--surface-2);
 			border: 1px solid var(--border);
 			border-radius: var(--radius);
+		}
+
+		/* The name row (Captain radio + name input + tag) at the top of a seat; the
+		   info-token pad sits below it inside the same seat block. */
+		.seatMain {
+			display: flex;
+			align-items: center;
+			gap: var(--space-3);
 		}
 
 		.radio {
@@ -139,22 +147,11 @@
 			color: var(--accent);
 		}
 
-		.infoTokens {
+		/* Skip toggle + hint, sitting above the roster and below the player count. */
+		.infoToggle {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-3);
-		}
-
-		.infoHeader {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: space-between;
 			gap: var(--space-2);
-		}
-
-		.infoTitle {
-			font-weight: 600;
 		}
 
 		.skip {
@@ -178,17 +175,11 @@
 			font-size: 0.9rem;
 		}
 
-		.infoList {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-3);
-		}
-
+		/* The info-token pad folded into a seat, separated from the name row above
+		   by a hairline within the same seat block. */
 		.infoPad {
-			padding: var(--space-3);
-			background-color: var(--surface-2);
-			border: 1px solid var(--border);
-			border-radius: var(--radius);
+			padding-block-start: var(--space-3);
+			border-block-start: 1px solid var(--border);
 		}
 
 		.start {
