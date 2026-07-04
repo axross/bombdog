@@ -37,6 +37,8 @@ Report at most five Nits per review; summarize any beyond that as a count.
 
 ## Reporting
 
-Post all findings as a single pull-request review — inline comments anchored to
-the diff, plus a summary — never as loose top-level conversation comments. Open
-the review summary with a one-line tally (e.g. `1 important, 2 nits`).
+Anchor each finding as an inline comment on the diff, and post one summary that
+opens with a one-line tally (e.g. `1 important, 2 nits`). Keep reporting to those
+two shapes — inline comments for the findings, one comment for the summary — and
+do not scatter individual findings across separate top-level conversation
+comments.
