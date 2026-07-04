@@ -154,6 +154,14 @@ export interface DetectorMove extends BaseMove {
 	 * The wire's true value, recorded when the detector failed.
 	 */
 	revealed?: RevealedWire;
+	/**
+	 * The value the cut wire turned out to be, recorded only for a *successful*
+	 * X or Y Ray. That card names two candidate values for a single wire, so a
+	 * success leaves the actual cut value ambiguous; capturing it (one of the two
+	 * named values) lets the status view attribute the cut. Unused by the other
+	 * detectors, whose single named value already pins the cut.
+	 */
+	cutValue?: BlueWireValueOrUnknown;
 }
 
 /**
@@ -194,6 +202,7 @@ export type MoveDraft =
 			values: BlueWireValueOrUnknown[];
 			outcome: Outcome;
 			revealed?: RevealedWire;
+			cutValue?: BlueWireValueOrUnknown;
 	  }
 	| { type: "equipment"; actorId: string; equipment: string; note?: string };
 

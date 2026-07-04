@@ -23,6 +23,7 @@ describe("emptyDraftFields()", () => {
 			values: [],
 			outcome: null,
 			revealed: null,
+			cutValue: null,
 			equipment: "",
 			note: "",
 		});
@@ -210,6 +211,9 @@ describe("buildDraft()", () => {
 			detector: "x-or-y-ray" as const,
 			targetId: "b",
 			outcome: "success" as const,
+			// a successful ray also needs its cut value; set it so the value-count
+			// rule is the only thing under test here.
+			cutValue: 9 as const,
 		};
 		// one value is not enough for a two-value ray.
 		expect(buildDraft("detector", { ...base, values: [4] })).toBeNull();
@@ -220,6 +224,52 @@ describe("buildDraft()", () => {
 			detector: "x-or-y-ray",
 			values: [4, 9],
 		});
+	});
+
+	it("requires the actual cut value for a successful X or Y Ray", () => {
+		const base = {
+			...emptyDraftFields("a"),
+			detector: "x-or-y-ray" as const,
+			targetId: "b",
+			values: [4, 9] as BlueWireValue[],
+			outcome: "success" as const,
+		};
+		// success is ambiguous across the two names until the cut value is recorded.
+		expect(buildDraft("detector", base)).toBeNull();
+		expect(buildDraft("detector", { ...base, cutValue: 9 })).toMatchObject({
+			type: "detector",
+			detector: "x-or-y-ray",
+			values: [4, 9],
+			outcome: "success",
+			cutValue: 9,
+		});
+	});
+
+	it("omits the cut value for a non-ray detector and on failure", () => {
+		// a single-value detector never needs disambiguation, even with a stray
+		// cutValue in the fields.
+		expect(
+			buildDraft("detector", {
+				...emptyDraftFields("a"),
+				detector: "triple",
+				targetId: "b",
+				values: [4],
+				outcome: "success",
+				cutValue: 9,
+			}),
+		).not.toHaveProperty("cutValue");
+		// a failed ray records `revealed`, not `cutValue`.
+		expect(
+			buildDraft("detector", {
+				...emptyDraftFields("a"),
+				detector: "x-or-y-ray",
+				targetId: "b",
+				values: [4, 9],
+				outcome: "fail",
+				revealed: 8,
+				cutValue: 9,
+			}),
+		).not.toHaveProperty("cutValue");
 	});
 
 	it("rejects a second value for a single-value detector", () => {
@@ -335,6 +385,37 @@ describe("fieldsFromMove()", () => {
 			outcome: "fail",
 			revealed: "unknown",
 		});
+	});
+
+	it("seeds the cut value from a successful X or Y Ray", () => {
+		const move: DetectorMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "detector",
+			detector: "x-or-y-ray",
+			actorId: "a",
+			targetId: "c",
+			values: [4, 9],
+			outcome: "success",
+			cutValue: 9,
+		};
+		expect(fieldsFromMove(move).cutValue).toBe(9);
+	});
+
+	it("defaults the cut value to null when a detector has none", () => {
+		const move: DetectorMove = {
+			id: "1",
+			seq: 1,
+			at: 0,
+			type: "detector",
+			detector: "double",
+			actorId: "a",
+			targetId: "c",
+			values: [4],
+			outcome: "success",
+		};
+		expect(fieldsFromMove(move).cutValue).toBeNull();
 	});
 
 	it("defaults revealed to null when a detector has none", () => {

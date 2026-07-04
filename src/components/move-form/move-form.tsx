@@ -9,7 +9,7 @@ import {
 	type SelectOption,
 } from "@/components/select-field/select-field";
 import { WirePad } from "@/components/wire-pad/wire-pad";
-import { targetPlayerOrder } from "@/lib/game";
+import { formatWire, targetPlayerOrder, wireLabel } from "@/lib/game";
 import {
 	type BlueWireValueOrUnknown,
 	DETECTOR_OPTIONS,
@@ -105,10 +105,12 @@ function MoveFields({
 					value={fields.detector}
 					onValueChange={(kind) =>
 						// trim the selection to the new card's value count (e.g. dropping
-						// down from the two-value X or Y Ray to a one-value detector).
+						// down from the two-value X or Y Ray to a one-value detector), and
+						// drop any X-or-Y-Ray cut value the old card may have carried.
 						update({
 							detector: kind as DetectorKind,
 							values: detectorValues(fields.values, kind as DetectorKind),
+							cutValue: null,
 						})
 					}
 					options={DETECTOR_SELECT_OPTIONS}
@@ -154,11 +156,13 @@ function MoveFields({
 					values={fields.values}
 					onValuesChange={(values) =>
 						// the pad is blue-only, so this narrows to blue values (still
-						// possibly "?"); yellow can never be picked here.
+						// possibly "?"); yellow can never be picked here. changing the named
+						// values invalidates any X-or-Y-Ray cut value picked from them.
 						update({
 							values: values.filter(
 								(v): v is BlueWireValueOrUnknown => v !== "yellow",
 							),
+							cutValue: null,
 						})
 					}
 					blueOnly
@@ -172,10 +176,47 @@ function MoveFields({
 					label="Result"
 					outcome={fields.outcome}
 					revealed={fields.revealed}
-					onChange={(outcome, revealed) => update({ outcome, revealed })}
+					onChange={(outcome, revealed) =>
+						// a fail has no single cut value; clear any X-or-Y-Ray pick.
+						update({
+							outcome,
+							revealed,
+							cutValue: outcome === "success" ? fields.cutValue : null,
+						})
+					}
 					data-testid="outcome"
 				/>
 			)}
+
+			{isDetector &&
+				fields.detector === "x-or-y-ray" &&
+				fields.outcome === "success" &&
+				fields.values.length === 2 && (
+					// a successful X or Y Ray cut one of the two named wires; record
+					// which so the status view can attribute the cut.
+					<fieldset
+						className={css.cutValue}
+						aria-label="Actual cut value"
+						data-testid="cut-value"
+					>
+						<span className={css.cutValueLabel}>Actual value</span>
+						<div className={css.cutValueButtons}>
+							{fields.values.map((value) => (
+								<button
+									key={String(value)}
+									type="button"
+									className={css.cutValueItem}
+									aria-pressed={fields.cutValue === value}
+									aria-label={wireLabel(value)}
+									onClick={() => update({ cutValue: value })}
+									data-testid={`cut-value-${value}`}
+								>
+									{formatWire(value)}
+								</button>
+							))}
+						</div>
+					</fieldset>
+				)}
 
 			{type === "equipment" && (
 				<div className={css.equipment}>

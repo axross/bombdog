@@ -38,6 +38,64 @@
 			flex: none;
 			color: var(--accent);
 		}
+
+		/* Fills the space between header and composer; its active panel scrolls
+		   internally so the shell height stays fixed. */
+		.tabsRoot {
+			flex: 1;
+			min-block-size: 0;
+			display: flex;
+			flex-direction: column;
+		}
+
+		/* View switch below the header: the two tab triggers, plus the move filter
+		   (Moves view only) pinned to the trailing edge. */
+		.tabBar {
+			display: flex;
+			align-items: center;
+			gap: var(--space-3);
+			padding-inline: var(--space-4);
+			background-color: var(--surface-2);
+			border-block-end: 1px solid var(--border);
+		}
+
+		.tabs {
+			flex: 1;
+			display: flex;
+			gap: var(--space-1);
+		}
+
+		.tab {
+			min-block-size: 44px;
+			padding-inline: var(--space-3);
+			background-color: transparent;
+			color: var(--text-muted);
+			border: none;
+			border-block-end: 2px solid transparent;
+			font-weight: 600;
+			font-size: 0.95rem;
+			white-space: nowrap;
+
+			&:hover {
+				color: var(--text);
+			}
+
+			&[data-state="active"] {
+				color: var(--accent);
+				border-block-end-color: var(--accent);
+			}
+		}
+
+		.panel {
+			flex: 1;
+			min-block-size: 0;
+			display: flex;
+			flex-direction: column;
+
+			&:focus-visible {
+				outline: none;
+			}
+		}
 	}
 
 	@scope (.loading) {

@@ -1,7 +1,15 @@
 // pure, UI-agnostic helpers for the tracker. kept separate from the store so
 // they are trivially unit-testable and reusable across components.
 
-import type { Move, MoveFilter, Player, WireValueOrUnknown } from "./types";
+import {
+	BLUE_WIRE_VALUES,
+	type BlueWireValue,
+	type DetectorMove,
+	type Move,
+	type MoveFilter,
+	type Player,
+	type WireValueOrUnknown,
+} from "./types";
 
 /**
  * Resolve a player's display name, tolerant of unknown ids.
@@ -106,4 +114,170 @@ export function nextActorId(
 	const lastSeat = players.findIndex((p) => p.id === lastTurnMove.actorId);
 	if (lastSeat === -1) return captainSeatId;
 	return players[(lastSeat + 1) % players.length].id;
+}
+
+/**
+ * The number of copies of every blue value in the game (the "4-of-each" fact
+ * that anchors all deduction).
+ */
+export const WIRE_COPIES = 4;
+
+/**
+ * One blue value's line in the status view: how many of its four copies are
+ * cut vs still uncut, plus the players known to hold an uncut copy.
+ */
+export interface WireStatusRow {
+	value: BlueWireValue;
+	/**
+	 * Copies cut so far (0–4, clamped — a mis-logged over-cut cannot exceed 4).
+	 */
+	cut: number;
+	/**
+	 * Copies still in play (`WIRE_COPIES - cut`).
+	 */
+	uncut: number;
+	/**
+	 * Players known to hold an uncut copy, in seat order. Deduplicated: a player
+	 * appears once however many copies they are known to hold.
+	 */
+	holders: Player[];
+}
+
+/**
+ * The derived status view: the twelve blue values plus the players known to
+ * hold an uncut yellow wire.
+ */
+export interface WireStatus {
+	blue: WireStatusRow[];
+	yellowHolders: Player[];
+}
+
+/**
+ * Map key for the possession multiset: a blue number or the shared "yellow".
+ * Unknown ("?") wires can't be attributed to a value, so they never key here.
+ */
+type HolderKey = BlueWireValue | "yellow";
+
+/**
+ * The value a *successful* detector cut, or `null` when it can't be pinned to a
+ * single value (an X or Y Ray whose actual cut value was never captured, or a
+ * detector with no named value). The X or Y Ray names two candidates, so its
+ * captured `cutValue` — not the named `values` — is the one that was cut; every
+ * other detector's single named value is the cut.
+ */
+function detectorCutValue(move: DetectorMove): WireValueOrUnknown | null {
+	return move.detector === "x-or-y-ray"
+		? (move.cutValue ?? null)
+		: (move.values[0] ?? null);
+}
+
+/**
+ * Derive the status view from the logged game state. Pure and best-effort: it
+ * mirrors what the moves imply without validating them, matching the app's
+ * pure-logger stance (an inconsistent manual log is reflected, not corrected).
+ *
+ * **Cut counts** (blue 1–12, out of {@link WIRE_COPIES}): a successful dual cut
+ * or detector cuts two copies of its value (the actor's wire and the target's);
+ * a solo cut removes a value's last copies, so it marks that value fully cut. A
+ * failed guess and an unknown ("?") value change no count.
+ *
+ * **Possession**: starting info tokens and failed-guess reveals record that a
+ * player holds a wire of a value (blue or yellow); a successful cut consumes one
+ * known copy from *both* the actor and the target, and a solo cut clears the
+ * value entirely (its last copies just left play).
+ */
+export function deriveWireStatus(
+	players: Player[],
+	moves: Move[],
+	infoTokens: Record<string, BlueWireValue>,
+): WireStatus {
+	const cut = new Map<BlueWireValue, number>();
+	// values fully cut by a solo cut, pinned to 4 regardless of prior partial cuts.
+	const complete = new Set<BlueWireValue>();
+	// possession as a multiset of player ids per value, so both-side consumption
+	// removes exactly one known copy at a time.
+	const holders = new Map<HolderKey, string[]>();
+
+	const addHolder = (key: HolderKey, playerId: string) => {
+		const list = holders.get(key);
+		if (list) list.push(playerId);
+		else holders.set(key, [playerId]);
+	};
+	const consumeHolder = (key: HolderKey, playerId: string) => {
+		const list = holders.get(key);
+		if (!list) return;
+		const at = list.indexOf(playerId);
+		if (at !== -1) list.splice(at, 1);
+	};
+	const addCut = (value: WireValueOrUnknown | null) => {
+		if (typeof value !== "number") return;
+		cut.set(value, (cut.get(value) ?? 0) + 2);
+	};
+
+	// starting info tokens: each records that a player holds that blue value.
+	for (const [playerId, value] of Object.entries(infoTokens)) {
+		addHolder(value, playerId);
+	}
+
+	// replay moves in sequence order so consumption follows the reveals it relies on.
+	const ordered = [...moves].sort((a, b) => a.seq - b.seq);
+	for (const move of ordered) {
+		switch (move.type) {
+			case "equipment":
+				break;
+			case "solo-cut": {
+				// the last copies of this value leave play: mark it complete and drop
+				// every known holder of it (the actor held them; no one holds it now).
+				if (typeof move.value === "number") complete.add(move.value);
+				if (move.value !== "unknown") holders.delete(move.value);
+				break;
+			}
+			case "dual-cut": {
+				if (move.outcome === "success") {
+					addCut(move.value);
+					if (move.value !== "unknown") {
+						consumeHolder(move.value, move.actorId);
+						consumeHolder(move.value, move.targetId);
+					}
+				} else if (move.revealed != null && move.revealed !== "unknown") {
+					// a failed guess reveals the target's pointed-at wire (blue or yellow).
+					addHolder(move.revealed, move.targetId);
+				}
+				break;
+			}
+			case "detector": {
+				if (move.outcome === "success") {
+					const value = detectorCutValue(move);
+					addCut(value);
+					if (value != null && value !== "unknown") {
+						consumeHolder(value, move.actorId);
+						consumeHolder(value, move.targetId);
+					}
+				} else if (move.revealed != null && move.revealed !== "unknown") {
+					addHolder(move.revealed, move.targetId);
+				}
+				break;
+			}
+		}
+	}
+
+	// resolve a holder multiset to unique players in seat order.
+	const resolveHolders = (key: HolderKey): Player[] => {
+		const ids = new Set(holders.get(key) ?? []);
+		return players.filter((p) => ids.has(p.id));
+	};
+
+	const blue: WireStatusRow[] = BLUE_WIRE_VALUES.map((value) => {
+		const cutCount = complete.has(value)
+			? WIRE_COPIES
+			: Math.min(WIRE_COPIES, cut.get(value) ?? 0);
+		return {
+			value,
+			cut: cutCount,
+			uncut: WIRE_COPIES - cutCount,
+			holders: resolveHolders(value),
+		};
+	});
+
+	return { blue, yellowHolders: resolveHolders("yellow") };
 }

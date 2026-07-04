@@ -106,5 +106,51 @@
 				color: var(--text-muted);
 			}
 		}
+
+		/* Which of the two X-or-Y-Ray values the wire turned out to be. Mirrors
+		   the outcome toggle's segmented buttons for a consistent picker feel. */
+		.cutValue {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-1);
+			min-inline-size: 0;
+			padding: 0;
+			margin: 0;
+			border: 0;
+		}
+
+		.cutValueLabel {
+			font-size: 0.8rem;
+			font-weight: 600;
+			color: var(--text-muted);
+		}
+
+		.cutValueButtons {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: var(--space-2);
+		}
+
+		.cutValueItem {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-block-size: 44px;
+			background-color: var(--surface-2);
+			color: var(--text);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			font-weight: 700;
+
+			&:hover {
+				background-color: var(--surface-3);
+			}
+
+			&[aria-pressed="true"] {
+				background-color: var(--accent);
+				color: var(--accent-contrast);
+				border-color: var(--accent);
+			}
+		}
 	}
 }

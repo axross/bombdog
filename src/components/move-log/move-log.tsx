@@ -59,20 +59,27 @@ function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
 
 /**
  * Success/fail badge for a guess-based move. On a failure with a known
- * `revealed` value, the badge also shows that value (e.g. "fail (8)").
+ * `revealed` value, the badge also shows that value (e.g. "fail (8)"). On a
+ * successful X or Y Ray, `cut` names which of the two candidates was cut, shown
+ * the same way (e.g. "success (8)").
  */
 function OutcomeBadge({
 	outcome,
 	revealed,
+	cut,
 }: {
 	outcome: "success" | "fail";
 	revealed?: RevealedWire;
+	cut?: WireValueOrUnknown;
 }): JSX.Element {
 	const showReveal = outcome === "fail" && revealed !== undefined;
+	const showCut = outcome === "success" && cut !== undefined;
 	const Icon = outcome === "success" ? Check : X;
 	const text =
 		outcome === "success"
-			? "success"
+			? showCut
+				? `success (${formatWire(cut)})`
+				: "success"
 			: showReveal
 				? `fail (${formatWire(revealed)})`
 				: "fail";
@@ -85,6 +92,7 @@ function OutcomeBadge({
 			data-testid="badge"
 			data-outcome={outcome}
 			data-revealed={showReveal ? formatWire(revealed) : undefined}
+			data-cut={showCut ? formatWire(cut) : undefined}
 		>
 			<Icon size={14} aria-hidden />
 			{text}
@@ -111,7 +119,11 @@ function MoveDetail({ move }: { move: Move }): JSX.Element {
 					{move.values.map((value) => (
 						<WireChip key={value} value={value} />
 					))}
-					<OutcomeBadge outcome={move.outcome} revealed={move.revealed} />
+					<OutcomeBadge
+						outcome={move.outcome}
+						revealed={move.revealed}
+						cut={move.cutValue}
+					/>
 				</>
 			);
 		case "solo-cut":

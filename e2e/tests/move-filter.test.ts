@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
 	filterDialog,
-	header,
 	logDetector,
 	logDualCut,
 	logSoloCut,
@@ -88,8 +87,8 @@ test.describe("move-log filter", () => {
 		await expect(moveRow(page, 3)).toHaveCount(0);
 		await expect(moveRow(page, 2)).toBeVisible();
 		await expect(moveRow(page, 4)).toBeVisible();
-		// the active filter is flagged on the header trigger.
-		await expect(header(page).getByTestId("filter-active")).toBeVisible();
+		// the active filter is flagged on the filter trigger.
+		await expect(page.getByTestId("filter-active")).toBeVisible();
 
 		await openFilter(page);
 		await filterDialog(page).getByTestId("filter-reset").click();
@@ -98,6 +97,6 @@ test.describe("move-log filter", () => {
 		// everything returns and the active flag clears.
 		await expect(moveRow(page, 1)).toBeVisible();
 		await expect(moveRow(page, 3)).toBeVisible();
-		await expect(header(page).getByTestId("filter-active")).toHaveCount(0);
+		await expect(page.getByTestId("filter-active")).toHaveCount(0);
 	});
 });

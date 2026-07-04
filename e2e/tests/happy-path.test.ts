@@ -237,6 +237,8 @@ test.describe("logging each action type", () => {
 			target: "Player 2",
 			values: [3, 11],
 			outcome: "success",
+			// a successful ray records which of the two named wires it turned out to be.
+			cutValue: 11,
 		});
 
 		const row = moveRow(page, 1);
@@ -244,6 +246,8 @@ test.describe("logging each action type", () => {
 		// both named values render as chips.
 		await expect(row.getByRole("img", { name: "Wire 3" })).toBeVisible();
 		await expect(row.getByRole("img", { name: "Wire 11" })).toBeVisible();
+		// the captured actual value shows on the success badge.
+		await expect(row.getByTestId("badge")).toHaveText(/success \(11\)/);
 	});
 
 	test("super detector — points at a whole stand", {
