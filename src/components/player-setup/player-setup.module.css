@@ -147,11 +147,13 @@
 			color: var(--accent);
 		}
 
-		/* Skip toggle + hint, sitting above the roster and below the player count. */
-		.infoToggle {
+		/* Roster group: the info-token hint leads directly into the seats, so it
+		   hugs them with a tight gap. The skip toggle sits above as its own
+		   element, separated by the screen's larger inter-block rhythm. */
+		.roster {
 			display: flex;
 			flex-direction: column;
-			gap: var(--space-2);
+			gap: var(--space-3);
 		}
 
 		.skip {

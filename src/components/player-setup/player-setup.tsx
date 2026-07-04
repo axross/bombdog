@@ -154,71 +154,73 @@ export function PlayerSetup(): JSX.Element {
 				</div>
 			</div>
 
-			<div className={css.infoToggle}>
-				<label className={css.skip}>
-					<input
-						type="checkbox"
-						checked={skipInfoTokens}
-						onChange={(e) => setSkipInfoTokens(e.target.checked)}
-						data-testid="skip-info-tokens"
-					/>
-					Skip starting info tokens
-				</label>
+			<label className={css.skip}>
+				<input
+					type="checkbox"
+					checked={skipInfoTokens}
+					onChange={(e) => setSkipInfoTokens(e.target.checked)}
+					data-testid="skip-info-tokens"
+				/>
+				Skip starting info tokens
+			</label>
+
+			{/* The hint leads into the per-seat wire pads, so it is grouped with the
+			    roster (tight gap) and kept clear of the skip toggle above it. */}
+			<div className={css.roster}>
 				{!skipInfoTokens && (
 					<p className={css.infoHint}>
 						Tap the wire each player marked with their info token.
 					</p>
 				)}
-			</div>
-
-			<RadioGroup.Root
-				className={css.seats}
-				value={String(captainIndex)}
-				onValueChange={(v) => setCaptainIndex(Number(v))}
-				aria-label="Choose the Captain"
-			>
-				{Array.from({ length: count }, (_, i) => (
-					// seats are positional: the seat index *is* the identity here
-					// (the Captain is tracked by index), so an index key is correct.
-					// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
-					<div key={i} className={css.seat}>
-						<div className={css.seatMain}>
-							<RadioGroup.Item
-								className={css.radio}
-								value={String(i)}
-								id={`captain-${i}`}
-								aria-label={`Make player ${i + 1} the Captain`}
-							>
-								<RadioGroup.Indicator className={css.radioDot} />
-							</RadioGroup.Item>
-							<input
-								className={css.nameInput}
-								type="text"
-								value={names[i]}
-								onChange={(e) => setName(i, e.target.value)}
-								// select the whole name on focus so typing replaces it
-								// outright — players rarely tweak the default, they retype it.
-								onFocus={(e) => e.target.select()}
-								aria-label={`Name of player ${i + 1}`}
-								maxLength={24}
-							/>
-							{captainIndex === i && (
-								<span className={css.captainTag}>Captain</span>
+				<RadioGroup.Root
+					className={css.seats}
+					value={String(captainIndex)}
+					onValueChange={(v) => setCaptainIndex(Number(v))}
+					aria-label="Choose the Captain"
+				>
+					{Array.from({ length: count }, (_, i) => (
+						// seats are positional: the seat index *is* the identity here
+						// (the Captain is tracked by index), so an index key is correct.
+						// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
+						<div key={i} className={css.seat}>
+							<div className={css.seatMain}>
+								<RadioGroup.Item
+									className={css.radio}
+									value={String(i)}
+									id={`captain-${i}`}
+									aria-label={`Make player ${i + 1} the Captain`}
+								>
+									<RadioGroup.Indicator className={css.radioDot} />
+								</RadioGroup.Item>
+								<input
+									className={css.nameInput}
+									type="text"
+									value={names[i]}
+									onChange={(e) => setName(i, e.target.value)}
+									// select the whole name on focus so typing replaces it
+									// outright — players rarely tweak the default, they retype it.
+									onFocus={(e) => e.target.select()}
+									aria-label={`Name of player ${i + 1}`}
+									maxLength={24}
+								/>
+								{captainIndex === i && (
+									<span className={css.captainTag}>Captain</span>
+								)}
+							</div>
+							{!skipInfoTokens && (
+								<WirePad
+									label="Info token"
+									value={infoTokenBySeat[i] ?? null}
+									onValueChange={(value) => setInfoToken(i, value)}
+									blueOnly
+									className={css.infoPad}
+									data-testid={`info-token-${i}`}
+								/>
 							)}
 						</div>
-						{!skipInfoTokens && (
-							<WirePad
-								label="Info token"
-								value={infoTokenBySeat[i] ?? null}
-								onValueChange={(value) => setInfoToken(i, value)}
-								blueOnly
-								className={css.infoPad}
-								data-testid={`info-token-${i}`}
-							/>
-						)}
-					</div>
-				))}
-			</RadioGroup.Root>
+					))}
+				</RadioGroup.Root>
+			</div>
 
 			<button
 				type="button"
