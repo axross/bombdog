@@ -1,13 +1,17 @@
 @layer components {
 	@scope (.startingInfo) {
 		/* Heads the scrollable move history as a bordered card (matching the move
-		   rows), scrolling away with it rather than pinning under the header. */
+		   rows), scrolling away with it rather than pinning under the header. The
+		   trailing inline padding reserves room for the top-right Edit button so
+		   wrapping tokens never run under it. */
 		:where(:scope) {
+			position: relative;
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
 			gap: var(--space-2) var(--space-3);
 			padding: var(--space-3);
+			padding-inline-end: calc(var(--space-3) + 36px + var(--space-2));
 			background-color: var(--surface-2);
 			border: 1px solid var(--border);
 			border-radius: var(--radius);
@@ -55,6 +59,29 @@
 			border-radius: var(--radius-sm);
 			color: var(--wire-blue-contrast);
 			background-color: var(--wire-blue);
+		}
+
+		/* Edit trigger — an icon-only button pinned to the card's top-right corner,
+		   clear of the wrapping label/token content (which reserves inline-end room
+		   for it). Square tap target, mirroring the move-log row's edit affordance. */
+		.edit {
+			position: absolute;
+			inset-block-start: var(--space-3);
+			inset-inline-end: var(--space-3);
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-inline-size: 36px;
+			min-block-size: 36px;
+			color: var(--text-muted);
+			background-color: transparent;
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+
+			&:hover {
+				color: var(--text);
+				background-color: var(--surface-3);
+			}
 		}
 	}
 }

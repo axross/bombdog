@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
 import {
+	editInfoToken,
 	gotoApp,
+	openStartingInfoEditor,
 	placeInfoToken,
+	saveStartingInfo,
 	skipInfoTokens,
 	startFromSetup,
 	startingInfo,
@@ -40,6 +43,44 @@ test.describe("starting info tokens", () => {
 		await expect(
 			startingInfo(page).getByTestId("starting-info-token"),
 		).toHaveCount(2);
+	});
+
+	test("edits a starting info token from the tracker", {
+		tag: [
+			"@scenario:session.edit-info-tokens",
+			"@area:session",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
+		await gotoApp(page);
+		// seat 0 marks wire 9, seat 2 marks wire 4.
+		await placeInfoToken(page, 0, 9);
+		await placeInfoToken(page, 2, 4);
+		await startFromSetup(page);
+
+		const strip = startingInfo(page);
+		const player1 = strip.locator('[data-player="Player 1"]');
+		await expect(player1.getByRole("img", { name: "Wire 9" })).toBeVisible();
+
+		// correct Player 1's token from 9 to 2; Player 3's stays untouched.
+		await openStartingInfoEditor(page);
+		await editInfoToken(page, "Player 1", 2);
+		await saveStartingInfo(page);
+
+		await expect(player1.getByRole("img", { name: "Wire 2" })).toBeVisible();
+		await expect(
+			strip
+				.locator('[data-player="Player 3"]')
+				.getByRole("img", { name: "Wire 4" }),
+		).toBeVisible();
+
+		// the correction persists across a reload (IndexedDB rehydration).
+		await page.reload();
+		await expect(
+			startingInfo(page)
+				.locator('[data-player="Player 1"]')
+				.getByRole("img", { name: "Wire 2" }),
+		).toBeVisible();
 	});
 
 	test("skips the starting info token phase", {

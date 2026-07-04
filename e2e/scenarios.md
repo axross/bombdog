@@ -47,6 +47,7 @@ carries its `@scenario:<id>` tag. The reporter
 | session.off-turn-equipment | Off-turn equipment returns the suggestion to the turn-holder | session | should |
 | session.undo-redo | Undo/redo walk the move stack; a new move clears redo | session | should |
 | session.edit-move | Edit a logged move in place | session | should |
+| session.edit-info-tokens | Correct a starting info token's value from the tracker's Starting info strip | session | should |
 | session.edit-cancel | Cancel an edit leaves the logged move unchanged | session | should |
 | session.delete-move | Delete a logged move from its edit panel | session | should |
 | session.collapse | Collapse and expand the composer | session | should |
