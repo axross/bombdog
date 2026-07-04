@@ -194,7 +194,6 @@ function MoveRow({
 				data-testid="edit"
 			>
 				<Pencil size={15} aria-hidden />
-				<span className={css.editText}>Edit</span>
 			</button>
 		</div>
 	);
