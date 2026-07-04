@@ -52,6 +52,7 @@ a miss that breaks the requirement is **Important**, a gap that does not is a
 - **Type safety** — no `any`, unchecked cast, or unjustified non-null assertion
   (`!`) introduced, per
   [`development-guidelines`](.claude/skills/development-guidelines/SKILL.md).
+  Unjustified type-unsafety is Important.
 - **Dead code** — no unused export, unreachable branch, or commented-out code
   left in the diff (Important only if it hides a bug).
 - **Boundaries & styling** — correct Server/Client component boundaries (an
