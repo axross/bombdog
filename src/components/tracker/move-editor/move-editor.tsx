@@ -1,11 +1,12 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import { AlertDialog } from "radix-ui";
 import { type JSX, useState } from "react";
-import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
-import { buildDraft, fieldsFromMove } from "@/lib/move-draft";
 import { MoveForm } from "@/components/tracker/move-form/move-form";
+import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/ui/button/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog/confirm-dialog";
+import { buildDraft, fieldsFromMove } from "@/lib/move-draft";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
 import css from "./move-editor.module.css";
@@ -72,62 +73,35 @@ export function MoveEditor({
 			/>
 
 			<div className={css.footer}>
-				<AlertDialog.Root>
-					<AlertDialog.Trigger asChild>
-						<button type="button" className={css.danger} data-testid="delete">
+				{/* Destructive action kept opposite the primary Save so it is not
+				    tapped by reflex; the confirm dialog sits above the editor sheet. */}
+				<ConfirmDialog
+					trigger={
+						<Button variant="danger-ghost" data-testid="delete">
 							<Trash2 size={15} aria-hidden />
 							Delete
-						</button>
-					</AlertDialog.Trigger>
-					<AlertDialog.Portal>
-						<AlertDialog.Overlay className={css.confirmOverlay} />
-						<AlertDialog.Content
-							className={css.confirmContent}
-							data-testid="delete-dialog"
-						>
-							<AlertDialog.Title className={css.confirmTitle}>
-								Delete move #{move.seq}?
-							</AlertDialog.Title>
-							<AlertDialog.Description className={css.confirmDescription}>
-								This removes the move from the history. It can't be undone.
-							</AlertDialog.Description>
-							<div className={css.confirmActions}>
-								<AlertDialog.Cancel asChild>
-									<button type="button" className={css.confirmCancel}>
-										Cancel
-									</button>
-								</AlertDialog.Cancel>
-								<AlertDialog.Action asChild>
-									<button
-										type="button"
-										className={css.confirmDelete}
-										onClick={handleDelete}
-										data-testid="delete-confirm"
-									>
-										Delete
-									</button>
-								</AlertDialog.Action>
-							</div>
-						</AlertDialog.Content>
-					</AlertDialog.Portal>
-				</AlertDialog.Root>
+						</Button>
+					}
+					title={`Delete move #${move.seq}?`}
+					description="This removes the move from the history. It can't be undone."
+					confirmLabel="Delete"
+					onConfirm={handleDelete}
+					elevated
+					data-testid="delete-dialog"
+					confirmTestId="delete-confirm"
+				/>
 				<div className={css.actions}>
-					<button
-						type="button"
-						className={css.secondary}
-						onClick={() => setOpen(false)}
-					>
+					<Button variant="secondary" onClick={() => setOpen(false)}>
 						Cancel
-					</button>
-					<button
-						type="button"
-						className={css.primary}
+					</Button>
+					<Button
+						variant="primary"
 						onClick={handleSave}
 						disabled={!draft}
 						data-testid="save"
 					>
 						Save
-					</button>
+					</Button>
 				</div>
 			</div>
 		</BottomSheet>

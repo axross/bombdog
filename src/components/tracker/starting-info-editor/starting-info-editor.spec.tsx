@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { StartingInfoToken } from "@/hooks/use-starting-info-tokens";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { BlueWireValue, Player } from "@/lib/types";
-import { type EditableToken, StartingInfoEditor } from "./starting-info-editor";
+import { StartingInfoEditor } from "./starting-info-editor";
 
 const players: Player[] = [
 	{ id: "a", name: "Alice" },
@@ -10,7 +11,7 @@ const players: Player[] = [
 	{ id: "c", name: "Carol" },
 ];
 
-const tokens: EditableToken[] = [
+const tokens: StartingInfoToken[] = [
 	{ player: players[0], value: 9 },
 	{ player: players[2], value: 4 },
 ];

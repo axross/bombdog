@@ -2,10 +2,13 @@
 
 import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
-import { type JSX, useEffect, useMemo, useRef, useState } from "react";
+import { type JSX, useEffect, useRef, useState } from "react";
 import { MoveEditor } from "@/components/tracker/move-editor/move-editor";
 import { StartingInfo } from "@/components/tracker/starting-info/starting-info";
-import { filterMoves, formatWire, getPlayerName, wireLabel } from "@/lib/game";
+import { Button } from "@/components/ui/button/button";
+import { WireChip } from "@/components/ui/wire-chip/wire-chip";
+import { useFilteredMoves } from "@/hooks/use-filtered-moves";
+import { formatWire, getPlayerName } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import {
 	detectorOption,
@@ -32,29 +35,6 @@ function kindLabel(move: Move): string {
 	return move.type === "detector"
 		? detectorOption(move.detector).label
 		: KIND_LABEL[move.type];
-}
-
-const CHIP_VARIANT: Record<"blue" | "yellow" | "unknown", string> = {
-	blue: css.chipBlue,
-	yellow: css.chipYellow,
-	unknown: css.chipUnknown,
-};
-
-/**
- * A wire value shown as a colour-coded chip: blue, yellow, or "?" (unknown).
- */
-function WireChip({ value }: { value: WireValueOrUnknown }): JSX.Element {
-	const variant =
-		value === "unknown" ? "unknown" : value === "yellow" ? "yellow" : "blue";
-	return (
-		<span
-			role="img"
-			className={clsx(css.chip, CHIP_VARIANT[variant])}
-			aria-label={wireLabel(value)}
-		>
-			{formatWire(value)}
-		</span>
-	);
 }
 
 /**
@@ -218,15 +198,15 @@ function MoveRow({
 					<MoveDetail move={move} players={players} />
 				</div>
 			</div>
-			<button
-				type="button"
-				className={css.edit}
+			<Button
+				variant="ghost"
+				size="icon-sm"
 				onClick={onEdit}
 				aria-label={`Edit move #${move.seq}`}
 				data-testid="edit"
 			>
 				<Pencil size={15} aria-hidden />
-			</button>
+			</Button>
 		</div>
 	);
 }
@@ -242,10 +222,7 @@ export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const prevCount = useRef(0);
 
-	const visibleMoves = useMemo(
-		() => filterMoves(moves, filter),
-		[moves, filter],
-	);
+	const visibleMoves = useFilteredMoves(filter);
 
 	// keep the newest visible move (bottom) in view only when the list *grows*
 	// (a move was logged). toggling a filter can shrink the list; re-scrolling

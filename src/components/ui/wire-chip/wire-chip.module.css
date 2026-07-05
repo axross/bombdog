@@ -1,0 +1,32 @@
+@layer components {
+	@scope (.chip) {
+		:where(:scope) {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-inline-size: 26px;
+			block-size: 26px;
+			padding-inline: var(--space-2);
+			font-family: var(--font-mono);
+			font-weight: 700;
+			font-size: 0.85rem;
+			border-radius: var(--radius-sm);
+
+			/* Colour variants, at zero specificity so a caller's className wins. */
+			&:where(.blue) {
+				color: var(--wire-blue-contrast);
+				background-color: var(--wire-blue);
+			}
+
+			&:where(.yellow) {
+				color: var(--wire-yellow-contrast);
+				background-color: var(--wire-yellow);
+			}
+
+			&:where(.unknown) {
+				color: var(--surface);
+				background-color: var(--text-muted);
+			}
+		}
+	}
+}

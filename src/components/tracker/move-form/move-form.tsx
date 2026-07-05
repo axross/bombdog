@@ -13,6 +13,11 @@ import {
 import { WirePad } from "@/components/ui/wire-pad/wire-pad";
 import { formatWire, targetPlayerOrder, wireLabel } from "@/lib/game";
 import {
+	type DraftFields,
+	detectorValues,
+	type MoveFieldKey,
+} from "@/lib/move-draft";
+import {
 	type BlueWireValueOrUnknown,
 	DETECTOR_OPTIONS,
 	type DetectorKind,
@@ -23,7 +28,6 @@ import {
 	type Player,
 	POST_IT_EQUIPMENT,
 } from "@/lib/types";
-import { type DraftFields, detectorValues, type MoveFieldKey } from "@/lib/move-draft";
 import css from "./move-form.module.css";
 
 /**

@@ -3,12 +3,16 @@ import userEvent from "@testing-library/user-event";
 import { type JSX, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+	type DraftFields,
+	emptyDraftFields,
+	type MoveFieldKey,
+} from "@/lib/move-draft";
+import {
 	GENERAL_RADAR_EQUIPMENT,
 	type MoveType,
 	type Player,
 	POST_IT_EQUIPMENT,
 } from "@/lib/types";
-import { type DraftFields, emptyDraftFields, type MoveFieldKey } from "@/lib/move-draft";
 import { MoveForm } from "./move-form";
 
 const players: Player[] = [

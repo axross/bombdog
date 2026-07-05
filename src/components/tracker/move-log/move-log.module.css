@@ -114,34 +114,6 @@
 			color: var(--text);
 		}
 
-		.chip {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			min-inline-size: 26px;
-			block-size: 26px;
-			padding-inline: var(--space-2);
-			font-family: var(--font-mono);
-			font-weight: 700;
-			font-size: 0.85rem;
-			border-radius: var(--radius-sm);
-		}
-
-		.chipBlue {
-			color: var(--wire-blue-contrast);
-			background-color: var(--wire-blue);
-		}
-
-		.chipYellow {
-			color: var(--wire-yellow-contrast);
-			background-color: var(--wire-yellow);
-		}
-
-		.chipUnknown {
-			color: var(--surface);
-			background-color: var(--text-muted);
-		}
-
 		.badge {
 			display: inline-flex;
 			align-items: center;
@@ -161,25 +133,6 @@
 		.fail {
 			color: var(--danger-text);
 			background-color: var(--danger-soft);
-		}
-
-		/* Icon-only control: a compact square holding just the pencil glyph. Its
-		   accessible name comes from the button's aria-label, not visible text. */
-		.edit {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			inline-size: 36px;
-			block-size: 36px;
-			color: var(--text-muted);
-			background-color: transparent;
-			border: 1px solid var(--border);
-			border-radius: var(--radius-sm);
-
-			&:hover {
-				color: var(--text);
-				background-color: var(--surface-3);
-			}
 		}
 	}
 }

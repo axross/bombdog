@@ -1,28 +1,17 @@
 @layer components {
+	/* On top of the shared ghost/compact Button: the trigger sits on the tab
+	   bar, so it keeps a subtle surface, and it recolours while the filter is
+	   active. The active rules repeat with :hover so they outrank the Button's
+	   ghost hover recolour regardless of module order. */
 	@scope (.trigger) {
 		:where(:scope) {
-			display: inline-flex;
-			align-items: center;
-			gap: var(--space-1);
-			/* Compact toolbar trigger: 36px is the convention's floor for these. */
-			min-block-size: 36px;
-			padding-inline: var(--space-3);
-			color: var(--text-muted);
 			background-color: var(--surface-2);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-sm);
-			font-size: 0.85rem;
-			font-weight: 600;
+		}
 
-			&:hover {
-				color: var(--text);
-				background-color: var(--surface-3);
-			}
-
-			&.triggerActive {
-				color: var(--accent);
-				border-color: var(--accent);
-			}
+		:where(:scope).triggerActive,
+		:where(:scope).triggerActive:hover {
+			color: var(--accent);
+			border-color: var(--accent);
 		}
 
 		.dot {
@@ -39,20 +28,6 @@
 			display: flex;
 			flex-direction: column;
 			gap: var(--space-3);
-		}
-
-		.both {
-			min-block-size: 40px;
-			padding-inline: var(--space-4);
-			color: var(--text);
-			background-color: var(--surface-3);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-sm);
-			font-weight: 600;
-
-			&:hover {
-				background-color: var(--surface-hover);
-			}
 		}
 
 		.toggles {
@@ -109,39 +84,6 @@
 			justify-content: space-between;
 			gap: var(--space-2);
 			margin-block-start: var(--space-1);
-		}
-
-		.reset,
-		.done {
-			min-block-size: 44px;
-			padding-inline: var(--space-5);
-			border-radius: var(--radius-sm);
-			font-weight: 600;
-			border: 1px solid var(--border);
-		}
-
-		.reset {
-			color: var(--text);
-			background-color: transparent;
-
-			&:hover:not([aria-disabled="true"]) {
-				background-color: var(--surface-3);
-			}
-
-			&[aria-disabled="true"] {
-				opacity: 0.5;
-				cursor: not-allowed;
-			}
-		}
-
-		.done {
-			color: var(--accent-contrast);
-			background-color: var(--accent);
-			border-color: var(--accent);
-
-			&:hover {
-				background-color: var(--accent-hover);
-			}
 		}
 	}
 }

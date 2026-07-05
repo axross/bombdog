@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { Check, ListFilter } from "lucide-react";
 import { type JSX, useState } from "react";
 import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/ui/button/button";
 import { isFilterActive } from "@/lib/game";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./move-filter.module.css";
@@ -28,8 +29,9 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 
 	return (
 		<>
-			<button
-				type="button"
+			<Button
+				variant="ghost"
+				size="compact"
 				className={clsx(css.trigger, active && css.triggerActive)}
 				aria-label={active ? "Filter (active)" : "Filter"}
 				onClick={() => setOpen(true)}
@@ -40,7 +42,7 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 				{active && (
 					<span className={css.dot} aria-hidden data-testid="filter-active" />
 				)}
-			</button>
+			</Button>
 
 			<BottomSheet
 				open={open}
@@ -54,9 +56,9 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 					    (or off again once both are set) in a single tap. it is a plain
 					    action, not a toggle, so it carries no aria-pressed state — that
 					    would read as "off" in the mixed (one-exclusion) case. */}
-					<button
-						type="button"
-						className={css.both}
+					<Button
+						variant="secondary"
+						size="sm"
 						onClick={() =>
 							onChange({
 								excludeSuccessfulDualCut: !bothExcluded,
@@ -66,7 +68,7 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 						data-testid="filter-exclude-both"
 					>
 						{bothExcluded ? "Clear both" : "Exclude both"}
-					</button>
+					</Button>
 
 					<div className={css.toggles}>
 						<button
@@ -110,23 +112,21 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 						    button right after a keyboard user activates it would drop focus
 						    out of the dialog to <body>. it no-ops when nothing is excluded,
 						    and aria-disabled conveys the state without losing focus. */}
-						<button
-							type="button"
-							className={css.reset}
+						<Button
+							variant="ghost"
 							onClick={() => active && onChange(EMPTY_MOVE_FILTER)}
 							aria-disabled={!active}
 							data-testid="filter-reset"
 						>
 							Clear
-						</button>
-						<button
-							type="button"
-							className={css.done}
+						</Button>
+						<Button
+							variant="primary"
 							onClick={() => setOpen(false)}
 							data-testid="filter-done"
 						>
 							Done
-						</button>
+						</Button>
 					</div>
 				</div>
 			</BottomSheet>

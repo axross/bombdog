@@ -1,16 +1,14 @@
 "use client";
 
 import type { JSX } from "react";
+import { useWireStatus } from "@/hooks/use-wire-status";
 import {
-	derivePlayerPossessions,
-	deriveWireStatus,
 	formatWire,
 	type PlayerPossession,
 	WIRE_COPIES,
 	type WireStatusRow,
 	wireLabel,
 } from "@/lib/game";
-import { useTrackerStore } from "@/lib/tracker-store";
 import { BLUE_WIRE_VALUES, type WireValue } from "@/lib/types";
 import css from "./status-panel.module.css";
 
@@ -127,12 +125,7 @@ function PlayerCard({ player, values }: PlayerPossession): JSX.Element {
  * tokens, failed-cut reveals, Post-its, and General Radars).
  */
 export function StatusPanel(): JSX.Element {
-	const players = useTrackerStore((s) => s.players);
-	const moves = useTrackerStore((s) => s.moves);
-	const infoTokens = useTrackerStore((s) => s.infoTokens);
-
-	const status = deriveWireStatus(players, moves, infoTokens);
-	const possessions = derivePlayerPossessions(players, status);
+	const { status, possessions } = useWireStatus();
 
 	return (
 		<section

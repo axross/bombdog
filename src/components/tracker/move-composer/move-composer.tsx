@@ -2,18 +2,13 @@
 
 import { Redo2, Undo2 } from "lucide-react";
 import { type JSX, useState } from "react";
-import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
-import {
-	buildDraft,
-	type DraftFields,
-	emptyDraftFields,
-	invalidFields,
-	type MoveFieldKey,
-} from "@/lib/move-draft";
 import { MoveForm } from "@/components/tracker/move-form/move-form";
-import { nextActorId } from "@/lib/game";
+import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/ui/button/button";
+import { useMoveDraft } from "@/hooks/use-move-draft";
+import { useNextActor } from "@/hooks/use-next-actor";
+import { emptyDraftFields, type MoveFieldKey } from "@/lib/move-draft";
 import { useTrackerStore } from "@/lib/tracker-store";
-import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
 
 /**
@@ -43,78 +38,50 @@ const FIELD_LABELS: Record<MoveFieldKey, string> = {
  */
 export function MoveComposer(): JSX.Element {
 	const players = useTrackerStore((s) => s.players);
-	const captainIndex = useTrackerStore((s) => s.captainIndex);
 	const moves = useTrackerStore((s) => s.moves);
 	const redoCount = useTrackerStore((s) => s.redoStack.length);
 	const addMove = useTrackerStore((s) => s.addMove);
 	const undoLastMove = useTrackerStore((s) => s.undoLastMove);
 	const redoMove = useTrackerStore((s) => s.redoMove);
 
-	const suggestedActor =
-		nextActorId(players, captainIndex, moves) ?? players[0]?.id ?? "";
+	const { suggestedActor, suggestAfterLogging } = useNextActor();
+	const form = useMoveDraft("dual-cut", () => emptyDraftFields(suggestedActor));
 
 	const [open, setOpen] = useState(false);
-	const [type, setType] = useState<MoveType>("dual-cut");
-	const [fields, setFields] = useState<DraftFields>(() =>
-		emptyDraftFields(suggestedActor),
-	);
-	// how many times Log move has been pressed with an incomplete move since the
-	// last successful log. 0 means "not attempted yet" (no fields flagged); each
-	// failed press bumps it to re-play the highlight shake on what's still invalid.
-	const [nudge, setNudge] = useState(0);
 	// assertive message naming the fields that blocked the last press, for the
 	// live region; cleared on a successful log or when the sheet closes.
 	const [alert, setAlert] = useState("");
 
-	const draft = buildDraft(type, fields);
-	// flag fields only after a failed press, and recompute live so each fix clears
-	// its own highlight (UI=F(state)).
-	const invalid =
-		nudge > 0
-			? new Set<MoveFieldKey>(invalidFields(type, fields))
-			: new Set<MoveFieldKey>();
-
-	// clear any validation flags/announcement — after a log, and when the sheet is
-	// dismissed so a reopen starts clean.
-	const clearValidation = () => {
-		setNudge(0);
-		setAlert("");
-	};
-
-	const handleTypeChange = (next: MoveType) => {
-		setType(next);
-		// a different action has different required fields, so clear any flags from
-		// the previous action rather than flagging the new tab's fields pre-emptively.
-		clearValidation();
-	};
-
 	const handleOpenChange = (next: boolean) => {
 		setOpen(next);
-		if (!next) clearValidation();
+		// clear any validation flags/announcement when the sheet is dismissed so
+		// a reopen starts clean.
+		if (!next) {
+			form.resetValidation();
+			setAlert("");
+		}
 	};
 
 	/**
 	 * Log the built draft, then reset the form for the next move. The sheet stays
 	 * open for rapid consecutive logging; the suggested actor is seeded from the
-	 * same {@link nextActorId} rule a reloaded log runs through so the live
-	 * suggestion matches what a reload would show.
+	 * same rule a reloaded log runs through so the live suggestion matches what
+	 * a reload would show.
 	 */
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
 		// Log move is always pressable, so validate on press: an incomplete move
-		// flags its missing fields (a bumped `nudge` re-shakes them) and announces
+		// flags its missing fields (a bumped nudge re-shakes them) and announces
 		// them, rather than logging.
-		if (!draft) {
-			const missing = invalidFields(type, fields);
-			const next = nudge + 1;
-			setNudge(next);
+		if (!form.draft) {
+			const { missing, attempt } = form.flagInvalid();
 			// Re-announce on every failed press. A repeat press with the same missing
 			// fields would set an identical string — React bails on the no-op state
 			// update, the live region's DOM text never changes, and assertive screen
 			// readers stay silent (regressing #26's "hears which fields need
 			// attention"). A trailing zero-width space toggled per press keeps the
 			// text changing while leaving the spoken wording untouched.
-			const marker = next % 2 === 1 ? "\u200B" : "";
+			const marker = attempt % 2 === 1 ? "\u200B" : "";
 			setAlert(
 				`Can't log yet — check: ${missing
 					.map((key) => FIELD_LABELS[key])
@@ -122,24 +89,12 @@ export function MoveComposer(): JSX.Element {
 			);
 			return;
 		}
-		addMove(draft);
-		// a successful log clears any prior validation flags/announcement.
-		clearValidation();
-		// suggest the next actor with the same rule the log rehydrates through:
-		// append the just-logged move and ask nextActorId. it ignores equipment
-		// (so the turn stays put) and advances clockwise for every other move —
-		// one source of truth, so the live suggestion matches a reload. the id/
-		// seq/at are placeholders: nextActorId only reads `type` and `actorId`.
-		const suggested =
-			nextActorId(players, captainIndex, [
-				...moves,
-				{ ...draft, id: "", seq: 0, at: 0 },
-			]) ?? fields.actorId;
-		setFields(emptyDraftFields(suggested));
+		addMove(form.draft);
+		setAlert("");
 		// return the action tab to Dual cut — the most common move — so the next
-		// turn's cut needs no tab switch. only the type resets; the fields and
-		// suggested actor above are the already-correct per-move resets.
-		setType("dual-cut");
+		// turn's cut needs no tab switch; the fields reset seeded with the next
+		// suggested actor.
+		form.reset(emptyDraftFields(suggestAfterLogging(form.draft)), "dual-cut");
 	};
 
 	return (
@@ -147,35 +102,31 @@ export function MoveComposer(): JSX.Element {
 			{/* Persistent bar behind any modal: undo/redo lead, Add move trails. */}
 			<div className={css.bar} data-testid="composer-bar">
 				<div className={css.history}>
-					<button
-						type="button"
-						className={css.icon}
+					<Button
+						size="icon"
 						onClick={undoLastMove}
 						disabled={moves.length === 0}
 						aria-label="Undo"
 						data-testid="undo"
 					>
 						<Undo2 size={20} aria-hidden />
-					</button>
-					<button
-						type="button"
-						className={css.icon}
+					</Button>
+					<Button
+						size="icon"
 						onClick={redoMove}
 						disabled={redoCount === 0}
 						aria-label="Redo"
 						data-testid="redo"
 					>
 						<Redo2 size={20} aria-hidden />
-					</button>
+					</Button>
 				</div>
-				<button
-					type="button"
-					className={css.addMove}
-					onClick={() => setOpen(true)}
-					data-testid="add-move"
-				>
+				{/* Neutral (gray) button: opening the composer is a low-emphasis
+				    action, so it does not carry the accent — that is reserved for Log
+				    move inside. */}
+				<Button onClick={() => setOpen(true)} data-testid="add-move">
 					Add move
-				</button>
+				</Button>
 			</div>
 
 			<BottomSheet
@@ -187,12 +138,12 @@ export function MoveComposer(): JSX.Element {
 				<form className={css.form} onSubmit={handleSubmit}>
 					<MoveForm
 						players={players}
-						type={type}
-						onTypeChange={handleTypeChange}
-						fields={fields}
-						onFieldsChange={setFields}
-						invalid={invalid}
-						nudge={nudge}
+						type={form.type}
+						onTypeChange={form.changeType}
+						fields={form.fields}
+						onFieldsChange={form.setFields}
+						invalid={form.invalid}
+						nudge={form.nudge}
 					/>
 					{/* announces which fields blocked a failed Log move press; the shake
 					    highlights carry the same information visually. */}
@@ -202,13 +153,9 @@ export function MoveComposer(): JSX.Element {
 					<div className={css.actions}>
 						{/* always pressable: an incomplete move is caught in handleSubmit,
 						    which flags the missing fields instead of logging. */}
-						<button
-							type="submit"
-							className={css.logButton}
-							data-testid="log-move"
-						>
+						<Button variant="primary" type="submit" data-testid="log-move">
 							Log move
-						</button>
+						</Button>
 					</div>
 				</form>
 			</BottomSheet>

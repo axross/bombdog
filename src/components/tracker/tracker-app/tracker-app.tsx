@@ -2,13 +2,14 @@
 
 import { Bomb } from "lucide-react";
 import { Tabs } from "radix-ui";
-import { type JSX, useEffect, useState } from "react";
+import { type JSX, useState } from "react";
 import { MoveComposer } from "@/components/tracker/move-composer/move-composer";
 import { MoveFilter } from "@/components/tracker/move-filter/move-filter";
 import { MoveLog } from "@/components/tracker/move-log/move-log";
 import { PlayerSetup } from "@/components/tracker/player-setup/player-setup";
 import { ResetButton } from "@/components/tracker/reset-button/reset-button";
 import { StatusPanel } from "@/components/tracker/status-panel/status-panel";
+import { useTrackerHydration } from "@/hooks/use-tracker-hydration";
 import { useTrackerStore } from "@/lib/tracker-store";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./tracker-app.module.css";
@@ -23,18 +24,14 @@ type Tab = "moves" | "status";
  * loading, setup, and tracker states.
  */
 export function TrackerApp(): JSX.Element {
-	const hasHydrated = useTrackerStore((s) => s.hasHydrated);
+	// hydration is deferred (skipHydration) so server and first client render
+	// match; the hook kicks it off once mounted.
+	const hasHydrated = useTrackerHydration();
 	const players = useTrackerStore((s) => s.players);
 	// the move-log filter lives here so its trigger can sit in the tab bar while
 	// the log below consumes the resulting filter.
 	const [filter, setFilter] = useState<Filter>(EMPTY_MOVE_FILTER);
 	const [tab, setTab] = useState<Tab>("moves");
-
-	// hydration is deferred (skipHydration) so server and first client render
-	// match; kick it off once mounted.
-	useEffect(() => {
-		void useTrackerStore.persist.rehydrate();
-	}, []);
 
 	if (!hasHydrated) {
 		return (

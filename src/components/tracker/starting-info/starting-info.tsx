@@ -3,18 +3,10 @@
 import { Pencil } from "lucide-react";
 import { type JSX, useState } from "react";
 import { StartingInfoEditor } from "@/components/tracker/starting-info-editor/starting-info-editor";
-import { formatWire, wireLabel } from "@/lib/game";
-import { useTrackerStore } from "@/lib/tracker-store";
-import type { BlueWireValue, Player } from "@/lib/types";
+import { Button } from "@/components/ui/button/button";
+import { WireChip } from "@/components/ui/wire-chip/wire-chip";
+import { useStartingInfoTokens } from "@/hooks/use-starting-info-tokens";
 import css from "./starting-info.module.css";
-
-/**
- * A player who placed a starting info token, paired with its revealed value.
- */
-interface TokenEntry {
-	player: Player;
-	value: BlueWireValue;
-}
 
 /**
  * The starting info tokens strip: a persistent, pinned reference showing the
@@ -23,13 +15,8 @@ interface TokenEntry {
  * selected), so it costs no space in that case.
  */
 export function StartingInfo(): JSX.Element | null {
-	const players = useTrackerStore((s) => s.players);
-	const infoTokens = useTrackerStore((s) => s.infoTokens);
+	const tokens = useStartingInfoTokens();
 	const [editing, setEditing] = useState(false);
-
-	const tokens: TokenEntry[] = players
-		.map((player) => ({ player, value: infoTokens[player.id] }))
-		.filter((entry): entry is TokenEntry => entry.value != null);
 
 	if (tokens.length === 0) return null;
 
@@ -50,25 +37,22 @@ export function StartingInfo(): JSX.Element | null {
 							data-player={player.name}
 						>
 							<span className={css.name}>{player.name}</span>
-							<span
-								role="img"
-								className={css.chip}
-								aria-label={wireLabel(value)}
-							>
-								{formatWire(value)}
-							</span>
+							{/* info tokens indicate blue values only, so the chip is always
+							    the blue variant, mirroring the move-log wire chips. */}
+							<WireChip value={value} />
 						</li>
 					))}
 				</ul>
-				<button
-					type="button"
+				<Button
+					variant="ghost"
+					size="icon-sm"
 					className={css.edit}
 					onClick={() => setEditing(true)}
 					aria-label="Edit starting info tokens"
 					data-testid="edit-starting-info"
 				>
 					<Pencil size={15} aria-hidden />
-				</button>
+				</Button>
 			</section>
 
 			{editing && (

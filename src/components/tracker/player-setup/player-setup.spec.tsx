@@ -267,7 +267,7 @@ describe("<PlayerSetup>", () => {
 	});
 
 	it("still generates seat ids when crypto.randomUUID is unavailable", async () => {
-		// exercises the makeId() fallback used in browsers without randomUUID.
+		// exercises the createId() fallback used in browsers without randomUUID.
 		vi.stubGlobal("crypto", { randomUUID: undefined });
 		const user = userEvent.setup();
 		render(<PlayerSetup />);
@@ -277,7 +277,7 @@ describe("<PlayerSetup>", () => {
 		const { players } = useTrackerStore.getState();
 		expect(players).toHaveLength(4);
 		expect(new Set(players.map((p) => p.id)).size).toBe(4);
-		for (const p of players) expect(p.id).toMatch(/^p_/);
+		for (const p of players) expect(p.id).toMatch(/^id_/);
 		// restoration happens in afterEach so it survives an early assertion failure.
 	});
 });

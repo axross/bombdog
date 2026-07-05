@@ -56,22 +56,9 @@
 			gap: var(--space-4);
 		}
 
+		/* On top of the shared icon Button: only the outsized −/+ glyphs. */
 		.stepButton {
-			inline-size: 44px;
-			block-size: 44px;
 			font-size: 1.4rem;
-			background-color: var(--surface-3);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-sm);
-
-			&:hover:not(:disabled) {
-				background-color: var(--surface-hover);
-			}
-
-			&:disabled {
-				opacity: 0.5;
-				cursor: not-allowed;
-			}
 		}
 
 		.count {
@@ -184,19 +171,15 @@
 			border-block-start: 1px solid var(--border);
 		}
 
+		/* On top of the shared primary Button: the screen's hero call-to-action is
+		   taller and rounder than an in-form control. */
 		.start {
 			margin-block-start: auto;
 			min-block-size: 52px;
-			background-color: var(--accent);
-			color: var(--accent-contrast);
 			border: none;
 			border-radius: var(--radius);
 			font-size: 1.05rem;
 			font-weight: 700;
-
-			&:hover {
-				background-color: var(--accent-hover);
-			}
 		}
 	}
 }

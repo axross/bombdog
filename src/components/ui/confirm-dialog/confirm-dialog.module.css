@@ -1,22 +1,7 @@
 @layer components {
-	@scope (.trigger) {
-		:where(:scope) {
-			min-block-size: 40px;
-			padding-inline: var(--space-3);
-			color: var(--danger-text);
-			background-color: transparent;
-			border: 1px solid var(--border);
-			border-radius: var(--radius-sm);
-			font-weight: 600;
-
-			&:hover {
-				background-color: var(--danger-soft);
-				border-color: var(--danger);
-			}
-		}
-	}
-
-	/* AlertDialog overlay + content are portaled to <body>. */
+	/* Overlay + content are portaled to <body>, so each gets its own scope.
+	   Default z-indexes sit at the app's base modal level (40/50); the elevated
+	   variants (60/70) clear an open bottom sheet at depth 0. */
 	@scope (.overlay) {
 		:where(:scope) {
 			position: fixed;
@@ -24,6 +9,10 @@
 			background-color: var(--scrim);
 			backdrop-filter: blur(2px);
 			z-index: 40;
+
+			&:where(.overlayElevated) {
+				z-index: 60;
+			}
 
 			&[data-state="open"] {
 				animation: overlay-in var(--motion-fast) var(--ease-standard);
@@ -51,7 +40,11 @@
 			border-radius: var(--radius-lg);
 			z-index: 50;
 
-			/* Centered fade + zoom, matching the move editor's delete confirm. */
+			&:where(.contentElevated) {
+				z-index: 70;
+			}
+
+			/* Centered fade + zoom. */
 			&[data-state="open"] {
 				animation: dialog-in var(--motion-fast) var(--ease-standard);
 			}
@@ -75,34 +68,6 @@
 			justify-content: flex-end;
 			gap: var(--space-2);
 			margin-block-start: var(--space-2);
-		}
-
-		.cancel,
-		.confirm {
-			min-block-size: 44px;
-			padding-inline: var(--space-5);
-			border-radius: var(--radius-sm);
-			font-weight: 600;
-			border: 1px solid var(--border);
-		}
-
-		.cancel {
-			background-color: var(--surface-3);
-			color: var(--text);
-
-			&:hover {
-				background-color: var(--surface-hover);
-			}
-		}
-
-		.confirm {
-			background-color: var(--danger);
-			color: var(--on-solid);
-			border-color: var(--danger);
-
-			&:hover {
-				background-color: var(--danger-hover);
-			}
 		}
 	}
 

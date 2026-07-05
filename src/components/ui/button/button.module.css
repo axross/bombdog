@@ -1,0 +1,99 @@
+@layer components {
+	@scope (.button) {
+		:where(:scope) {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: var(--space-1);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+			font-weight: 600;
+
+			/* aria-disabled marks controls kept pressable to preserve focus (they
+			   no-op instead); they read as disabled without leaving the tab order. */
+			&:disabled,
+			&[aria-disabled="true"] {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+
+			/* Sizes. All zero-specificity (:where) so a caller's className wins. */
+			&:where(.md) {
+				min-block-size: 44px;
+				padding-inline: var(--space-5);
+			}
+
+			&:where(.sm) {
+				min-block-size: 40px;
+				padding-inline: var(--space-4);
+			}
+
+			&:where(.compact) {
+				min-block-size: 36px;
+				padding-inline: var(--space-3);
+				font-size: 0.85rem;
+			}
+
+			&:where(.icon) {
+				min-inline-size: 44px;
+				min-block-size: 44px;
+				padding-inline: var(--space-2);
+			}
+
+			&:where(.iconSm) {
+				min-inline-size: 36px;
+				min-block-size: 36px;
+			}
+
+			/* Variants, per the appearance convention's color roles. */
+			&:where(.primary) {
+				background-color: var(--accent);
+				color: var(--accent-contrast);
+				border-color: var(--accent);
+
+				&:hover:not(:disabled, [aria-disabled="true"]) {
+					background-color: var(--accent-hover);
+				}
+			}
+
+			&:where(.secondary) {
+				background-color: var(--surface-3);
+				color: var(--text);
+
+				&:hover:not(:disabled, [aria-disabled="true"]) {
+					background-color: var(--surface-hover);
+				}
+			}
+
+			&:where(.danger) {
+				background-color: var(--danger);
+				color: var(--on-solid);
+				border-color: var(--danger);
+
+				&:hover:not(:disabled, [aria-disabled="true"]) {
+					background-color: var(--danger-hover);
+				}
+			}
+
+			&:where(.dangerGhost) {
+				background-color: transparent;
+				color: var(--danger-text);
+
+				&:hover:not(:disabled, [aria-disabled="true"]) {
+					background-color: var(--danger-soft);
+					border-color: var(--danger);
+				}
+			}
+
+			&:where(.ghost) {
+				background-color: transparent;
+				color: var(--text-muted);
+
+				&:hover:not(:disabled, [aria-disabled="true"]) {
+					color: var(--text);
+					background-color: var(--surface-3);
+				}
+			}
+		}
+	}
+}

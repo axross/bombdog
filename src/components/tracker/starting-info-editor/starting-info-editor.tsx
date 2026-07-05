@@ -2,18 +2,12 @@
 
 import { type JSX, useState } from "react";
 import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/ui/button/button";
 import { WirePad } from "@/components/ui/wire-pad/wire-pad";
+import type { StartingInfoToken } from "@/hooks/use-starting-info-tokens";
 import { useTrackerStore } from "@/lib/tracker-store";
-import type { BlueWireValue, Player } from "@/lib/types";
+import type { BlueWireValue } from "@/lib/types";
 import css from "./starting-info-editor.module.css";
-
-/**
- * A player that placed a starting info token, paired with its current value.
- */
-export interface EditableToken {
-	player: Player;
-	value: BlueWireValue;
-}
 
 /**
  * Props for {@link StartingInfoEditor}.
@@ -23,7 +17,7 @@ interface StartingInfoEditorProps {
 	 * The tokened players to edit, in seat order. The dialog only ever edits
 	 * existing tokens, so this is never empty when the editor is mounted.
 	 */
-	tokens: EditableToken[];
+	tokens: StartingInfoToken[];
 	onClose: () => void;
 }
 
@@ -96,21 +90,16 @@ export function StartingInfoEditor({
 			</div>
 
 			<div className={css.footer}>
-				<button
-					type="button"
-					className={css.secondary}
-					onClick={() => setOpen(false)}
-				>
+				<Button variant="secondary" onClick={() => setOpen(false)}>
 					Cancel
-				</button>
-				<button
-					type="button"
-					className={css.primary}
+				</Button>
+				<Button
+					variant="primary"
 					onClick={handleSave}
 					data-testid="save-starting-info"
 				>
 					Save
-				</button>
+				</Button>
 			</div>
 		</BottomSheet>
 	);

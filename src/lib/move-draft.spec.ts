@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+	buildDraft,
+	detectorValues,
+	emptyDraftFields,
+	fieldsFromMove,
+	invalidFields,
+} from "@/lib/move-draft";
+import {
 	type BlueWireValue,
 	type DetectorMove,
 	type DualCutMove,
@@ -9,13 +16,6 @@ import {
 	POST_IT_EQUIPMENT,
 	type SoloCutMove,
 } from "@/lib/types";
-import {
-	buildDraft,
-	detectorValues,
-	emptyDraftFields,
-	fieldsFromMove,
-	invalidFields,
-} from "@/lib/move-draft";
 
 describe("emptyDraftFields()", () => {
 	it("returns an all-empty shape with the given actor", () => {
