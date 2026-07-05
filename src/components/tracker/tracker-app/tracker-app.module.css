@@ -1,0 +1,101 @@
+@layer components {
+	/* Page-level shell: owns its own centered column width. */
+	@scope (.app) {
+		:where(:scope) {
+			inline-size: min(100vw, var(--app-max-width));
+			margin-inline: auto;
+			block-size: 100dvh;
+			display: flex;
+			flex-direction: column;
+			background-color: var(--surface);
+			border-inline: 1px solid var(--border);
+		}
+
+		.header {
+			display: flex;
+			align-items: center;
+			gap: var(--space-3);
+			padding: var(--space-3) var(--space-4);
+			padding-block-start: max(var(--space-3), env(safe-area-inset-top));
+			background-color: var(--surface-2);
+			border-block-end: 1px solid var(--border);
+		}
+
+		.brand {
+			flex: 1;
+			min-inline-size: 0;
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-2);
+			font-size: 1.1rem;
+			font-weight: 800;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.brandIcon {
+			flex: none;
+			color: var(--accent);
+		}
+
+		/* Fills the space between header and composer; its active panel scrolls
+		   internally so the shell height stays fixed. */
+		.tabsRoot {
+			flex: 1;
+			min-block-size: 0;
+			display: flex;
+			flex-direction: column;
+		}
+
+		/* View switch below the header: the two tab triggers, plus the move filter
+		   (Moves view only) pinned to the trailing edge. */
+		.tabBar {
+			display: flex;
+			align-items: center;
+			gap: var(--space-3);
+			padding-inline: var(--space-4);
+			background-color: var(--surface-2);
+			border-block-end: 1px solid var(--border);
+		}
+
+		/* On top of the shared Tabs primitives: the page-level strip fills the
+		   bar and spaces its triggers. */
+		.tabs {
+			flex: 1;
+			gap: var(--space-1);
+		}
+
+		.tab {
+			padding-inline: var(--space-3);
+			font-size: 0.95rem;
+		}
+
+		/* Radix keeps the inactive tab panel mounted with the `hidden` attribute;
+		   scope the flex-fill to the visible panel so the hidden one collapses to
+		   the UA `display: none`. Styling `.panel` unconditionally would override
+		   `hidden` and leave both panels splitting the content height. */
+		.panel:not([hidden]) {
+			flex: 1;
+			min-block-size: 0;
+			display: flex;
+			flex-direction: column;
+		}
+	}
+
+	@scope (.loading) {
+		:where(:scope) {
+			block-size: 100dvh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: var(--space-3);
+			color: var(--text-muted);
+		}
+
+		.loadingText {
+			font-size: 0.9rem;
+		}
+	}
+}

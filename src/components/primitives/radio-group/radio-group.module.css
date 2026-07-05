@@ -1,0 +1,25 @@
+@layer components {
+	@scope (.radio) {
+		:where(:scope) {
+			flex-shrink: 0;
+			inline-size: 26px;
+			block-size: 26px;
+			background-color: var(--surface);
+			border: 2px solid var(--border-strong);
+			border-radius: 50%;
+			display: grid;
+			place-items: center;
+
+			&[data-state="checked"] {
+				border-color: var(--accent);
+			}
+		}
+
+		.dot {
+			inline-size: 14px;
+			block-size: 14px;
+			border-radius: 50%;
+			background-color: var(--accent);
+		}
+	}
+}

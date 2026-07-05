@@ -1,0 +1,18 @@
+@layer components {
+	/* Editor footer inside the shared bottom sheet: Delete sits opposite the
+	   grouped Cancel + Save. */
+	@scope (.footer) {
+		:where(:scope) {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: var(--space-2);
+		}
+
+		/* Cancel + Save stay grouped on the trailing edge; Delete sits opposite. */
+		.actions {
+			display: flex;
+			gap: var(--space-2);
+		}
+	}
+}

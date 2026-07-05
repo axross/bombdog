@@ -8,6 +8,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { createId } from "./id";
 import { idbStorage, STORAGE_KEY } from "./idb-storage";
 import {
 	type BlueWireValue,
@@ -95,23 +96,6 @@ const EMPTY_STATE: TrackerState = {
 	moves: [],
 	infoTokens: {},
 };
-
-/**
- * Generate a unique id for a new move.
- *
- * @remarks
- * Prefers `crypto.randomUUID`; when it is unavailable (older runtimes or
- * non-secure contexts) it falls back to a timestamp-plus-random string.
- */
-function createId(): string {
-	if (
-		typeof crypto !== "undefined" &&
-		typeof crypto.randomUUID === "function"
-	) {
-		return crypto.randomUUID();
-	}
-	return `m_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e9).toString(36)}`;
-}
 
 /**
  * The next sequence number, one past the highest `seq` among existing moves.

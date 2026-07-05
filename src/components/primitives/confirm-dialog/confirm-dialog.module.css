@@ -1,0 +1,133 @@
+@layer components {
+	/* Overlay + content are portaled to <body>, so each gets its own scope.
+	   Default z-indexes sit at the app's base modal level (40/50); the elevated
+	   variants (60/70) clear an open bottom sheet at depth 0. */
+	@scope (.overlay) {
+		:where(:scope) {
+			position: fixed;
+			inset: 0;
+			background-color: var(--scrim);
+			backdrop-filter: blur(2px);
+			z-index: 40;
+
+			&:where(.overlayElevated) {
+				z-index: 60;
+			}
+
+			&[data-state="open"] {
+				animation: overlay-in var(--motion-fast) var(--ease-standard);
+			}
+
+			&[data-state="closed"] {
+				animation: overlay-out var(--motion-fast) var(--ease-standard);
+			}
+		}
+	}
+
+	@scope (.content) {
+		:where(:scope) {
+			position: fixed;
+			inset-inline-start: 50%;
+			inset-block-start: 50%;
+			translate: -50% -50%;
+			inline-size: min(92vw, 26rem);
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+			padding: var(--space-5);
+			background-color: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-lg);
+			z-index: 50;
+
+			&:where(.contentElevated) {
+				z-index: 70;
+			}
+
+			/* Centered fade + zoom. */
+			&[data-state="open"] {
+				animation: dialog-in var(--motion-fast) var(--ease-standard);
+			}
+
+			&[data-state="closed"] {
+				animation: dialog-out var(--motion-fast) var(--ease-standard);
+			}
+		}
+
+		.title {
+			font-size: 1.15rem;
+			font-weight: 700;
+		}
+
+		.description {
+			color: var(--text-muted);
+		}
+
+		.actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: var(--space-2);
+			margin-block-start: var(--space-2);
+		}
+	}
+
+	/* Keyframes are scoped to this module by CSS Modules, so the names above
+	   resolve to these definitions. */
+	@keyframes overlay-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes overlay-out {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes dialog-in {
+		from {
+			opacity: 0;
+			translate: -50% -48%;
+			scale: 0.96;
+		}
+		to {
+			opacity: 1;
+			translate: -50% -50%;
+			scale: 1;
+		}
+	}
+
+	@keyframes dialog-out {
+		from {
+			opacity: 1;
+			translate: -50% -50%;
+			scale: 1;
+		}
+		to {
+			opacity: 0;
+			translate: -50% -48%;
+			scale: 0.96;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		@scope (.overlay) {
+			:where(:scope) {
+				animation: none;
+			}
+		}
+
+		@scope (.content) {
+			:where(:scope) {
+				animation: none;
+			}
+		}
+	}
+}

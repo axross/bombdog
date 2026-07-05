@@ -1,0 +1,25 @@
+@layer components {
+	@scope (.spinner) {
+		:where(:scope) {
+			display: inline-block;
+			inline-size: 28px;
+			block-size: 28px;
+			border: 3px solid var(--border);
+			border-block-start-color: var(--accent);
+			border-radius: 50%;
+			animation: spin 0.7s linear infinite;
+
+			@media (prefers-reduced-motion: reduce) {
+				animation-duration: 2s;
+			}
+		}
+	}
+
+	/* Keyframes are scoped to this module by CSS Modules, so the name above
+	   resolves to this definition. */
+	@keyframes spin {
+		to {
+			rotate: 360deg;
+		}
+	}
+}

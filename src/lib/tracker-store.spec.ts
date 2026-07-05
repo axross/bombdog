@@ -122,7 +122,7 @@ describe("addMove()", () => {
 			state().addMove(dual);
 			const move = state().moves[0];
 			expect(move.id).toBeTruthy();
-			expect(move.id.startsWith("m_")).toBe(true);
+			expect(move.id.startsWith("id_")).toBe(true);
 		});
 	});
 });

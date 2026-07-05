@@ -22,8 +22,10 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 | Path | Owns |
 |---|---|
 | `src/app/` | App Router routes, `layout.tsx`, `page.tsx`, and the global CSS trio `layers.css` / `globals.css` / `variables.css` |
-| `src/components/<name>/` | UI components, one kebab-case folder each, colocating `<name>.tsx`, `<name>.module.css`, and `<name>.spec.tsx` |
-| `src/lib/` | Non-UI application code (kebab-case: `tracker-store.ts`, `idb-storage.ts`, `game.ts`, `types.ts`) + colocated `*.spec.ts` |
+| `src/components/primitives/<name>/` | Strictly domain-agnostic primitives (`button`, `bottom-sheet`, `select-field`, `segmented-picker`, `toggle-grid`, `chip`, …), one kebab-case folder each, colocating `<name>.tsx`, `<name>.module.css`, and `<name>.spec.tsx` |
+| `src/components/tracker/<name>/` | Domain components — store/game-rule compositions and thin domain wrappers over primitives (`wire-pad`, `wire-chip`, `player-picker`, …) — with the same colocation |
+| `src/hooks/` | Reusable hook functions (`use-<name>.ts`) binding domain logic to React state + colocated `*.spec.ts(x)` |
+| `src/lib/` | Non-UI application code (kebab-case: `tracker-store.ts`, `idb-storage.ts`, `game.ts`, `move-draft.ts`, `types.ts`) + colocated `*.spec.ts` |
 | `e2e/tests/` | Playwright end-to-end specs (`*.test.ts`) |
 | `e2e/helpers/` | Reusable e2e helpers (page setup, chained-locator shortcuts) |
 | `public/` | Static assets served from the site root |
@@ -39,7 +41,8 @@ New files follow fixed placement rules by kind — routes, components, non-UI mo
 
 - MUST use **kebab-case** for all file and folder names (`move-composer/move-composer.tsx`).
 - MUST place routes under `src/app/` following App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route segment folders).
-- MUST place shared components under `src/components/<name>/` and non-UI modules under `src/lib/`.
+- MUST place components per the tier decision in [Component Composition](../component-composition/SKILL.md) — strictly domain-agnostic primitives under `src/components/primitives/<name>/`, domain components under `src/components/tracker/<name>/` — and non-UI modules under `src/lib/`. That skill owns the tier semantics, the primitives import rule, and the split/promotion strategy.
+- MUST place reusable hook functions under `src/hooks/` as `use-<name>.ts`; when logic belongs in a hook vs `src/lib` vs the component is owned by [Component Composition](../component-composition/SKILL.md).
 - MUST colocate a **unit** test next to its subject as `<name>.spec.ts(x)`; Vitest picks up `src/**/*.{test,spec}.{ts,tsx}`.
 - MUST place **end-to-end** specs under `e2e/tests/` as `<name>.test.ts` (Playwright `testDir` is `e2e/tests`) and shared e2e helpers under `e2e/helpers/`.
 - MUST colocate a component's styles as `<name>.module.css` and import them as `css`.

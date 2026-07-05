@@ -1,0 +1,46 @@
+@layer components {
+	/* On top of the shared ghost/compact Button: the trigger sits on the tab
+	   bar, so it keeps a subtle surface, and it recolours while the filter is
+	   active. The active rules repeat with :hover so they outrank the Button's
+	   ghost hover recolour regardless of module order. */
+	@scope (.trigger) {
+		:where(:scope) {
+			background-color: var(--surface-2);
+		}
+
+		:where(:scope).triggerActive,
+		:where(:scope).triggerActive:hover {
+			color: var(--accent);
+			border-color: var(--accent);
+		}
+
+		.dot {
+			inline-size: 7px;
+			block-size: 7px;
+			border-radius: 50%;
+			background-color: var(--accent);
+		}
+	}
+
+	/* Filter controls inside the shared bottom sheet. */
+	@scope (.body) {
+		:where(:scope) {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		.toggles {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-2);
+		}
+
+		.footer {
+			display: flex;
+			justify-content: space-between;
+			gap: var(--space-2);
+			margin-block-start: var(--space-1);
+		}
+	}
+}

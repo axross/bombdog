@@ -1,0 +1,56 @@
+@layer components {
+	@scope (.startingInfo) {
+		/* Heads the scrollable move history as a bordered card (matching the move
+		   rows), scrolling away with it rather than pinning under the header. The
+		   trailing inline padding reserves room for the top-right Edit button so
+		   wrapping tokens never run under it. */
+		:where(:scope) {
+			position: relative;
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-2) var(--space-3);
+			padding: var(--space-3);
+			padding-inline-end: calc(var(--space-3) + 36px + var(--space-2));
+			background-color: var(--surface-2);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+		}
+
+		.label {
+			font-size: 0.75rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			color: var(--text-muted);
+		}
+
+		.list {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: var(--space-2) var(--space-3);
+			list-style: none;
+		}
+
+		.item {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-2);
+		}
+
+		.name {
+			font-size: 0.9rem;
+			font-weight: 600;
+		}
+
+		/* Edit trigger — pinned to the card's top-right corner, clear of the
+		   wrapping label/token content (which reserves inline-end room for it).
+		   Positioning only; the control itself is the shared ghost icon Button. */
+		.edit {
+			position: absolute;
+			inset-block-start: var(--space-3);
+			inset-inline-end: var(--space-3);
+		}
+	}
+}

@@ -1,0 +1,145 @@
+@layer components {
+	@scope (.form) {
+		:where(:scope) {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		/* The action type and its dependent inputs share one bordered card so the
+		   dependency is visually obvious. */
+		.card {
+			overflow: hidden;
+			background-color: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+		}
+
+		/* On top of the shared Tabs primitives: the in-card strip scrolls and
+		   sits on a tinted band; triggers share the band evenly, and the active
+		   trigger lifts to the panel surface. */
+		.tabs {
+			overflow-x: auto;
+			background-color: var(--surface-3);
+			border-block-end: 1px solid var(--border);
+			scrollbar-width: none;
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+
+		.tab {
+			flex: 1 0 auto;
+			padding-inline: var(--space-4);
+			font-size: 0.9rem;
+
+			&[data-state="active"] {
+				background-color: var(--surface);
+			}
+		}
+
+		/* Static action label used in edit mode, where the type can't change. */
+		.staticHeader {
+			display: flex;
+			align-items: center;
+			min-block-size: 44px;
+			padding-inline: var(--space-4);
+			background-color: var(--surface-3);
+			border-block-end: 1px solid var(--border);
+			font-weight: 600;
+			font-size: 0.9rem;
+			color: var(--text);
+		}
+
+		.panel {
+			padding: var(--space-4);
+		}
+
+		.fields {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		.equipment {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-3);
+		}
+
+		.noteField {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-1);
+		}
+
+		/* On top of the shared Input: the note sits on the sheet's surface, so
+		   it takes the contrasting tinted background. */
+		.noteInput {
+			background-color: var(--surface-2);
+		}
+
+		/* Which of the two X-or-Y-Ray values the wire turned out to be. A
+		   segmented two-option picker, but it picks a *wire value*, so it wears
+		   the wire palette (soft rest, solid when pressed) like the WirePad chips
+		   rather than the accent. */
+		.cutValue {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-1);
+			min-inline-size: 0;
+			padding: 0;
+			margin: 0;
+			border: 0;
+		}
+
+		.cutValueButtons {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: var(--space-2);
+		}
+
+		.cutValueItem {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-block-size: 44px;
+			font-family: var(--font-mono);
+			font-size: 1rem;
+			font-weight: 600;
+			color: var(--wire-blue-text);
+			background-color: var(--wire-blue-soft);
+			border: 1px solid var(--wire-blue-border);
+			border-radius: var(--radius-sm);
+
+			&:hover {
+				background-color: var(--wire-blue-soft-hover);
+			}
+
+			&[aria-pressed="true"] {
+				background-color: var(--wire-blue);
+				color: var(--wire-blue-contrast);
+				border-color: var(--wire-blue);
+			}
+		}
+
+		/* A named "?" value keeps the neutral unknown treatment so it never
+		   masquerades as a real hue. */
+		.cutValueUnknown {
+			color: var(--text);
+			background-color: var(--surface-3);
+			border-color: var(--border);
+
+			&:hover {
+				background-color: var(--surface-hover);
+			}
+
+			&[aria-pressed="true"] {
+				background-color: var(--text-muted);
+				color: var(--surface);
+				border-color: var(--text-muted);
+			}
+		}
+	}
+}
