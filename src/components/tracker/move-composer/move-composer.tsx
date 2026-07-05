@@ -9,6 +9,7 @@ import { useMoveDraft } from "@/hooks/use-move-draft";
 import { useNextActor } from "@/hooks/use-next-actor";
 import { emptyDraftFields, type MoveFieldKey } from "@/lib/move-draft";
 import { useTrackerStore } from "@/lib/tracker-store";
+import type { MoveType } from "@/lib/types";
 import css from "./move-composer.module.css";
 
 /**
@@ -60,6 +61,13 @@ export function MoveComposer(): JSX.Element {
 			form.resetValidation();
 			setAlert("");
 		}
+	};
+
+	// a different action has different required fields, so the hook clears the
+	// previous action's flags; the stale announcement goes with them.
+	const handleTypeChange = (next: MoveType) => {
+		form.changeType(next);
+		setAlert("");
 	};
 
 	/**
@@ -139,7 +147,7 @@ export function MoveComposer(): JSX.Element {
 					<MoveForm
 						players={players}
 						type={form.type}
-						onTypeChange={form.changeType}
+						onTypeChange={handleTypeChange}
 						fields={form.fields}
 						onFieldsChange={form.setFields}
 						invalid={form.invalid}

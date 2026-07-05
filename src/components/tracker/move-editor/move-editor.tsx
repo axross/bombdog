@@ -6,7 +6,8 @@ import { MoveForm } from "@/components/tracker/move-form/move-form";
 import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
 import { Button } from "@/components/ui/button/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog/confirm-dialog";
-import { buildDraft, fieldsFromMove } from "@/lib/move-draft";
+import { useMoveDraft } from "@/hooks/use-move-draft";
+import { fieldsFromMove } from "@/lib/move-draft";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
 import css from "./move-editor.module.css";
@@ -36,17 +37,17 @@ export function MoveEditor({
 }: MoveEditorProps): JSX.Element {
 	const updateMove = useTrackerStore((s) => s.updateMove);
 	const removeMove = useTrackerStore((s) => s.removeMove);
-	const [fields, setFields] = useState(() => fieldsFromMove(move));
+	// the action kind is fixed while editing, so the form never changes type
+	// and Save simply stays disabled while the draft is incomplete.
+	const form = useMoveDraft(move.type, () => fieldsFromMove(move));
 	// drive `open` locally so closing plays the exit animation before the parent
 	// unmounts us: onCloseComplete hands control back once the sheet has animated
 	// out.
 	const [open, setOpen] = useState(true);
 
-	const draft = buildDraft(move.type, fields);
-
 	const handleSave = () => {
-		if (!draft) return;
-		updateMove(move.id, draft);
+		if (!form.draft) return;
+		updateMove(move.id, form.draft);
 		setOpen(false);
 	};
 
@@ -68,8 +69,8 @@ export function MoveEditor({
 			<MoveForm
 				players={players}
 				type={move.type}
-				fields={fields}
-				onFieldsChange={setFields}
+				fields={form.fields}
+				onFieldsChange={form.setFields}
 			/>
 
 			<div className={css.footer}>
@@ -97,7 +98,7 @@ export function MoveEditor({
 					<Button
 						variant="primary"
 						onClick={handleSave}
-						disabled={!draft}
+						disabled={!form.draft}
 						data-testid="save"
 					>
 						Save
