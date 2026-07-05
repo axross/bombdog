@@ -7,7 +7,16 @@ description: Use this skill when writing, reviewing, or refactoring React compon
 
 Apply this skill for any user-facing work in bombdog: React components, pages, layouts, and styling. The app uses the Next.js App Router (React 19) with CSS Modules.
 
-This skill owns implementation mechanics. Which appearance treatment a surface gets — color roles, elevation, control selection, modal vs bottom sheet, wire-state and cut-outcome visuals — is owned by [UI Appearance](../ui-appearance/SKILL.md); consult it before styling a new component or state.
+This skill owns implementation mechanics. Which appearance treatment a surface gets — color roles, elevation, control selection, modal vs bottom sheet, wire-state and cut-outcome visuals — is owned by [UI Appearance](../ui-appearance/SKILL.md); consult it before styling a new component or state. Where a component *file* lives (the `ui/` vs `tracker/` tier split and its import rule) is owned by [Project Structure](../project-structure/SKILL.md).
+
+## Composition Tiers and Primitives
+
+Components are organized in two tiers: generic, prop-driven primitives under `src/components/ui/` and domain compositions under `src/components/tracker/` (tier definition and import rule in [Project Structure](../project-structure/SKILL.md)).
+
+- MUST compose the existing `ui/` primitives instead of re-implementing their look per component: `Button` (variants `primary` / `secondary` / `danger` / `danger-ghost` / `ghost`, sizes `md` / `sm` / `compact` / `icon` / `icon-sm`) for buttons, `ConfirmDialog` for centered destructive confirmations, `WireChip` for wire-value chips, `BottomSheet` for form-like modals, `SelectField`, `PlayerPicker`, `WirePad`, `OutcomeToggle`, `FieldHighlight` for their respective controls.
+- MUST keep a `tracker/` component's CSS module free of rules a `ui/` primitive already provides; a caller's module adds layout/positioning (and rare surface-specific overrides via `className`), not re-declared control styling.
+- MUST split domain logic (store selectors with derivations, game-rule orchestration, multi-field form state) into a `src/hooks/` hook or a pure `src/lib` module before a component grows it inline; bare store selectors/actions may stay direct `useTrackerStore` calls.
+- SHOULD promote a pattern to a new `ui/` primitive only once it repeats across components; one-off styling stays local to its component.
 
 ## File Naming and Exports
 
