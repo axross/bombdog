@@ -41,9 +41,8 @@ New files follow fixed placement rules by kind — routes, components, non-UI mo
 
 - MUST use **kebab-case** for all file and folder names (`move-composer/move-composer.tsx`).
 - MUST place routes under `src/app/` following App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route segment folders).
-- MUST place components in the tier that matches their coupling: strictly domain-agnostic primitives under `src/components/primitives/<name>/`, domain components (store/game-rule compositions and thin wrappers that bind a primitive to the domain, e.g. `wire-pad` over `toggle-grid`) under `src/components/tracker/<name>/`, and non-UI modules under `src/lib/`.
-- MUST NOT import anything from `@/lib` or from `components/tracker/` in a `components/primitives/` module — a primitive knows no domain types, rules, store, or vocabulary. When a control needs domain typing or content, split it: the generic shell stays a primitive and a `tracker/` wrapper supplies the domain (values, labels, colour variants, mappings).
-- MUST place reusable hook functions under `src/hooks/` as `use-<name>.ts`; a component needing domain state or derivations consumes them through a hook (or a pure `src/lib` module) rather than inlining the logic.
+- MUST place components per the tier decision in [Component Composition](../component-composition/SKILL.md) — strictly domain-agnostic primitives under `src/components/primitives/<name>/`, domain components under `src/components/tracker/<name>/` — and non-UI modules under `src/lib/`. That skill owns the tier semantics, the primitives import rule, and the split/promotion strategy.
+- MUST place reusable hook functions under `src/hooks/` as `use-<name>.ts`; when logic belongs in a hook vs `src/lib` vs the component is owned by [Component Composition](../component-composition/SKILL.md).
 - MUST colocate a **unit** test next to its subject as `<name>.spec.ts(x)`; Vitest picks up `src/**/*.{test,spec}.{ts,tsx}`.
 - MUST place **end-to-end** specs under `e2e/tests/` as `<name>.test.ts` (Playwright `testDir` is `e2e/tests`) and shared e2e helpers under `e2e/helpers/`.
 - MUST colocate a component's styles as `<name>.module.css` and import them as `css`.

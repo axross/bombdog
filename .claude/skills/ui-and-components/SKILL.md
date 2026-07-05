@@ -7,17 +7,14 @@ description: Use this skill when writing, reviewing, or refactoring React compon
 
 Apply this skill for any user-facing work in bombdog: React components, pages, layouts, and styling. The app uses the Next.js App Router (React 19) with CSS Modules.
 
-This skill owns implementation mechanics. Which appearance treatment a surface gets — color roles, elevation, control selection, modal vs bottom sheet, wire-state and cut-outcome visuals — is owned by [UI Appearance](../ui-appearance/SKILL.md); consult it before styling a new component or state. Where a component *file* lives (the `primitives/` vs `tracker/` tier split and its import rule) is owned by [Project Structure](../project-structure/SKILL.md).
+This skill owns implementation mechanics. Which appearance treatment a surface gets — color roles, elevation, control selection, modal vs bottom sheet, wire-state and cut-outcome visuals — is owned by [UI Appearance](../ui-appearance/SKILL.md); consult it before styling a new component or state. Component separation and composition — the `primitives/` vs `tracker/` tier split, the primitives import rule, the two-layer split for domain-typed controls, styling extension via `className`, primitive promotion, and the hooks/lib split for domain logic — is owned by [Component Composition](../component-composition/SKILL.md); consult it before creating or placing any component. Where the files live on disk is owned by [Project Structure](../project-structure/SKILL.md).
 
-## Composition Tiers and Primitives
+## Composing the Existing Catalog
 
-Components are organized in two tiers: strictly domain-agnostic primitives under `src/components/primitives/` and domain components under `src/components/tracker/` (tier definition and import rule in [Project Structure](../project-structure/SKILL.md)).
+Every control the app needs likely already exists; re-implementing one's look is a review finding. The separation strategy behind this catalog lives in [Component Composition](../component-composition/SKILL.md).
 
 - MUST compose the existing components instead of re-implementing their look: from `primitives/` — `Button` (variants `primary` / `secondary` / `danger` / `danger-ghost` / `ghost`, sizes `md` / `sm` / `compact` / `icon` / `icon-sm`), `ConfirmDialog` for centered destructive confirmations, `BottomSheet` for form-like modals, `Tabs`/`TabsList`/`TabsTrigger`/`TabsContent` for tab strips, `SelectField`, `SegmentedPicker`, `ToggleGrid`, `Input`, `Checkbox` (compact labelled box), `CheckToggle` (full-width toggle row), `RadioGroup`/`RadioGroupItem`, `FieldLabel`, `FieldHighlight`, `Chip`, `Badge`, `Spinner`, `EmptyState`; from `tracker/` — `WirePad` (the one wire-value picker), `WireChip`, `PlayerPicker`, `OutcomeToggle`.
-- MUST keep the two layers of a split control separate: the primitive (`SegmentedPicker`, `ToggleGrid`, `Chip`) owns the control mechanics and shape; its `tracker/` wrapper (`PlayerPicker`, `WirePad`, `WireChip`) owns the domain — value sets, glyphs/labels, colour variants, orderings. New domain-typed controls follow the same split rather than baking domain content into a primitive.
-- MUST keep a consuming component's CSS module free of rules a composed component already provides; a caller's module adds layout/positioning (and rare surface-specific overrides via `className`), not re-declared control styling.
-- MUST split domain logic (store selectors with derivations, game-rule orchestration, multi-field form state) into a `src/hooks/` hook or a pure `src/lib` module before a component grows it inline; bare store selectors/actions may stay direct `useTrackerStore` calls.
-- SHOULD promote a pattern to a new primitive only once it repeats across components; one-off styling stays local to its component.
+- MUST follow [Component Composition](../component-composition/SKILL.md) when a needed control is missing, needs domain content, or needs to look different on one surface — do not inline a new variant here.
 
 ## File Naming and Exports
 
