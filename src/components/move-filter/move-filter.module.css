@@ -4,7 +4,8 @@
 			display: inline-flex;
 			align-items: center;
 			gap: var(--space-1);
-			min-block-size: 34px;
+			/* Compact toolbar trigger: 36px is the convention's floor for these. */
+			min-block-size: 36px;
 			padding-inline: var(--space-3);
 			color: var(--text-muted);
 			background-color: var(--surface-2);

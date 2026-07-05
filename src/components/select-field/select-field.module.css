@@ -59,8 +59,7 @@
 			background-color: var(--surface-2);
 			border: 1px solid var(--border);
 			border-radius: var(--radius);
-			box-shadow: 0 10px 30px
-				color-mix(in oklch, var(--slate-12) 18%, transparent);
+			box-shadow: var(--shadow-popover);
 			z-index: 50;
 		}
 

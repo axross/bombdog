@@ -110,11 +110,32 @@ describe("<StatusPanel>", () => {
 			expect(within(tile).getByRole("img")).toHaveAccessibleName(
 				"Wire 9: 2 of 4 cut",
 			);
-			// squares fill row-major: the in-play pair stays ahead of the cut pair.
+			// squares fill row-major: the in-play (hidden) pair stays ahead of the
+			// cut pair.
 			const fills = Array.from(tile.querySelectorAll("[data-fill]")).map((el) =>
 				el.getAttribute("data-fill"),
 			);
-			expect(fills).toEqual(["in-play", "in-play", "cut", "cut"]);
+			expect(fills).toEqual(["hidden", "hidden", "cut", "cut"]);
+		});
+
+		it("marks a located copy revealed, ahead of the hidden ones", () => {
+			useTrackerStore.setState({ players, infoTokens: { c: 3 } });
+
+			render(<StatusPanel />);
+
+			// Carol's info token locates one uncut copy of the 3.
+			const tile = tileFor(3);
+			expect(tile).toHaveAttribute("data-state", "uncut");
+			expect(tile).toHaveAttribute("data-revealed", "1");
+			expect(within(tile).getByRole("img")).toHaveAccessibleName(
+				"Wire 3: 0 of 4 cut, 1 located",
+			);
+			const fills = Array.from(tile.querySelectorAll("[data-fill]")).map((el) =>
+				el.getAttribute("data-fill"),
+			);
+			expect(fills).toEqual(["revealed", "hidden", "hidden", "hidden"]);
+			// no other tile picks up a located copy.
+			expect(tileFor(4)).toHaveAttribute("data-revealed", "0");
 		});
 
 		it("marks a solo-cut value fully cut with every square hollow", () => {
@@ -139,6 +160,18 @@ describe("<StatusPanel>", () => {
 				el.getAttribute("data-fill"),
 			);
 			expect(fills).toEqual(["cut", "cut", "cut", "cut"]);
+		});
+
+		it("keeps the strip outcome-colorless with all squares hidden at start", () => {
+			useTrackerStore.setState({ players });
+
+			render(<StatusPanel />);
+
+			// with nothing logged, every copy is in play but unlocated.
+			const fills = Array.from(tileFor(1).querySelectorAll("[data-fill]")).map(
+				(el) => el.getAttribute("data-fill"),
+			);
+			expect(fills).toEqual(["hidden", "hidden", "hidden", "hidden"]);
 		});
 	});
 

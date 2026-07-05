@@ -1,11 +1,9 @@
 "use client";
 
-import { clsx } from "clsx";
 import type { JSX } from "react";
 import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
-import { formatWire, wireLabel } from "@/lib/game";
-import { BLUE_WIRE_VALUES, type RevealedWire } from "@/lib/types";
-import css from "./reveal-dialog.module.css";
+import { WirePad } from "@/components/wire-pad/wire-pad";
+import type { RevealedWire } from "@/lib/types";
 
 /**
  * Props for {@link RevealDialog}: its open state and the reveal callbacks.
@@ -25,7 +23,10 @@ interface RevealDialogProps {
 
 /**
  * Bottom sheet shown when a cut fails: pick the wire's actual value (1–12,
- * Yellow, or "?" for the special-rule "unknown"). Selecting a value closes it.
+ * Yellow, or "?" for the special-rule "unknown"). Selecting a value closes it —
+ * including re-picking the recorded value, which the {@link WirePad} re-commits
+ * on a repeat tap. The pad is the shared wire-value picker, so this sheet has
+ * no wire styling of its own.
  */
 export function RevealDialog({
 	open,
@@ -46,46 +47,12 @@ export function RevealDialog({
 			description="What was the wire's real value?"
 			data-testid="reveal-dialog"
 		>
-			<div className={css.grid}>
-				{BLUE_WIRE_VALUES.map((n) => (
-					<button
-						key={n}
-						type="button"
-						className={clsx(css.cell, current === n && css.selected)}
-						onClick={() => choose(n)}
-						aria-label={wireLabel(n)}
-						data-testid={`reveal-${n}`}
-					>
-						{formatWire(n)}
-					</button>
-				))}
-				<button
-					type="button"
-					className={clsx(
-						css.cell,
-						css.yellow,
-						current === "yellow" && css.selected,
-					)}
-					onClick={() => choose("yellow")}
-					aria-label={wireLabel("yellow")}
-					data-testid="reveal-yellow"
-				>
-					{formatWire("yellow")}
-				</button>
-				<button
-					type="button"
-					className={clsx(
-						css.cell,
-						css.unknown,
-						current === "unknown" && css.selected,
-					)}
-					onClick={() => choose("unknown")}
-					aria-label={wireLabel("unknown")}
-					data-testid="reveal-unknown"
-				>
-					{formatWire("unknown")}
-				</button>
-			</div>
+			<WirePad
+				value={current}
+				onValueChange={choose}
+				allowUnknown
+				itemTestIdPrefix="reveal"
+			/>
 		</BottomSheet>
 	);
 }

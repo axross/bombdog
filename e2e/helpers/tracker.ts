@@ -277,8 +277,9 @@ export function statusPanel(page: Page): Locator {
 
 /**
  * A wire-count tile in the Status view's Wires strip, for a blue value 1–12.
- * Carries the cut state as `data-cut` / `data-uncut` counts and a
- * `data-state` of `uncut`, `half-cut`, or `full-cut`.
+ * Carries the cut state as `data-cut` / `data-uncut` counts, the located
+ * (revealed-but-uncut) copy count as `data-revealed`, and a `data-state` of
+ * `uncut`, `half-cut`, or `full-cut`.
  */
 export function statusWire(page: Page, value: number): Locator {
 	return statusPanel(page).locator(

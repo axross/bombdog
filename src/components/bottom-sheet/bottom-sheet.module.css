@@ -14,7 +14,7 @@
 		:where(:scope) {
 			position: fixed;
 			inset: 0;
-			background-color: color-mix(in oklch, var(--slate-1) 55%, transparent);
+			background-color: var(--scrim);
 			backdrop-filter: blur(2px);
 			/* Deeper sheets stack above shallower ones (content one step higher). */
 			z-index: calc(40 + var(--sheet-depth, 0) * 20);

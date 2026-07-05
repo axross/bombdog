@@ -64,10 +64,14 @@
 		--text: var(--slate-12);
 		--text-muted: var(--slate-11);
 
+		/* Text/icons on any solid step-9 fill (accent, success, danger). Step-9
+		   solids are identical in light and dark, so this never flips. */
+		--on-solid: oklch(100% 0 0);
+
 		/* Accent (blue). blue-9 is dark enough to pair with white. */
 		--accent: var(--blue-9);
 		--accent-hover: var(--blue-10);
-		--accent-contrast: oklch(100% 0 0);
+		--accent-contrast: var(--on-solid);
 		--focus-ring: var(--blue-8);
 
 		/* Wire colours. soft = step 3 (rest background), -hover = step 4, border =
@@ -96,6 +100,15 @@
 		--danger-hover: var(--tomato-10);
 		--danger-soft: var(--tomato-4);
 		--danger-text: var(--tomato-11);
+		/* A whisper of danger behind an invalid field — a tint, not a fill. */
+		--danger-tint: color-mix(in oklch, var(--danger) 10%, transparent);
+
+		/* Overlay & elevation. The scrim dims everything behind a modal surface
+		   (sheets, dialogs, confirms); the popover shadow is the only sanctioned
+		   box-shadow, reserved for anchored popovers (select/dropdown menus). */
+		--scrim: color-mix(in oklch, var(--slate-1) 55%, transparent);
+		--shadow-popover: 0 10px 30px
+			color-mix(in oklch, var(--slate-12) 18%, transparent);
 
 		/* Spacing scale */
 		--space-1: 0.25rem;
@@ -163,5 +176,9 @@
 		--grass-4: oklch(31.9% 0.0527 150.3); /* #1d3a24 */
 		--grass-9: oklch(65.1% 0.1468 147.4); /* #46a758 */
 		--grass-11: oklch(78% 0.1419 148.5); /* #71d083 */
+
+		/* Slate-12 flips near-white in dark, which would turn the popover shadow
+		   into a glow; shadows stay shadow-coloured. */
+		--shadow-popover: 0 10px 30px oklch(0% 0 0 / 50%);
 	}
 }

@@ -77,8 +77,9 @@
 			text-decoration: line-through;
 		}
 
-		/* The four copies as a 2×2 grid; squares fill row-major, so a half-cut
-		   wire keeps its top pair solid. */
+		/* The four copies as a 2×2 grid; squares fill row-major — revealed
+		   copies first, then hidden, then cut — so a half-cut wire keeps its
+		   top pair. */
 		.copyGrid {
 			display: grid;
 			grid-template-columns: repeat(2, 8px);
@@ -86,9 +87,17 @@
 			gap: 3px;
 		}
 
-		/* One copy still in play: solid wire blue. */
+		/* Wire-state language, mirroring the player cells: a copy in play but
+		   unlocated is a dashed outline. */
 		.copy {
 			border-radius: 2px;
+			border: 1px dashed var(--border-strong);
+		}
+
+		/* A located (revealed-but-uncut) copy: solid wire blue — we know where
+		   this one is. */
+		.copy[data-fill="revealed"] {
+			border: 1px solid var(--wire-blue);
 			background-color: var(--wire-blue);
 		}
 

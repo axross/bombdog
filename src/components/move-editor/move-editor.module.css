@@ -73,7 +73,7 @@
 		:where(:scope) {
 			position: fixed;
 			inset: 0;
-			background-color: color-mix(in oklch, var(--slate-1) 55%, transparent);
+			background-color: var(--scrim);
 			backdrop-filter: blur(2px);
 			z-index: 60;
 
@@ -149,7 +149,7 @@
 
 		.confirmDelete {
 			background-color: var(--danger);
-			color: var(--accent-contrast);
+			color: var(--on-solid);
 			border-color: var(--danger);
 
 			&:hover {

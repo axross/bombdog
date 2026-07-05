@@ -7,6 +7,8 @@ description: Use this skill when writing, reviewing, or refactoring React compon
 
 Apply this skill for any user-facing work in bombdog: React components, pages, layouts, and styling. The app uses the Next.js App Router (React 19) with CSS Modules.
 
+This skill owns implementation mechanics. Which appearance treatment a surface gets — color roles, elevation, control selection, modal vs bottom sheet, wire-state and cut-outcome visuals — is owned by [UI Appearance](../ui-appearance/SKILL.md); consult it before styling a new component or state.
+
 ## File Naming and Exports
 
 - MUST name component files and folders in **kebab-case** (`move-composer/move-composer.tsx`), with the CSS Module sharing the base name (`move-composer.module.css`).

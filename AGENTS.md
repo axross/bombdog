@@ -38,6 +38,7 @@ Apply these keywords consistently in this document and the documents linked from
 | [Project Structure](.claude/skills/project-structure/SKILL.md) | Navigating the repository, locating files, placing new modules, or checking directory/stack conventions |
 | [Quality Assurance Guidelines](.claude/skills/quality-assurance-guidelines/SKILL.md) | Reviewing verification evidence, e2e coverage, snapshots, flakiness, lint/format evidence, or manual checks |
 | [UI and Components](.claude/skills/ui-and-components/SKILL.md) | Writing or reviewing React components, Server/Client boundaries, CSS Modules styling, routing under `src/app`, or user-facing surfaces and accessibility |
+| [UI Appearance](.claude/skills/ui-appearance/SKILL.md) | Deciding how a surface should look — color roles, elevation (borders/shadows/fills), which control element to use, modal dialog vs bottom sheet, wire indicator states, or cut outcome treatment |
 | [Unit Test Guidelines](.claude/skills/unit-test-guidelines/SKILL.md) | Writing, refactoring, reviewing, or running unit tests, including mocks/fakes, fixtures, schema tests, and behavior-focused assertions |
 
 ## Response Approach
@@ -85,7 +86,7 @@ User-facing changes need design intent before implementation mechanics. The sing
 **Guidelines:**
 
 - MUST establish design intent before implementing user-facing changes: hierarchy, interaction states, accessibility intent, responsive behavior, and copy constraints.
-- MUST consult [UI and Components](.claude/skills/ui-and-components/SKILL.md) for design decisions and implementation mechanics.
+- MUST consult [UI Appearance](.claude/skills/ui-appearance/SKILL.md) for appearance decisions and [UI and Components](.claude/skills/ui-and-components/SKILL.md) for implementation mechanics.
 - MUST express design intent in user-facing terms before translating it into components, styles, or tests.
 - MUST verify that text, layout, focus behavior, loading states, and responsive behavior remain coherent across relevant viewports or surfaces.
 - SHOULD keep design-system rules in design vocabulary and link to implementation-mechanics skills instead of duplicating them.

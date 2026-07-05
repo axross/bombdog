@@ -1,5 +1,6 @@
 "use client";
 
+import { clsx } from "clsx";
 import { Tabs } from "radix-ui";
 import type { JSX } from "react";
 import { FieldHighlight } from "@/components/field-highlight/field-highlight";
@@ -252,7 +253,10 @@ function MoveFields({
 									<button
 										key={String(value)}
 										type="button"
-										className={css.cutValueItem}
+										className={clsx(
+											css.cutValueItem,
+											value === "unknown" && css.cutValueUnknown,
+										)}
 										aria-pressed={fields.cutValue === value}
 										aria-label={wireLabel(value)}
 										onClick={() => update({ cutValue: value })}

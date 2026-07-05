@@ -31,11 +31,18 @@ function cutState(row: WireStatusRow): "uncut" | "half-cut" | "full-cut" {
 
 /**
  * One wire's tile in the count strip: the value number over a 2×2 grid of
- * squares, one per physical copy — solid while still in play, hollow once cut.
- * Squares fill row-major, so a half-cut wire keeps its top pair. The counts are
- * announced through the accessible name; the squares stay decorative.
+ * squares, one per physical copy, wearing the wire-state language — solid
+ * while located (revealed by an info token or failed cut), dashed while in
+ * play but unlocated, hollow once cut. Squares fill row-major: revealed
+ * copies first, then hidden ones, then cut ones. The counts are announced
+ * through the accessible name; the squares stay decorative.
  */
 function WireTile({ row }: { row: WireStatusRow }): JSX.Element {
+	const copyFill = (i: number): "revealed" | "hidden" | "cut" => {
+		if (i < row.revealed) return "revealed";
+		return i < row.uncut ? "hidden" : "cut";
+	};
+	const located = row.revealed > 0 ? `, ${row.revealed} located` : "";
 	return (
 		<li
 			className={css.wireTile}
@@ -43,12 +50,13 @@ function WireTile({ row }: { row: WireStatusRow }): JSX.Element {
 			data-value={row.value}
 			data-cut={row.cut}
 			data-uncut={row.uncut}
+			data-revealed={row.revealed}
 			data-state={cutState(row)}
 		>
 			<span
 				role="img"
 				className={css.wireFigure}
-				aria-label={`${wireLabel(row.value)}: ${row.cut} of ${WIRE_COPIES} cut`}
+				aria-label={`${wireLabel(row.value)}: ${row.cut} of ${WIRE_COPIES} cut${located}`}
 			>
 				<span className={css.wireNumber} aria-hidden>
 					{row.value}
@@ -59,7 +67,7 @@ function WireTile({ row }: { row: WireStatusRow }): JSX.Element {
 							// biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static square grid
 							key={i}
 							className={css.copy}
-							data-fill={i < row.uncut ? "in-play" : "cut"}
+							data-fill={copyFill(i)}
 						/>
 					))}
 				</span>

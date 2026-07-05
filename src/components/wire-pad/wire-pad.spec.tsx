@@ -54,16 +54,37 @@ describe("<WirePad>", () => {
 		expect(screen.getByRole("radio", { name: "Yellow wire" })).toBeChecked();
 	});
 
-	it("ignores deselecting the current wire (no empty-value change)", async () => {
+	it("re-commits the current wire on a repeat tap instead of clearing", async () => {
 		const user = userEvent.setup();
 		const onValueChange = vi.fn();
 		render(<WirePad value={8} onValueChange={onValueChange} />);
 
 		// Radix single-toggle emits "" when the active item is toggled off; the
-		// guard drops it so a chosen wire cannot be cleared to null.
+		// pad never clears, so the repeat tap re-reports the current value —
+		// commit-style pickers (the reveal sheet) act on it, form fields no-op.
 		await user.click(screen.getByRole("radio", { name: "Wire 8" }));
 
-		expect(onValueChange).not.toHaveBeenCalled();
+		expect(onValueChange).toHaveBeenCalledWith(8);
+	});
+
+	it("prefixes chip test ids with itemTestIdPrefix", () => {
+		render(
+			<WirePad
+				value={null}
+				onValueChange={vi.fn()}
+				allowUnknown
+				itemTestIdPrefix="reveal"
+			/>,
+		);
+
+		expect(screen.getByRole("radio", { name: "Wire 8" })).toHaveAttribute(
+			"data-testid",
+			"reveal-8",
+		);
+		expect(screen.getByRole("radio", { name: "Unknown wire" })).toHaveAttribute(
+			"data-testid",
+			"reveal-unknown",
+		);
 	});
 
 	it("hides the Yellow option in blue-only mode", () => {

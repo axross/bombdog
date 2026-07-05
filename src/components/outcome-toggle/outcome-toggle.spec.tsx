@@ -44,7 +44,8 @@ describe("<OutcomeToggle>", () => {
 		);
 
 		await user.click(screen.getByRole("button", { name: /Fail/ }));
-		await user.click(screen.getByRole("button", { name: "Wire 8" }));
+		// the reveal dialog's picker is the shared WirePad (single-select radios).
+		await user.click(screen.getByRole("radio", { name: "Wire 8" }));
 
 		expect(onChange).toHaveBeenCalledWith("fail", 8);
 	});

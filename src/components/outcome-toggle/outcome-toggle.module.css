@@ -41,13 +41,13 @@
 
 		.success[aria-pressed="true"] {
 			background-color: var(--success);
-			color: var(--accent-contrast);
+			color: var(--on-solid);
 			border-color: var(--success);
 		}
 
 		.fail[aria-pressed="true"] {
 			background-color: var(--danger);
-			color: var(--accent-contrast);
+			color: var(--on-solid);
 			border-color: var(--danger);
 		}
 	}

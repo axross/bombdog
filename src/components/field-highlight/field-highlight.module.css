@@ -14,7 +14,7 @@
 		   (below) and the composer's live region announces which fields need fixing.
 		   The tint uses no border/outline, so toggling it never shifts layout. */
 		:where(:scope)[data-invalid] {
-			background: color-mix(in oklch, var(--danger) 10%, transparent);
+			background: var(--danger-tint);
 			/* duration and easing compose from the shared motion tokens; the shake's
 			   snappy feel comes from the keyframe offsets below, and the emphasized
 			   curve suits the quick settle. two motion beats give it room to decay. */
@@ -44,7 +44,7 @@
 			font-size: 0.85em;
 			font-weight: 800;
 			line-height: 1;
-			color: var(--accent-contrast);
+			color: var(--on-solid);
 			background: var(--danger);
 			border-radius: 50%;
 		}
