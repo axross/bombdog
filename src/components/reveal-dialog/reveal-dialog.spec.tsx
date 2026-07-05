@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe("<RevealDialog>", () => {
-	it("renders numeric cells 1–12 plus Yellow and Unknown when open", () => {
+	it("renders wire chips 1–12 plus Yellow and Unknown when open", () => {
 		render(
 			<RevealDialog
 				open
@@ -20,18 +20,18 @@ describe("<RevealDialog>", () => {
 
 		for (let n = 1; n <= 12; n++) {
 			expect(
-				screen.getByRole("button", { name: `Wire ${n}` }),
+				screen.getByRole("radio", { name: `Wire ${n}` }),
 			).toBeInTheDocument();
 		}
 		expect(
-			screen.getByRole("button", { name: "Yellow wire" }),
+			screen.getByRole("radio", { name: "Yellow wire" }),
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole("button", { name: "Unknown wire" }),
+			screen.getByRole("radio", { name: "Unknown wire" }),
 		).toBeInTheDocument();
 	});
 
-	it("selecting a numeric cell reports the value and closes", async () => {
+	it("selecting a numeric chip reports the value and closes", async () => {
 		const user = userEvent.setup();
 		const onSelect = vi.fn();
 		const onOpenChange = vi.fn();
@@ -44,7 +44,7 @@ describe("<RevealDialog>", () => {
 			/>,
 		);
 
-		await user.click(screen.getByRole("button", { name: "Wire 8" }));
+		await user.click(screen.getByRole("radio", { name: "Wire 8" }));
 
 		expect(onSelect).toHaveBeenCalledWith(8);
 		expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -63,7 +63,7 @@ describe("<RevealDialog>", () => {
 			/>,
 		);
 
-		await user.click(screen.getByRole("button", { name: "Yellow wire" }));
+		await user.click(screen.getByRole("radio", { name: "Yellow wire" }));
 
 		expect(onSelect).toHaveBeenCalledWith("yellow");
 		expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -82,16 +82,13 @@ describe("<RevealDialog>", () => {
 			/>,
 		);
 
-		await user.click(screen.getByRole("button", { name: "Unknown wire" }));
+		await user.click(screen.getByRole("radio", { name: "Unknown wire" }));
 
 		expect(onSelect).toHaveBeenCalledWith("unknown");
 		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
 
-	// the highlight is a hashed CSS-module `selected` class; assert it toggles on
-	// the recorded cell and is absent from a sibling (reaching the branch alone
-	// wouldn't prove anything).
-	it("highlights the currently-recorded numeric value only", () => {
+	it("marks the currently-recorded value checked, and only it", () => {
 		render(
 			<RevealDialog
 				open
@@ -100,45 +97,32 @@ describe("<RevealDialog>", () => {
 				current={8}
 			/>,
 		);
-		expect(screen.getByRole("button", { name: "Wire 8" }).className).toMatch(
-			/selected/,
-		);
+
+		expect(screen.getByRole("radio", { name: "Wire 8" })).toBeChecked();
+		expect(screen.getByRole("radio", { name: "Wire 7" })).not.toBeChecked();
 		expect(
-			screen.getByRole("button", { name: "Wire 7" }).className,
-		).not.toMatch(/selected/);
+			screen.getByRole("radio", { name: "Yellow wire" }),
+		).not.toBeChecked();
 	});
 
-	it("highlights the currently-recorded Yellow value only", () => {
+	it("re-picking the recorded value still reports it and closes", async () => {
+		const user = userEvent.setup();
+		const onSelect = vi.fn();
+		const onOpenChange = vi.fn();
 		render(
 			<RevealDialog
 				open
-				onOpenChange={vi.fn()}
-				onSelect={vi.fn()}
-				current="yellow"
+				onOpenChange={onOpenChange}
+				onSelect={onSelect}
+				current={8}
 			/>,
 		);
-		expect(
-			screen.getByRole("button", { name: "Yellow wire" }).className,
-		).toMatch(/selected/);
-		expect(
-			screen.getByRole("button", { name: "Wire 1" }).className,
-		).not.toMatch(/selected/);
-	});
 
-	it("highlights the currently-recorded Unknown value only", () => {
-		render(
-			<RevealDialog
-				open
-				onOpenChange={vi.fn()}
-				onSelect={vi.fn()}
-				current="unknown"
-			/>,
-		);
-		expect(
-			screen.getByRole("button", { name: "Unknown wire" }).className,
-		).toMatch(/selected/);
-		expect(
-			screen.getByRole("button", { name: "Yellow wire" }).className,
-		).not.toMatch(/selected/);
+		// the pad re-commits the active value on a repeat tap, so confirming the
+		// recorded value behaves like any other pick instead of dead-ending.
+		await user.click(screen.getByRole("radio", { name: "Wire 8" }));
+
+		expect(onSelect).toHaveBeenCalledWith(8);
+		expect(onOpenChange).toHaveBeenCalledWith(false);
 	});
 });

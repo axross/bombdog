@@ -27,6 +27,12 @@ interface BaseProps {
 	 * Offer the "?" (unknown) option for wires cut/named without a known value.
 	 */
 	allowUnknown?: boolean;
+	/**
+	 * Prefix for each chip's `data-testid` (`<prefix>-<value>`), so surfaces
+	 * with their own e2e vocabulary (e.g. the reveal picker's `reveal-8`) keep
+	 * it. Defaults to `wire`.
+	 */
+	itemTestIdPrefix?: string;
 	className?: string;
 	"data-testid"?: string;
 }
@@ -71,10 +77,18 @@ function fromKey(key: string): WireValueOrUnknown {
 /**
  * Grid of wire buttons: 1–12 and (unless blue-only) Yellow. Defaults to a
  * single-select toggle; pass `multiple` to let several wires be chosen at once
- * (used by the X or Y Ray, which names two values against one wire).
+ * (used by the X or Y Ray, which names two values against one wire). This is
+ * the one wire-value picker — any surface choosing a wire value renders it,
+ * per the UI Appearance skill's control-selection rule.
  */
 export function WirePad(props: WirePadProps): JSX.Element {
-	const { label, blueOnly = false, allowUnknown = false, className } = props;
+	const {
+		label,
+		blueOnly = false,
+		allowUnknown = false,
+		itemTestIdPrefix = "wire",
+		className,
+	} = props;
 	const dataTestId = props["data-testid"];
 
 	// the buttons are identical across modes; only the enclosing Root's
@@ -87,7 +101,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					value={toKey(n)}
 					className={css.wire}
 					aria-label={wireLabel(n)}
-					data-testid={`wire-${n}`}
+					data-testid={`${itemTestIdPrefix}-${n}`}
 				>
 					{formatWire(n)}
 				</ToggleGroup.Item>
@@ -97,7 +111,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					value="yellow"
 					className={clsx(css.wire, css.yellow)}
 					aria-label={wireLabel("yellow")}
-					data-testid="wire-yellow"
+					data-testid={`${itemTestIdPrefix}-yellow`}
 				>
 					{formatWire("yellow")}
 				</ToggleGroup.Item>
@@ -107,7 +121,7 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					value="unknown"
 					className={clsx(css.wire, css.unknown)}
 					aria-label={wireLabel("unknown")}
-					data-testid="wire-unknown"
+					data-testid={`${itemTestIdPrefix}-unknown`}
 				>
 					{formatWire("unknown")}
 				</ToggleGroup.Item>
@@ -144,7 +158,15 @@ export function WirePad(props: WirePadProps): JSX.Element {
 					type="single"
 					value={props.value === null ? "" : toKey(props.value)}
 					onValueChange={(next) => {
-						if (next) props.onValueChange(fromKey(next));
+						if (next) {
+							props.onValueChange(fromKey(next));
+						} else if (props.value !== null) {
+							// Radix reports a tap on the active item as "" (toggle-off). A
+							// single-select pad never clears, so a repeat tap re-commits the
+							// current value: commit-style pickers (the reveal sheet) act on
+							// it, and form fields receive the value they already hold.
+							props.onValueChange(props.value);
+						}
 					}}
 					{...rootProps}
 				>

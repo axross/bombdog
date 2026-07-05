@@ -77,6 +77,35 @@ test.describe("status view", () => {
 		await expect(statusWire(page, 1)).toHaveAttribute("data-cut", "0");
 	});
 
+	test("marks located copies on the wire strip while they stay uncut", {
+		tag: [
+			"@scenario:status.revealed-copies",
+			"@area:status",
+			"@priority:should",
+		],
+	}, async ({ page }) => {
+		// Player 1's info token locates a 3; a failed dual cut locates two more
+		// uncut wires: the named 6 (the actor must hold one) and the revealed 8.
+		await gotoApp(page);
+		await placeInfoToken(page, 0, 3);
+		await startFromSetup(page);
+		await logDualCut(page, {
+			target: "Player 2",
+			wire: 6,
+			outcome: { reveal: 8 },
+		});
+
+		await closeComposer(page);
+		await openStatusTab(page);
+		// each located value carries one revealed copy while staying uncut.
+		await expect(statusWire(page, 3)).toHaveAttribute("data-revealed", "1");
+		await expect(statusWire(page, 3)).toHaveAttribute("data-state", "uncut");
+		await expect(statusWire(page, 6)).toHaveAttribute("data-revealed", "1");
+		await expect(statusWire(page, 8)).toHaveAttribute("data-revealed", "1");
+		// an untouched value has no located copies.
+		await expect(statusWire(page, 1)).toHaveAttribute("data-revealed", "0");
+	});
+
 	test("marks known holders on player cards and consumes them on a successful cut", {
 		tag: ["@scenario:status.possession", "@area:status", "@priority:should"],
 	}, async ({ page }) => {

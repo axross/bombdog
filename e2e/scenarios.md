@@ -59,6 +59,7 @@ carries its `@scenario:<id>` tag. The reporter
 | session.reset-to-dual-cut | Logging a move returns the composer's action tab to Dual cut | session | should |
 | status.tab-switch | Switching tabs shows only the active panel, filling the content area | status | should |
 | status.counts | The Status view's wire strip tallies each value as uncut, half-cut, or fully cut | status | should |
+| status.revealed-copies | The Status view's wire strip marks located (revealed-but-uncut) copies distinctly from hidden and cut ones | status | should |
 | status.possession | The Status view marks known holdings on player cards and consumes them on a successful cut | status | should |
 | status.xy-ray-cut-value | A successful X or Y Ray records its actual cut value and tallies it in Status | status | should |
 | status.yellow | A revealed yellow wire lights the holder's yellow chip on their player card | status | should |

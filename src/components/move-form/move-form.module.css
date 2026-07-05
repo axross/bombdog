@@ -107,8 +107,10 @@
 			}
 		}
 
-		/* Which of the two X-or-Y-Ray values the wire turned out to be. Mirrors
-		   the outcome toggle's segmented buttons for a consistent picker feel. */
+		/* Which of the two X-or-Y-Ray values the wire turned out to be. A
+		   segmented two-option picker, but it picks a *wire value*, so it wears
+		   the wire palette (soft rest, solid when pressed) like the WirePad chips
+		   rather than the accent. */
 		.cutValue {
 			display: flex;
 			flex-direction: column;
@@ -136,20 +138,40 @@
 			align-items: center;
 			justify-content: center;
 			min-block-size: 44px;
-			background-color: var(--surface-2);
-			color: var(--text);
-			border: 1px solid var(--border);
+			font-family: var(--font-mono);
+			font-size: 1rem;
+			font-weight: 600;
+			color: var(--wire-blue-text);
+			background-color: var(--wire-blue-soft);
+			border: 1px solid var(--wire-blue-border);
 			border-radius: var(--radius-sm);
-			font-weight: 700;
 
 			&:hover {
-				background-color: var(--surface-3);
+				background-color: var(--wire-blue-soft-hover);
 			}
 
 			&[aria-pressed="true"] {
-				background-color: var(--accent);
-				color: var(--accent-contrast);
-				border-color: var(--accent);
+				background-color: var(--wire-blue);
+				color: var(--wire-blue-contrast);
+				border-color: var(--wire-blue);
+			}
+		}
+
+		/* A named "?" value keeps the neutral unknown treatment so it never
+		   masquerades as a real hue. */
+		.cutValueUnknown {
+			color: var(--text);
+			background-color: var(--surface-3);
+			border-color: var(--border);
+
+			&:hover {
+				background-color: var(--surface-hover);
+			}
+
+			&[aria-pressed="true"] {
+				background-color: var(--text-muted);
+				color: var(--surface);
+				border-color: var(--text-muted);
 			}
 		}
 	}
