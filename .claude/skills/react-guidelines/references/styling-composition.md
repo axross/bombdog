@@ -57,7 +57,7 @@ A consumer's CSS module holds three things only: **layout/positioning** (flex si
 - MUST compose the existing primitive and extend via `className` instead of re-declaring any control styling a primitive provides.
 - MUST declare a new primitive's base, variants, and sizes at zero specificity (`:where(:scope)`, `&:where(.variant)`) so caller extensions win without `!important` or module-order luck.
 - MUST repeat the state selector (`.x:hover`, `.x[data-state="active"]`) in a caller rule that needs to outrank a primitive's stateful rule.
-- MUST keep positioning, margins, and non-full sizing out of primitive roots — callers own placement via `className` (per [UI and Components](../../ui-and-components/SKILL.md)).
+- MUST keep positioning, margins, and non-full sizing out of primitive roots — callers own placement via `className` (per [css-modules-styling.md](./css-modules-styling.md)).
 - MUST disclose any pixel-level normalization in the PR description when unifying drifted duplicates into one primitive (e.g. the 40px seat name input joining the 44px control height); silent visual changes are review findings.
 - SHOULD add a one-line comment above a caller extension naming the primitive it extends ("On top of the shared primary Button: …"), so the reader knows the rest of the styling lives elsewhere.
 - SHOULD expose per-instance knobs as CSS custom properties with defaults (e.g. `--toggle-grid-columns`) when a primitive has one genuinely variable dimension, instead of a prop that injects style.

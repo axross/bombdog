@@ -5,7 +5,7 @@ description: Apply this skill when deciding how any bombdog surface should look 
 
 # UI Appearance
 
-The design vocabulary for bombdog's UI: which appearance treatment each surface, control, and state gets. This skill owns the *decisions*; [UI and Components](../ui-and-components/SKILL.md) owns the implementation mechanics (CSS Modules, `@scope`, ramp-step usage, motion/keyframe placement), and `src/app/variables.css` is the only home for token values.
+The design vocabulary for bombdog's UI: which appearance treatment each surface, control, and state gets. This skill owns the *decisions*; [React Guidelines](../react-guidelines/SKILL.md) owns the implementation mechanics (CSS Modules, `@scope`, ramp-step usage, motion/keyframe placement), and `src/app/variables.css` is the only home for token values.
 
 ## Color Roles
 
@@ -27,7 +27,7 @@ Every color in the app belongs to exactly one role. The ramps (see `variables.cs
 - MUST reserve green/red (grass/tomato) for action outcomes, destructive actions, and invalid-input signals; MUST NOT use them to encode wire identity or wire state.
 - MUST color wire-value UI with the wire hue tokens (sky for blue values, amber for yellow); MUST NOT use `--accent` for a wire-value choice, even a two-option one.
 - MUST use `--on-solid` for text and icons on solid success/danger/accent fills; MUST NOT hard-code white or reuse `--accent-contrast` outside accent fills.
-- MUST pick ramp steps by role per the step table in [UI and Components › Styling](../ui-and-components/SKILL.md#styling) (soft rest 3, hover 4, border 7, solid 9, text 11).
+- MUST pick ramp steps by role per the step table in [React Guidelines › CSS Modules Styling](../react-guidelines/references/css-modules-styling.md) (soft rest 3, hover 4, border 7, solid 9, text 11).
 
 ## Surfaces, Borders, Shadows
 
@@ -44,7 +44,7 @@ Elevation has a deliberate split — each floating layer type has one delineatio
 - MUST NOT introduce new `box-shadow` values; the only sanctioned shadow is `--shadow-popover`, and only on anchored popovers.
 - MUST dim every modal with the shared `--scrim` token on its overlay; MUST NOT re-declare an inline scrim `color-mix`.
 - MUST use the radius roles: `--radius-sm` for controls and chips, `--radius` for cards and popovers, `--radius-lg` for modal surfaces; `50%` only for genuinely circular dots/radios.
-- MUST derive hover fills from the adjacent ramp step, per [UI and Components › Styling](../ui-and-components/SKILL.md#styling) (never an ad-hoc `color-mix`).
+- MUST derive hover fills from the adjacent ramp step, per [React Guidelines › CSS Modules Styling](../react-guidelines/references/css-modules-styling.md) (never an ad-hoc `color-mix`).
 - SHOULD reserve `--border-strong` for emphasized outlines: checkbox rests, the status strip's tiny copy squares, neutral row accents.
 
 ## Control Selection
@@ -80,7 +80,7 @@ Two modal surface types exist, split by what the user is doing:
 
 - MUST open form-like modal flows in the shared `BottomSheet`; MUST NOT hand-roll overlay/sheet chrome per component.
 - MUST reserve `AlertDialog` for destructive commitments; a data-entry flow is never an `AlertDialog`.
-- MUST give every modal overlay and content both enter and leave animations plus a reduced-motion fallback, per [UI and Components › Motion](../ui-and-components/SKILL.md#motion-and-transitions).
+- MUST give every modal overlay and content both enter and leave animations plus a reduced-motion fallback, per [React Guidelines › Motion and Transitions](../react-guidelines/references/motion-and-transitions.md).
 - MUST order confirm actions as neutral Cancel then trailing solid-danger confirm.
 
 ## Wire Indicator States
