@@ -3,14 +3,14 @@
 import { clsx } from "clsx";
 import { Tabs } from "radix-ui";
 import type { JSX } from "react";
-import { FieldHighlight } from "@/components/field-highlight/field-highlight";
-import { OutcomeToggle } from "@/components/outcome-toggle/outcome-toggle";
-import { PlayerPicker } from "@/components/player-picker/player-picker";
+import { FieldHighlight } from "@/components/ui/field-highlight/field-highlight";
+import { OutcomeToggle } from "@/components/ui/outcome-toggle/outcome-toggle";
+import { PlayerPicker } from "@/components/ui/player-picker/player-picker";
 import {
 	SelectField,
 	type SelectOption,
-} from "@/components/select-field/select-field";
-import { WirePad } from "@/components/wire-pad/wire-pad";
+} from "@/components/ui/select-field/select-field";
+import { WirePad } from "@/components/ui/wire-pad/wire-pad";
 import { formatWire, targetPlayerOrder, wireLabel } from "@/lib/game";
 import {
 	type BlueWireValueOrUnknown,
@@ -23,7 +23,7 @@ import {
 	type Player,
 	POST_IT_EQUIPMENT,
 } from "@/lib/types";
-import { type DraftFields, detectorValues, type MoveFieldKey } from "./draft";
+import { type DraftFields, detectorValues, type MoveFieldKey } from "@/lib/move-draft";
 import css from "./move-form.module.css";
 
 /**

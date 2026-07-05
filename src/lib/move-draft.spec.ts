@@ -15,7 +15,7 @@ import {
 	emptyDraftFields,
 	fieldsFromMove,
 	invalidFields,
-} from "./draft";
+} from "@/lib/move-draft";
 
 describe("emptyDraftFields()", () => {
 	it("returns an all-empty shape with the given actor", () => {

@@ -3,7 +3,7 @@
 import { Bomb } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import { type JSX, useState } from "react";
-import { WirePad } from "@/components/wire-pad/wire-pad";
+import { WirePad } from "@/components/ui/wire-pad/wire-pad";
 import { useTrackerStore } from "@/lib/tracker-store";
 import {
 	type BlueWireValue,

@@ -3,9 +3,9 @@
 import { Trash2 } from "lucide-react";
 import { AlertDialog } from "radix-ui";
 import { type JSX, useState } from "react";
-import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
-import { buildDraft, fieldsFromMove } from "@/components/move-form/draft";
-import { MoveForm } from "@/components/move-form/move-form";
+import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
+import { buildDraft, fieldsFromMove } from "@/lib/move-draft";
+import { MoveForm } from "@/components/tracker/move-form/move-form";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { Move, Player } from "@/lib/types";
 import css from "./move-editor.module.css";

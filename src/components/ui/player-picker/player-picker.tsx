@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 import { Check, Ellipsis } from "lucide-react";
 import { DropdownMenu, ToggleGroup } from "radix-ui";
 import type { JSX } from "react";
-import type { SelectOption } from "@/components/select-field/select-field";
+import type { SelectOption } from "@/components/ui/select-field/select-field";
 import css from "./player-picker.module.css";
 
 /**

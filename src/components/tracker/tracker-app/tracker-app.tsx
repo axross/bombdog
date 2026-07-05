@@ -3,12 +3,12 @@
 import { Bomb } from "lucide-react";
 import { Tabs } from "radix-ui";
 import { type JSX, useEffect, useState } from "react";
-import { MoveComposer } from "@/components/move-composer/move-composer";
-import { MoveFilter } from "@/components/move-filter/move-filter";
-import { MoveLog } from "@/components/move-log/move-log";
-import { PlayerSetup } from "@/components/player-setup/player-setup";
-import { ResetButton } from "@/components/reset-button/reset-button";
-import { StatusPanel } from "@/components/status-panel/status-panel";
+import { MoveComposer } from "@/components/tracker/move-composer/move-composer";
+import { MoveFilter } from "@/components/tracker/move-filter/move-filter";
+import { MoveLog } from "@/components/tracker/move-log/move-log";
+import { PlayerSetup } from "@/components/tracker/player-setup/player-setup";
+import { ResetButton } from "@/components/tracker/reset-button/reset-button";
+import { StatusPanel } from "@/components/tracker/status-panel/status-panel";
 import { useTrackerStore } from "@/lib/tracker-store";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./tracker-app.module.css";

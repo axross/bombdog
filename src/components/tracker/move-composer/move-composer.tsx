@@ -2,15 +2,15 @@
 
 import { Redo2, Undo2 } from "lucide-react";
 import { type JSX, useState } from "react";
-import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
+import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
 import {
 	buildDraft,
 	type DraftFields,
 	emptyDraftFields,
 	invalidFields,
 	type MoveFieldKey,
-} from "@/components/move-form/draft";
-import { MoveForm } from "@/components/move-form/move-form";
+} from "@/lib/move-draft";
+import { MoveForm } from "@/components/tracker/move-form/move-form";
 import { nextActorId } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { MoveType } from "@/lib/types";

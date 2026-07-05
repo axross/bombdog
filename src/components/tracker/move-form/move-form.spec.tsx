@@ -8,7 +8,7 @@ import {
 	type Player,
 	POST_IT_EQUIPMENT,
 } from "@/lib/types";
-import { type DraftFields, emptyDraftFields, type MoveFieldKey } from "./draft";
+import { type DraftFields, emptyDraftFields, type MoveFieldKey } from "@/lib/move-draft";
 import { MoveForm } from "./move-form";
 
 const players: Player[] = [

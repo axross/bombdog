@@ -1,8 +1,8 @@
 "use client";
 
 import type { JSX } from "react";
-import { BottomSheet } from "@/components/bottom-sheet/bottom-sheet";
-import { WirePad } from "@/components/wire-pad/wire-pad";
+import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
+import { WirePad } from "@/components/ui/wire-pad/wire-pad";
 import type { RevealedWire } from "@/lib/types";
 
 /**

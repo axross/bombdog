@@ -2,7 +2,7 @@
 
 import { Pencil } from "lucide-react";
 import { type JSX, useState } from "react";
-import { StartingInfoEditor } from "@/components/starting-info-editor/starting-info-editor";
+import { StartingInfoEditor } from "@/components/tracker/starting-info-editor/starting-info-editor";
 import { formatWire, wireLabel } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { BlueWireValue, Player } from "@/lib/types";

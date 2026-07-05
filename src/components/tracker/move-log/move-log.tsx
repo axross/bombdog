@@ -3,8 +3,8 @@
 import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useMemo, useRef, useState } from "react";
-import { MoveEditor } from "@/components/move-editor/move-editor";
-import { StartingInfo } from "@/components/starting-info/starting-info";
+import { MoveEditor } from "@/components/tracker/move-editor/move-editor";
+import { StartingInfo } from "@/components/tracker/starting-info/starting-info";
 import { filterMoves, formatWire, getPlayerName, wireLabel } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";
 import {

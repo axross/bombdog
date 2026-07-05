@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { SelectOption } from "@/components/select-field/select-field";
+import type { SelectOption } from "@/components/ui/select-field/select-field";
 import { PlayerPicker } from "./player-picker";
 
 const options: SelectOption[] = [
