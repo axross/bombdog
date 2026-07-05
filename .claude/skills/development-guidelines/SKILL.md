@@ -69,7 +69,7 @@ Consult the appropriate skill for detailed guidance on each area:
 | Unit test structure, conventions, mocks/fixtures, and commands | [Unit Test Guidelines](../unit-test-guidelines/SKILL.md) |
 | End-to-end test structure, conventions, and commands | [E2E Testing Guidelines](../e2e-testing-guidelines/SKILL.md) |
 | Repository layout, file placement, and stack conventions | [Project Structure](../project-structure/SKILL.md) |
-| React components, Server/Client boundaries, CSS Modules, and routing | [UI and Components](../ui-and-components/SKILL.md) |
+| React components, hooks, composition, Server/Client boundaries, and CSS Modules | [React Guidelines](../react-guidelines/SKILL.md) |
 
 **Guidelines:**
 

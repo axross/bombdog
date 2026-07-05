@@ -32,7 +32,7 @@ Place shared logic at the lowest tier that has more than one caller. Most projec
 
 ## Route File Layout
 
-When the diff adds or moves a route/feature, the reviewer MUST verify it against [UI and Components](../../ui-and-components/SKILL.md), which covers routing under `src/app`. Typical co-location expectations include:
+When the diff adds or moves a route/feature, the reviewer MUST verify it against [Project Structure](../../project-structure/SKILL.md), which covers route placement under `src/app`. Typical co-location expectations include:
 
 - A props/types module co-located with the route entry, declaring the route's input shape (params and query, including any framework-required async typing).
 - A not-found / fallback module co-located when the route can fail to resolve (e.g., a dynamic record id/slug that may not exist).
@@ -41,7 +41,7 @@ When the diff adds or moves a route/feature, the reviewer MUST verify it against
 
 **Guidelines:**
 
-- MUST verify added or moved route files against [UI and Components](../../ui-and-components/SKILL.md) before approving their placement.
+- MUST verify added or moved route files against [Project Structure](../../project-structure/SKILL.md) before approving their placement.
 
 ## Identifier Naming
 

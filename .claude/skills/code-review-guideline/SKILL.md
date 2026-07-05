@@ -90,13 +90,13 @@ Consult the appropriate skill for detailed review checklists in each lens. These
 | OWASP-lens application security — secrets, input validation, access control, XSS, SSRF, auth, supply chain | [Application Security Requirements](../application-security-requirements/SKILL.md) |
 | Data-layer query cost (N+1), server/client boundary cost, caching correctness, asset/image optimization, bundle weight, error and observability hooks | [Performance and Reliability Requirements](../performance-and-reliability-requirements/SKILL.md) |
 
-In addition to the lenses above, the reviewer MUST also load the project's own topic-specific skills when they overlap the diff — repository structure and file placement via [Project Structure](../project-structure/SKILL.md), and components, routing, and UI design via [UI and Components](../ui-and-components/SKILL.md). Consult whichever ones overlap the change.
+In addition to the lenses above, the reviewer MUST also load the project's own topic-specific skills when they overlap the diff — repository structure and file placement via [Project Structure](../project-structure/SKILL.md), and components, hooks, styling, and UI implementation via [React Guidelines](../react-guidelines/SKILL.md). Consult whichever ones overlap the change.
 
 **Guidelines:**
 
 - MUST choose every topic-specific lens that materially overlaps the diff before reporting findings.
 - SHOULD cite the owning lens when a finding depends on a specialized project rule.
-- MUST NOT treat this table as exhaustive when the diff has an obvious topic covered by a developer-facing skill below or by a project-specific skill such as [Project Structure](../project-structure/SKILL.md) or [UI and Components](../ui-and-components/SKILL.md).
+- MUST NOT treat this table as exhaustive when the diff has an obvious topic covered by a developer-facing skill below or by a project-specific skill such as [Project Structure](../project-structure/SKILL.md) or [React Guidelines](../react-guidelines/SKILL.md).
 
 ## Developer-Facing Guidelines (defer, do not duplicate)
 
@@ -108,7 +108,7 @@ Developer-facing skills own how to write project-conforming code. The review ski
 | End-to-end test structure, conventions, and commands | [E2E Testing Guidelines](../e2e-testing-guidelines/SKILL.md) |
 | Unit test structure, conventions, mocks/fixtures, and commands | [Unit Test Guidelines](../unit-test-guidelines/SKILL.md) |
 
-In addition, the reviewer MUST defer to the project's own developer-facing skills — repository structure and file placement via [Project Structure](../project-structure/SKILL.md), and routing/URL conventions, component conventions, and UI/visual design via [UI and Components](../ui-and-components/SKILL.md). Cite whichever ones overlap the change instead of restating their rules.
+In addition, the reviewer MUST defer to the project's own developer-facing skills — repository structure and file placement via [Project Structure](../project-structure/SKILL.md), and component conventions, hooks, styling, and UI implementation via [React Guidelines](../react-guidelines/SKILL.md). Cite whichever ones overlap the change instead of restating their rules.
 
 **Guidelines:**
 

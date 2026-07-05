@@ -19,7 +19,7 @@ UI/components, project structure, and test coverage. **Verify the change
 conforms to every project agent skill whose routing condition matches the
 changed files**, per [`AGENTS.md`](AGENTS.md)'s skill index (e.g.
 `development-guidelines`, `unit-test-guidelines`, `e2e-testing-guidelines`,
-`ui-and-components`, `project-structure`) — flag any deviation from a skill's
+`react-guidelines`, `project-structure`) — flag any deviation from a skill's
 stated rule, citing the skill and the rule; a violated skill **MUST** rule is
 Important. Give each finding a severity label, `file:line` evidence, and a
 concrete fix.
@@ -53,7 +53,7 @@ a miss that breaks the requirement is **Important**, a gap that does not is a
   A swallowed or unhandled error is Important.
 - **Accessibility** — interactive elements have an accessible name and role and
   keyboard support, per
-  [`ui-and-components`](.claude/skills/ui-and-components/SKILL.md). A regression
+  [`react-guidelines`](.claude/skills/react-guidelines/SKILL.md). A regression
   or a missing affordance on an interactive element is Important.
 - **Type safety** — no unchecked cast or unjustified non-null assertion (`!`)
   introduced, per
@@ -67,7 +67,7 @@ a miss that breaks the requirement is **Important**, a gap that does not is a
   (Important only if it hides a bug).
 - **Boundaries & styling** — correct Server/Client component boundaries (an
   unsafe cross is Important) and CSS Modules for styling, no Tailwind, per
-  [`ui-and-components`](.claude/skills/ui-and-components/SKILL.md).
+  [`react-guidelines`](.claude/skills/react-guidelines/SKILL.md).
 
 ## Acceptance criteria
 

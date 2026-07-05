@@ -41,8 +41,8 @@ New files follow fixed placement rules by kind — routes, components, non-UI mo
 
 - MUST use **kebab-case** for all file and folder names (`move-composer/move-composer.tsx`).
 - MUST place routes under `src/app/` following App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route segment folders).
-- MUST place components per the tier decision in [Component Composition](../component-composition/SKILL.md) — strictly domain-agnostic primitives under `src/components/primitives/<name>/`, domain components under `src/components/tracker/<name>/` — and non-UI modules under `src/lib/`. That skill owns the tier semantics, the primitives import rule, and the split/promotion strategy.
-- MUST place reusable hook functions under `src/hooks/` as `use-<name>.ts`; when logic belongs in a hook vs `src/lib` vs the component is owned by [Component Composition](../component-composition/SKILL.md).
+- MUST place components per the tier decision in [React Guidelines](../react-guidelines/SKILL.md) — strictly domain-agnostic primitives under `src/components/primitives/<name>/`, domain components under `src/components/tracker/<name>/` — and non-UI modules under `src/lib/`. That skill owns the tier semantics, the primitives import rule, and the split/promotion strategy.
+- MUST place reusable hook functions under `src/hooks/` as `use-<name>.ts`; when logic belongs in a hook vs `src/lib` vs the component is owned by [React Guidelines](../react-guidelines/SKILL.md).
 - MUST colocate a **unit** test next to its subject as `<name>.spec.ts(x)`; Vitest picks up `src/**/*.{test,spec}.{ts,tsx}`.
 - MUST place **end-to-end** specs under `e2e/tests/` as `<name>.test.ts` (Playwright `testDir` is `e2e/tests`) and shared e2e helpers under `e2e/helpers/`.
 - MUST colocate a component's styles as `<name>.module.css` and import them as `css`.

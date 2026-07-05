@@ -8,7 +8,7 @@ Apply this reference when placing a new component, auditing an existing one, or 
 
 | Tier | Holds | Knows about |
 | --- | --- | --- |
-| `src/components/primitives/<name>/` | Strictly domain-agnostic building blocks, named after the common design-system vocabulary (shadcn/ui, Radix Primitives): `button`, `tabs`, `input`, `checkbox`, `radio-group`, `select-field`, `segmented-picker`, `toggle-grid`, `check-toggle`, `chip`, `badge`, `spinner`, `empty-state`, `field-label`, `field-highlight`, `bottom-sheet`, `confirm-dialog` | Nothing about the game. No store, no domain types, no game rules, no domain vocabulary — not even in prop names or doc comments |
+| `src/components/primitives/<name>/` | Strictly domain-agnostic building blocks, named after the common design-system vocabulary (shadcn/ui, Radix Primitives): `button`, `tabs`, `segmented-picker`, `toggle-grid`, `bottom-sheet`, … — full inventory in [component-catalog.md](./component-catalog.md) | Nothing about the game. No store, no domain types, no game rules, no domain vocabulary — not even in prop names or doc comments |
 | `src/components/tracker/<name>/` | Domain components: store/game-rule compositions (`move-composer`, `status-panel`, …) **and** thin domain wrappers over primitives (`wire-pad`, `wire-chip`, `player-picker`, `outcome-toggle`, `reveal-dialog`) | Players, wires, moves, outcomes — the game |
 
 **Guidelines:**
@@ -43,7 +43,7 @@ grep -rn "@/lib\|components/tracker" src/components/primitives --include="*.tsx"
 
 For a new component, walk this order:
 
-1. Is an existing primitive or wrapper already this control? **Compose it** — do not re-create it.
+1. Is an existing primitive or wrapper already this control (see [component-catalog.md](./component-catalog.md))? **Compose it** — do not re-create it.
 2. Does it read/write the store, or orchestrate a flow across controls? → `tracker/` composition (with logic in a hook, per [domain-logic-and-hooks.md](./domain-logic-and-hooks.md)).
 3. Is it a control whose *shape* is generic but whose values/labels/colours are game concepts? → **two-layer split**: primitive shell + `tracker/` wrapper.
 4. Is it fully generic? → `primitives/`, named per the design-system vocabulary.
@@ -51,7 +51,7 @@ For a new component, walk this order:
 
 **Guidelines:**
 
-- MUST check the existing catalogs (this file and the wrappers list) before writing any new control markup.
+- MUST check the inventory in [component-catalog.md](./component-catalog.md) before writing any new control markup.
 - MUST route a component that fails step 2 or 3 into `tracker/`; only step 4 earns `primitives/`.
 - SHOULD keep one-off arrangements local until a second consumer appears.
 
@@ -73,4 +73,4 @@ A pattern earns a primitive when it repeats across components, or when it is a r
 - SHOULD promote a single-consumer pattern only when it is a standard design-system concept (e.g. `Spinner`, `EmptyState`) whose extraction removes inline generic UI from a domain component.
 - MUST NOT build a speculative primitive for a pattern with zero current consumers.
 - MUST, when unifying duplicates, either preserve each duplicate's exact appearance via caller extensions or normalize the drift deliberately and disclose the pixel-level change in the PR (see [styling-composition.md](./styling-composition.md)).
-- MUST update the catalog list in [UI and Components](../../ui-and-components/SKILL.md) and this file's tier table when a primitive is added, renamed, or removed.
+- MUST update the inventory in [component-catalog.md](./component-catalog.md) when a primitive is added, renamed, or removed.

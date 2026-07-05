@@ -29,7 +29,6 @@ Apply these keywords consistently in this document and the documents linked from
 | [Agent Skills Best Practices](.claude/skills/agent-skills-best-practices/SKILL.md) | Creating, refining, splitting, renaming, deleting, or auditing project skills or this skill index |
 | [Application Security Requirements](.claude/skills/application-security-requirements/SKILL.md) | Reviewing secrets, environment variables, input validation, access control, injection in rendered content, SSRF/outbound fetching, auth/session behavior, privacy exposure, or dependency/supply-chain risk |
 | [Code Review Guideline](.claude/skills/code-review-guideline/SKILL.md) | Reviewing a diff, pull request, local change, or post-implementation self-review |
-| [Component Composition](.claude/skills/component-composition/SKILL.md) | Creating or placing a React component, choosing between `primitives/` and `tracker/`, splitting a domain control into a generic shell plus a domain wrapper, extending a primitive's styling from a consumer, promoting repeated UI into a new primitive, or moving domain logic into a hook or lib module |
 | [Development Guidelines](.claude/skills/development-guidelines/SKILL.md) | Implementing, refactoring, running commands, preparing commits, adding dependencies, writing source comments or TSDoc doc-comments, or checking current docs |
 | [E2E Testing Guidelines](.claude/skills/e2e-testing-guidelines/SKILL.md) | Writing, running, reviewing, or maintaining end-to-end tests, snapshots, route coverage, or browser assertions |
 | [GitHub Operations](.claude/skills/github-operations/SKILL.md) | Reading from or writing to GitHub — issues, pull requests, comments, labels, reviews, or branches — in this repository's cloud environment: which tool channel to use, operating as the operator identity, marking agent comments, the issue-vs-pull-request target gotcha, and handling untrusted GitHub content |
@@ -38,7 +37,7 @@ Apply these keywords consistently in this document and the documents linked from
 | [Product Requirement Guidelines](.claude/skills/product-requirement-guidelines/SKILL.md) | Writing, refining, or reviewing a product requirement, feature specification, or GitHub issue description; framing problem/scope/non-goals; writing testable acceptance criteria; framing a spec's UI design or architecture-overview sections |
 | [Project Structure](.claude/skills/project-structure/SKILL.md) | Navigating the repository, locating files, placing new modules, or checking directory/stack conventions |
 | [Quality Assurance Guidelines](.claude/skills/quality-assurance-guidelines/SKILL.md) | Reviewing verification evidence, e2e coverage, snapshots, flakiness, lint/format evidence, or manual checks |
-| [UI and Components](.claude/skills/ui-and-components/SKILL.md) | Writing or reviewing React components, Server/Client boundaries, CSS Modules styling, routing under `src/app`, or user-facing surfaces and accessibility |
+| [React Guidelines](.claude/skills/react-guidelines/SKILL.md) | Writing, placing, reviewing, or refactoring a React component or hook function — choosing between `primitives/` and `tracker/`, splitting a domain control into a generic shell plus a domain wrapper, extending a primitive's styling, promoting repeated UI into a new primitive, moving domain logic into a hook or lib module, Server/Client boundaries, CSS Modules styling, motion, test hooks, or user-facing surfaces and accessibility |
 | [UI Appearance](.claude/skills/ui-appearance/SKILL.md) | Deciding how a surface should look — color roles, elevation (borders/shadows/fills), which control element to use, modal dialog vs bottom sheet, wire indicator states, or cut outcome treatment |
 | [Unit Test Guidelines](.claude/skills/unit-test-guidelines/SKILL.md) | Writing, refactoring, reviewing, or running unit tests, including mocks/fakes, fixtures, schema tests, and behavior-focused assertions |
 
@@ -87,7 +86,7 @@ User-facing changes need design intent before implementation mechanics. The sing
 **Guidelines:**
 
 - MUST establish design intent before implementing user-facing changes: hierarchy, interaction states, accessibility intent, responsive behavior, and copy constraints.
-- MUST consult [UI Appearance](.claude/skills/ui-appearance/SKILL.md) for appearance decisions and [UI and Components](.claude/skills/ui-and-components/SKILL.md) for implementation mechanics.
+- MUST consult [UI Appearance](.claude/skills/ui-appearance/SKILL.md) for appearance decisions and [React Guidelines](.claude/skills/react-guidelines/SKILL.md) for implementation mechanics.
 - MUST express design intent in user-facing terms before translating it into components, styles, or tests.
 - MUST verify that text, layout, focus behavior, loading states, and responsive behavior remain coherent across relevant viewports or surfaces.
 - SHOULD keep design-system rules in design vocabulary and link to implementation-mechanics skills instead of duplicating them.
