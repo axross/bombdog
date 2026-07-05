@@ -1,10 +1,11 @@
 "use client";
 
 import { clsx } from "clsx";
-import { Check, ListFilter } from "lucide-react";
+import { ListFilter } from "lucide-react";
 import { type JSX, useState } from "react";
 import { BottomSheet } from "@/components/primitives/bottom-sheet/bottom-sheet";
 import { Button } from "@/components/primitives/button/button";
+import { CheckToggle } from "@/components/primitives/check-toggle/check-toggle";
 import { isFilterActive } from "@/lib/game";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./move-filter.module.css";
@@ -71,10 +72,8 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 					</Button>
 
 					<div className={css.toggles}>
-						<button
-							type="button"
-							className={css.toggle}
-							aria-pressed={filter.excludeSuccessfulDualCut}
+						<CheckToggle
+							pressed={filter.excludeSuccessfulDualCut}
 							onClick={() =>
 								onChange({
 									...filter,
@@ -83,15 +82,10 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 							}
 							data-testid="filter-exclude-dual-cut"
 						>
-							<span className={css.check} aria-hidden>
-								{filter.excludeSuccessfulDualCut && <Check size={15} />}
-							</span>
 							Exclude successful dual cuts
-						</button>
-						<button
-							type="button"
-							className={css.toggle}
-							aria-pressed={filter.excludeSoloCut}
+						</CheckToggle>
+						<CheckToggle
+							pressed={filter.excludeSoloCut}
 							onClick={() =>
 								onChange({
 									...filter,
@@ -100,11 +94,8 @@ export function MoveFilter({ filter, onChange }: MoveFilterProps): JSX.Element {
 							}
 							data-testid="filter-exclude-solo-cut"
 						>
-							<span className={css.check} aria-hidden>
-								{filter.excludeSoloCut && <Check size={15} />}
-							</span>
 							Exclude solo cuts
-						</button>
+						</CheckToggle>
 					</div>
 
 					<div className={css.footer}>

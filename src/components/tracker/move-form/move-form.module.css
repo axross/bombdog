@@ -15,8 +15,10 @@
 			border-radius: var(--radius);
 		}
 
+		/* On top of the shared Tabs primitives: the in-card strip scrolls and
+		   sits on a tinted band; triggers share the band evenly, and the active
+		   trigger lifts to the panel surface. */
 		.tabs {
-			display: flex;
 			overflow-x: auto;
 			background-color: var(--surface-3);
 			border-block-end: 1px solid var(--border);
@@ -29,24 +31,11 @@
 
 		.tab {
 			flex: 1 0 auto;
-			min-block-size: 44px;
 			padding-inline: var(--space-4);
-			background-color: transparent;
-			color: var(--text-muted);
-			border: none;
-			border-block-end: 2px solid transparent;
-			font-weight: 600;
 			font-size: 0.9rem;
-			white-space: nowrap;
-
-			&:hover {
-				color: var(--text);
-			}
 
 			&[data-state="active"] {
-				color: var(--accent);
 				background-color: var(--surface);
-				border-block-end-color: var(--accent);
 			}
 		}
 
@@ -65,10 +54,6 @@
 
 		.panel {
 			padding: var(--space-4);
-
-			&:focus-visible {
-				outline: none;
-			}
 		}
 
 		.fields {
@@ -89,22 +74,10 @@
 			gap: var(--space-1);
 		}
 
-		.noteLabel {
-			font-size: 0.8rem;
-			font-weight: 600;
-			color: var(--text-muted);
-		}
-
+		/* On top of the shared Input: the note sits on the sheet's surface, so
+		   it takes the contrasting tinted background. */
 		.noteInput {
-			min-block-size: 44px;
-			padding-inline: var(--space-3);
 			background-color: var(--surface-2);
-			border: 1px solid var(--border);
-			border-radius: var(--radius-sm);
-
-			&::placeholder {
-				color: var(--text-muted);
-			}
 		}
 
 		/* Which of the two X-or-Y-Ray values the wire turned out to be. A
@@ -119,12 +92,6 @@
 			padding: 0;
 			margin: 0;
 			border: 0;
-		}
-
-		.cutValueLabel {
-			font-size: 0.8rem;
-			font-weight: 600;
-			color: var(--text-muted);
 		}
 
 		.cutValueButtons {

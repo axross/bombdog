@@ -3,6 +3,7 @@
 import { clsx } from "clsx";
 import { ToggleGroup } from "radix-ui";
 import type { JSX } from "react";
+import { FieldLabel } from "@/components/primitives/field-label/field-label";
 import css from "./toggle-grid.module.css";
 
 /**
@@ -102,7 +103,7 @@ export function ToggleGrid(props: ToggleGridProps): JSX.Element {
 
 	return (
 		<div className={clsx(css.toggleGrid, className)}>
-			{label && <span className={css.label}>{label}</span>}
+			{label && <FieldLabel>{label}</FieldLabel>}
 			{props.multiple ? (
 				<ToggleGroup.Root
 					type="multiple"

@@ -1,8 +1,14 @@
 "use client";
 
 import { Bomb } from "lucide-react";
-import { Tabs } from "radix-ui";
 import { type JSX, useState } from "react";
+import { Spinner } from "@/components/primitives/spinner/spinner";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/components/primitives/tabs/tabs";
 import { MoveComposer } from "@/components/tracker/move-composer/move-composer";
 import { MoveFilter } from "@/components/tracker/move-filter/move-filter";
 import { MoveLog } from "@/components/tracker/move-log/move-log";
@@ -36,7 +42,7 @@ export function TrackerApp(): JSX.Element {
 	if (!hasHydrated) {
 		return (
 			<main className={css.loading} aria-busy="true" data-testid="loading">
-				<span className={css.spinner} aria-hidden="true" />
+				<Spinner />
 				<span className={css.loadingText}>Loading…</span>
 			</main>
 		);
@@ -55,49 +61,49 @@ export function TrackerApp(): JSX.Element {
 				</h1>
 				<ResetButton />
 			</header>
-			<Tabs.Root
+			<Tabs
 				className={css.tabsRoot}
 				value={tab}
 				onValueChange={(next) => setTab(next as Tab)}
 			>
 				<div className={css.tabBar}>
-					<Tabs.List className={css.tabs} aria-label="View">
-						<Tabs.Trigger
+					<TabsList className={css.tabs} aria-label="View">
+						<TabsTrigger
 							value="moves"
 							className={css.tab}
 							data-testid="tab-moves"
 						>
 							Moves
-						</Tabs.Trigger>
-						<Tabs.Trigger
+						</TabsTrigger>
+						<TabsTrigger
 							value="status"
 							className={css.tab}
 							data-testid="tab-status"
 						>
 							Status
-						</Tabs.Trigger>
-					</Tabs.List>
+						</TabsTrigger>
+					</TabsList>
 					{/* the filter only affects the move list, so it rides the tab bar and
 					    shows only while the Moves view is active. */}
 					{tab === "moves" && (
 						<MoveFilter filter={filter} onChange={setFilter} />
 					)}
 				</div>
-				<Tabs.Content
+				<TabsContent
 					value="moves"
 					className={css.panel}
 					data-testid="tab-panel-moves"
 				>
 					<MoveLog filter={filter} />
-				</Tabs.Content>
-				<Tabs.Content
+				</TabsContent>
+				<TabsContent
 					value="status"
 					className={css.panel}
 					data-testid="tab-panel-status"
 				>
 					<StatusPanel />
-				</Tabs.Content>
-			</Tabs.Root>
+				</TabsContent>
+			</Tabs>
 			<MoveComposer />
 		</div>
 	);

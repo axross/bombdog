@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { Check, ChevronDown } from "lucide-react";
 import { Select } from "radix-ui";
 import type { JSX } from "react";
+import { FieldLabel } from "@/components/primitives/field-label/field-label";
 import css from "./select-field.module.css";
 
 /**
@@ -48,7 +49,11 @@ export function SelectField({
 		// a plain wrapper (not <label>): the control is a Radix Select trigger,
 		// which is labelled via its own aria-label below.
 		<div className={clsx(css.field, className)}>
-			<span className={hideLabel ? css.srOnly : css.label}>{label}</span>
+			{hideLabel ? (
+				<span className={css.srOnly}>{label}</span>
+			) : (
+				<FieldLabel>{label}</FieldLabel>
+			)}
 			{/* pass the empty string (not undefined) so the Select stays controlled:
 			    undefined flips Radix into uncontrolled mode, which desyncs from
 			    state after the field is reset (e.g. after logging a move). Radix

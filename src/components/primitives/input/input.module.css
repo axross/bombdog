@@ -1,0 +1,15 @@
+@layer components {
+	@scope (.input) {
+		:where(:scope) {
+			min-block-size: 44px;
+			padding-inline: var(--space-3);
+			background-color: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius-sm);
+
+			&::placeholder {
+				color: var(--text-muted);
+			}
+		}
+	}
+}

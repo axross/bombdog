@@ -1,13 +1,20 @@
 "use client";
 
 import { clsx } from "clsx";
-import { Tabs } from "radix-ui";
-import type { JSX } from "react";
+import { type JSX, useId } from "react";
 import { FieldHighlight } from "@/components/primitives/field-highlight/field-highlight";
+import { FieldLabel } from "@/components/primitives/field-label/field-label";
+import { Input } from "@/components/primitives/input/input";
 import {
 	SelectField,
 	type SelectOption,
 } from "@/components/primitives/select-field/select-field";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/components/primitives/tabs/tabs";
 import { OutcomeToggle } from "@/components/tracker/outcome-toggle/outcome-toggle";
 import { PlayerPicker } from "@/components/tracker/player-picker/player-picker";
 import { WirePad } from "@/components/tracker/wire-pad/wire-pad";
@@ -106,6 +113,9 @@ function MoveFields({
 	invalid: ReadonlySet<MoveFieldKey>;
 	nudge: number;
 }): JSX.Element {
+	// associates the note label with the custom Input across both mounts (the
+	// composer's and the editor's forms have distinct ids).
+	const noteId = useId();
 	// props for a field's highlight wrapper: flagged state, the replay counter,
 	// and a stable testid so tests and e2e can address each wrapper.
 	const flag = (key: MoveFieldKey) => ({
@@ -233,7 +243,7 @@ function MoveFields({
 							aria-label="Actual cut value"
 							data-testid="cut-value"
 						>
-							<span className={css.cutValueLabel}>Actual value</span>
+							<FieldLabel>Actual value</FieldLabel>
 							<div className={css.cutValueButtons}>
 								{fields.values.map((value) => (
 									<button
@@ -319,9 +329,10 @@ function MoveFields({
 							/>
 						</>
 					)}
-					<label className={css.noteField}>
-						<span className={css.noteLabel}>Note (optional)</span>
-						<input
+					<label className={css.noteField} htmlFor={noteId}>
+						<FieldLabel>Note (optional)</FieldLabel>
+						<Input
+							id={noteId}
 							className={css.noteInput}
 							type="text"
 							value={fields.note}
@@ -373,25 +384,25 @@ export function MoveForm({
 			</FieldHighlight>
 
 			{onTypeChange ? (
-				<Tabs.Root
+				<Tabs
 					className={css.card}
 					value={type}
 					onValueChange={(next) => onTypeChange(next as MoveType)}
 				>
-					<Tabs.List className={css.tabs} aria-label="Action type">
+					<TabsList className={css.tabs} aria-label="Action type">
 						{ACTIONS.map((action) => (
-							<Tabs.Trigger
+							<TabsTrigger
 								key={action.type}
 								value={action.type}
 								className={css.tab}
 								data-testid={`tab-${action.type}`}
 							>
 								{action.label}
-							</Tabs.Trigger>
+							</TabsTrigger>
 						))}
-					</Tabs.List>
+					</TabsList>
 					{ACTIONS.map((action) => (
-						<Tabs.Content
+						<TabsContent
 							key={action.type}
 							value={action.type}
 							className={css.panel}
@@ -404,9 +415,9 @@ export function MoveForm({
 								invalid={invalid}
 								nudge={nudge}
 							/>
-						</Tabs.Content>
+						</TabsContent>
 					))}
-				</Tabs.Root>
+				</Tabs>
 			) : (
 				<div className={css.card}>
 					<p className={css.staticHeader}>{ACTION_LABEL[type]}</p>

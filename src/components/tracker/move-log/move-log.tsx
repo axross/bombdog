@@ -1,9 +1,10 @@
 "use client";
 
-import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useRef, useState } from "react";
+import { Badge } from "@/components/primitives/badge/badge";
 import { Button } from "@/components/primitives/button/button";
+import { EmptyState } from "@/components/primitives/empty-state/empty-state";
 import { MoveEditor } from "@/components/tracker/move-editor/move-editor";
 import { StartingInfo } from "@/components/tracker/starting-info/starting-info";
 import { WireChip } from "@/components/tracker/wire-chip/wire-chip";
@@ -64,11 +65,8 @@ function OutcomeBadge({
 				? `fail (${formatWire(revealed)})`
 				: "fail";
 	return (
-		<span
-			className={clsx(
-				css.badge,
-				outcome === "success" ? css.success : css.fail,
-			)}
+		<Badge
+			className={outcome === "success" ? css.success : css.fail}
 			data-testid="badge"
 			data-outcome={outcome}
 			data-revealed={showReveal ? formatWire(revealed) : undefined}
@@ -76,7 +74,7 @@ function OutcomeBadge({
 		>
 			<Icon size={14} aria-hidden />
 			{text}
-		</span>
+		</Badge>
 	);
 }
 
@@ -249,11 +247,11 @@ export function MoveLog({ filter }: { filter: Filter }): JSX.Element {
 				    it (not pinned); renders nothing when none were placed. */}
 				<StartingInfo />
 				{moves.length === 0 ? (
-					<p className={css.empty}>No moves yet. Log the first turn below.</p>
+					<EmptyState>No moves yet. Log the first turn below.</EmptyState>
 				) : visibleMoves.length === 0 ? (
-					<p className={css.empty} data-testid="filtered-empty">
+					<EmptyState data-testid="filtered-empty">
 						No moves match the filter.
-					</p>
+					</EmptyState>
 				) : (
 					<ol className={css.list}>
 						{visibleMoves.map((move) => (

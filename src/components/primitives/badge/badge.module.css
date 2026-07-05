@@ -1,0 +1,14 @@
+@layer components {
+	@scope (.badge) {
+		:where(:scope) {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--space-1);
+			block-size: 26px;
+			padding-inline: var(--space-2);
+			font-size: 0.8rem;
+			font-weight: 600;
+			border-radius: var(--radius-sm);
+		}
+	}
+}

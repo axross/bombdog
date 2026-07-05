@@ -1,9 +1,14 @@
 "use client";
 
 import { Bomb } from "lucide-react";
-import { RadioGroup } from "radix-ui";
 import type { JSX } from "react";
 import { Button } from "@/components/primitives/button/button";
+import { Checkbox } from "@/components/primitives/checkbox/checkbox";
+import { Input } from "@/components/primitives/input/input";
+import {
+	RadioGroup,
+	RadioGroupItem,
+} from "@/components/primitives/radio-group/radio-group";
 import { WirePad } from "@/components/tracker/wire-pad/wire-pad";
 import { usePlayerSetupForm } from "@/hooks/use-player-setup-form";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/lib/types";
@@ -60,15 +65,13 @@ export function PlayerSetup(): JSX.Element {
 				</div>
 			</div>
 
-			<label className={css.skip}>
-				<input
-					type="checkbox"
-					checked={form.skipInfoTokens}
-					onChange={(e) => form.setSkipInfoTokens(e.target.checked)}
-					data-testid="skip-info-tokens"
-				/>
+			<Checkbox
+				checked={form.skipInfoTokens}
+				onChange={(e) => form.setSkipInfoTokens(e.target.checked)}
+				data-testid="skip-info-tokens"
+			>
 				Skip starting info tokens
-			</label>
+			</Checkbox>
 
 			{/* The hint leads into the per-seat wire pads, so it is grouped with the
 			    roster (tight gap) and kept clear of the skip toggle above it. */}
@@ -78,7 +81,7 @@ export function PlayerSetup(): JSX.Element {
 						Tap the wire each player marked with their info token.
 					</p>
 				)}
-				<RadioGroup.Root
+				<RadioGroup
 					className={css.seats}
 					value={String(form.captainIndex)}
 					onValueChange={(v) => form.setCaptainIndex(Number(v))}
@@ -90,15 +93,12 @@ export function PlayerSetup(): JSX.Element {
 						// biome-ignore lint/suspicious/noArrayIndexKey: seat identity is its position
 						<div key={i} className={css.seat}>
 							<div className={css.seatMain}>
-								<RadioGroup.Item
-									className={css.radio}
+								<RadioGroupItem
 									value={String(i)}
 									id={`captain-${i}`}
 									aria-label={`Make player ${i + 1} the Captain`}
-								>
-									<RadioGroup.Indicator className={css.radioDot} />
-								</RadioGroup.Item>
-								<input
+								/>
+								<Input
 									className={css.nameInput}
 									type="text"
 									value={form.names[i]}
@@ -125,7 +125,7 @@ export function PlayerSetup(): JSX.Element {
 							)}
 						</div>
 					))}
-				</RadioGroup.Root>
+				</RadioGroup>
 			</div>
 
 			<Button

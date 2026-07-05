@@ -1,0 +1,39 @@
+@layer components {
+	@scope (.list) {
+		:where(:scope) {
+			display: flex;
+		}
+	}
+
+	/* The shared trigger core: borderless with a 2px underline slot, muted at
+	   rest, accent + accent underline while active. Surface-specific sizing,
+	   padding, and active backgrounds come from the caller's className. */
+	@scope (.trigger) {
+		:where(:scope) {
+			min-block-size: 44px;
+			background-color: transparent;
+			color: var(--text-muted);
+			border: none;
+			border-block-end: 2px solid transparent;
+			font-weight: 600;
+			white-space: nowrap;
+
+			&:hover {
+				color: var(--text);
+			}
+
+			&[data-state="active"] {
+				color: var(--accent);
+				border-block-end-color: var(--accent);
+			}
+		}
+	}
+
+	@scope (.content) {
+		:where(:scope) {
+			&:focus-visible {
+				outline: none;
+			}
+		}
+	}
+}

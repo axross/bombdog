@@ -1,0 +1,9 @@
+@layer components {
+	@scope (.label) {
+		:where(:scope) {
+			font-size: 0.8rem;
+			font-weight: 600;
+			color: var(--text-muted);
+		}
+	}
+}

@@ -10,12 +10,6 @@
 			border: 0;
 		}
 
-		.label {
-			font-size: 0.8rem;
-			font-weight: 600;
-			color: var(--text-muted);
-		}
-
 		.buttons {
 			display: grid;
 			grid-template-columns: repeat(2, 1fr);

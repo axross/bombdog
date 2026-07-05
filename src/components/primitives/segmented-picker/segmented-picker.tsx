@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import { Check, Ellipsis } from "lucide-react";
 import { DropdownMenu, ToggleGroup } from "radix-ui";
 import type { JSX } from "react";
+import { FieldLabel } from "@/components/primitives/field-label/field-label";
 import type { SelectOption } from "@/components/primitives/select-field/select-field";
 import css from "./segmented-picker.module.css";
 
@@ -84,7 +85,7 @@ export function SegmentedPicker(props: SegmentedPickerProps): JSX.Element {
 	if (props.multiple) {
 		return (
 			<div className={clsx(css.field, className)}>
-				<span className={css.label}>{label}</span>
+				<FieldLabel>{label}</FieldLabel>
 				<div className={css.row} data-testid={dataTestId}>
 					<ToggleGroup.Root
 						type="multiple"
@@ -113,7 +114,7 @@ export function SegmentedPicker(props: SegmentedPickerProps): JSX.Element {
 
 	return (
 		<div className={clsx(css.field, className)}>
-			<span className={css.label}>{label}</span>
+			<FieldLabel>{label}</FieldLabel>
 			{/* the testid spans the whole picker (segmented row + ⋯ overflow) so both
 			    the one-tap options and the folded-away menu are addressable under it. */}
 			<div className={css.row} data-testid={dataTestId}>

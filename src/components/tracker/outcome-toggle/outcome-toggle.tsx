@@ -3,6 +3,7 @@
 import { clsx } from "clsx";
 import { Check, X } from "lucide-react";
 import { type JSX, useState } from "react";
+import { FieldLabel } from "@/components/primitives/field-label/field-label";
 import { RevealDialog } from "@/components/tracker/reveal-dialog/reveal-dialog";
 import { formatWire } from "@/lib/game";
 import type { Outcome, RevealedWire } from "@/lib/types";
@@ -47,7 +48,7 @@ export function OutcomeToggle({
 			aria-label={label ?? "Outcome"}
 			data-testid={dataTestId}
 		>
-			{label && <span className={css.label}>{label}</span>}
+			{label && <FieldLabel>{label}</FieldLabel>}
 			<div className={css.buttons}>
 				<button
 					type="button"
