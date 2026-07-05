@@ -58,16 +58,9 @@ See [component-anatomy.md](./references/component-anatomy.md) for:
 
 - kebab-case file naming, named exports, and explicit return types
 - typing props with `ComponentProps<T>` and passing through `className`
+- defaulting to Server Components, when `"use client"` is justified, and what must not cross the boundary
 - `data-testid` test hooks and `data-*` state attributes for e2e targeting
 - colocating a component with its CSS module and unit spec
-
-## Server and Client Components
-
-See [server-and-client-components.md](./references/server-and-client-components.md) for:
-
-- defaulting to Server Components and when `"use client"` is justified
-- keeping the client boundary low in the tree
-- what must not cross from server code into Client Components
 
 ## CSS Modules Styling
 
