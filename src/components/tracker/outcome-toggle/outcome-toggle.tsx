@@ -3,7 +3,7 @@
 import { clsx } from "clsx";
 import { Check, X } from "lucide-react";
 import { type JSX, useState } from "react";
-import { RevealDialog } from "@/components/ui/reveal-dialog/reveal-dialog";
+import { RevealDialog } from "@/components/tracker/reveal-dialog/reveal-dialog";
 import { formatWire } from "@/lib/game";
 import type { Outcome, RevealedWire } from "@/lib/types";
 import css from "./outcome-toggle.module.css";

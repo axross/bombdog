@@ -1,9 +1,9 @@
 "use client";
 
 import { type JSX, useState } from "react";
-import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
-import { Button } from "@/components/ui/button/button";
-import { WirePad } from "@/components/ui/wire-pad/wire-pad";
+import { BottomSheet } from "@/components/primitives/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/primitives/button/button";
+import { WirePad } from "@/components/tracker/wire-pad/wire-pad";
 import type { StartingInfoToken } from "@/hooks/use-starting-info-tokens";
 import { useTrackerStore } from "@/lib/tracker-store";
 import type { BlueWireValue } from "@/lib/types";

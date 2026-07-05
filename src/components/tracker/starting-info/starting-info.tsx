@@ -2,9 +2,9 @@
 
 import { Pencil } from "lucide-react";
 import { type JSX, useState } from "react";
+import { Button } from "@/components/primitives/button/button";
 import { StartingInfoEditor } from "@/components/tracker/starting-info-editor/starting-info-editor";
-import { Button } from "@/components/ui/button/button";
-import { WireChip } from "@/components/ui/wire-chip/wire-chip";
+import { WireChip } from "@/components/tracker/wire-chip/wire-chip";
 import { useStartingInfoTokens } from "@/hooks/use-starting-info-tokens";
 import css from "./starting-info.module.css";
 

@@ -22,8 +22,8 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 | Path | Owns |
 |---|---|
 | `src/app/` | App Router routes, `layout.tsx`, `page.tsx`, and the global CSS trio `layers.css` / `globals.css` / `variables.css` |
-| `src/components/ui/<name>/` | Generic, prop-driven primitives (`button`, `bottom-sheet`, `select-field`, `wire-pad`, …), one kebab-case folder each, colocating `<name>.tsx`, `<name>.module.css`, and `<name>.spec.tsx` |
-| `src/components/tracker/<name>/` | Domain compositions — components that read/write the tracker store or encode game rules — with the same colocation |
+| `src/components/primitives/<name>/` | Strictly domain-agnostic primitives (`button`, `bottom-sheet`, `select-field`, `segmented-picker`, `toggle-grid`, `chip`, …), one kebab-case folder each, colocating `<name>.tsx`, `<name>.module.css`, and `<name>.spec.tsx` |
+| `src/components/tracker/<name>/` | Domain components — store/game-rule compositions and thin domain wrappers over primitives (`wire-pad`, `wire-chip`, `player-picker`, …) — with the same colocation |
 | `src/hooks/` | Reusable hook functions (`use-<name>.ts`) binding domain logic to React state + colocated `*.spec.ts(x)` |
 | `src/lib/` | Non-UI application code (kebab-case: `tracker-store.ts`, `idb-storage.ts`, `game.ts`, `move-draft.ts`, `types.ts`) + colocated `*.spec.ts` |
 | `e2e/tests/` | Playwright end-to-end specs (`*.test.ts`) |
@@ -41,8 +41,8 @@ New files follow fixed placement rules by kind — routes, components, non-UI mo
 
 - MUST use **kebab-case** for all file and folder names (`move-composer/move-composer.tsx`).
 - MUST place routes under `src/app/` following App Router conventions (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, route segment folders).
-- MUST place components in the tier that matches their coupling: generic, prop-driven primitives under `src/components/ui/<name>/`, domain compositions under `src/components/tracker/<name>/`, and non-UI modules under `src/lib/`.
-- MUST NOT import `@/lib/tracker-store`, game-rule derivations, `@/lib/move-draft`, or anything under `components/tracker/` from a `components/ui/` module — ui-tier components stay prop-driven. Domain value types from `@/lib/types` and the formatting helpers `formatWire` / `wireLabel` are allowed.
+- MUST place components in the tier that matches their coupling: strictly domain-agnostic primitives under `src/components/primitives/<name>/`, domain components (store/game-rule compositions and thin wrappers that bind a primitive to the domain, e.g. `wire-pad` over `toggle-grid`) under `src/components/tracker/<name>/`, and non-UI modules under `src/lib/`.
+- MUST NOT import anything from `@/lib` or from `components/tracker/` in a `components/primitives/` module — a primitive knows no domain types, rules, store, or vocabulary. When a control needs domain typing or content, split it: the generic shell stays a primitive and a `tracker/` wrapper supplies the domain (values, labels, colour variants, mappings).
 - MUST place reusable hook functions under `src/hooks/` as `use-<name>.ts`; a component needing domain state or derivations consumes them through a hook (or a pure `src/lib` module) rather than inlining the logic.
 - MUST colocate a **unit** test next to its subject as `<name>.spec.ts(x)`; Vitest picks up `src/**/*.{test,spec}.{ts,tsx}`.
 - MUST place **end-to-end** specs under `e2e/tests/` as `<name>.test.ts` (Playwright `testDir` is `e2e/tests`) and shared e2e helpers under `e2e/helpers/`.

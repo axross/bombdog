@@ -3,8 +3,8 @@
 import { Bomb } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import type { JSX } from "react";
-import { Button } from "@/components/ui/button/button";
-import { WirePad } from "@/components/ui/wire-pad/wire-pad";
+import { Button } from "@/components/primitives/button/button";
+import { WirePad } from "@/components/tracker/wire-pad/wire-pad";
 import { usePlayerSetupForm } from "@/hooks/use-player-setup-form";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/lib/types";
 import css from "./player-setup.module.css";

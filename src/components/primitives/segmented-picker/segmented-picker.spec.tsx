@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { SelectOption } from "@/components/ui/select-field/select-field";
-import { PlayerPicker } from "./player-picker";
+import type { SelectOption } from "@/components/primitives/select-field/select-field";
+import { SegmentedPicker } from "./segmented-picker";
 
 const options: SelectOption[] = [
 	{ value: "a", label: "Alice" },
@@ -14,10 +14,10 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-describe("<PlayerPicker>", () => {
-	it("renders one option per player and labels the group", () => {
+describe("<SegmentedPicker>", () => {
+	it("renders one control per option and labels the group", () => {
 		render(
-			<PlayerPicker
+			<SegmentedPicker
 				label="Actor"
 				value=""
 				onValueChange={vi.fn()}
@@ -36,11 +36,11 @@ describe("<PlayerPicker>", () => {
 		}
 	});
 
-	it("selecting an option reports that player's id", async () => {
+	it("selecting an option reports its value", async () => {
 		const user = userEvent.setup();
 		const onValueChange = vi.fn();
 		render(
-			<PlayerPicker
+			<SegmentedPicker
 				label="Actor"
 				value=""
 				onValueChange={onValueChange}
@@ -53,9 +53,9 @@ describe("<PlayerPicker>", () => {
 		expect(onValueChange).toHaveBeenCalledWith("b");
 	});
 
-	it("reflects the selected player as checked", () => {
+	it("reflects the selected option as checked", () => {
 		render(
-			<PlayerPicker
+			<SegmentedPicker
 				label="Actor"
 				value="c"
 				onValueChange={vi.fn()}
@@ -67,11 +67,11 @@ describe("<PlayerPicker>", () => {
 		expect(screen.getByRole("radio", { name: "Alice" })).not.toBeChecked();
 	});
 
-	it("ignores tapping the already-selected player (no clear)", async () => {
+	it("ignores tapping the already-selected option (no clear)", async () => {
 		const user = userEvent.setup();
 		const onValueChange = vi.fn();
 		render(
-			<PlayerPicker
+			<SegmentedPicker
 				label="Actor"
 				value="a"
 				onValueChange={onValueChange}
@@ -90,7 +90,7 @@ describe("<PlayerPicker>", () => {
 
 		it("renders the ⋯ trigger only when menuOptions is non-empty", () => {
 			const { rerender } = render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Target"
 					value=""
 					onValueChange={vi.fn()}
@@ -102,7 +102,7 @@ describe("<PlayerPicker>", () => {
 			).not.toBeInTheDocument();
 
 			rerender(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Target"
 					value=""
 					onValueChange={vi.fn()}
@@ -118,7 +118,7 @@ describe("<PlayerPicker>", () => {
 
 		it("does not render menu options as top-level segmented radios", () => {
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Target"
 					value=""
 					onValueChange={vi.fn()}
@@ -137,7 +137,7 @@ describe("<PlayerPicker>", () => {
 			const user = userEvent.setup();
 			const onValueChange = vi.fn();
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Target"
 					value=""
 					onValueChange={onValueChange}
@@ -157,7 +157,7 @@ describe("<PlayerPicker>", () => {
 
 		it("marks the ⋯ trigger active when the selection lives in the menu", () => {
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Target"
 					value="d"
 					onValueChange={vi.fn()}
@@ -172,9 +172,9 @@ describe("<PlayerPicker>", () => {
 			).toHaveAttribute("data-active", "on");
 		});
 
-		it("leaves the ⋯ trigger inactive when a segmented player is selected", () => {
+		it("leaves the ⋯ trigger inactive when a segmented option is selected", () => {
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Target"
 					value="a"
 					onValueChange={vi.fn()}
@@ -191,11 +191,11 @@ describe("<PlayerPicker>", () => {
 	});
 
 	describe("multi-select mode", () => {
-		it("labels the group and reports a player toggled on", async () => {
+		it("labels the group and reports an option toggled on", async () => {
 			const user = userEvent.setup();
 			const onValuesChange = vi.fn();
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Holders"
 					multiple
 					values={["a"]}
@@ -214,7 +214,7 @@ describe("<PlayerPicker>", () => {
 
 		it("reflects the selected subset as pressed", () => {
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Holders"
 					multiple
 					values={["a", "c"]}
@@ -233,11 +233,11 @@ describe("<PlayerPicker>", () => {
 			);
 		});
 
-		it("toggling a pressed player off reports the remaining subset", async () => {
+		it("toggling a pressed option off reports the remaining subset", async () => {
 			const user = userEvent.setup();
 			const onValuesChange = vi.fn();
 			render(
-				<PlayerPicker
+				<SegmentedPicker
 					label="Holders"
 					multiple
 					values={["a", "b"]}

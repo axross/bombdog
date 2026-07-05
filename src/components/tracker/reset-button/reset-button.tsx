@@ -1,8 +1,8 @@
 "use client";
 
 import type { JSX } from "react";
-import { Button } from "@/components/ui/button/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog/confirm-dialog";
+import { Button } from "@/components/primitives/button/button";
+import { ConfirmDialog } from "@/components/primitives/confirm-dialog/confirm-dialog";
 import { useTrackerStore } from "@/lib/tracker-store";
 
 /**

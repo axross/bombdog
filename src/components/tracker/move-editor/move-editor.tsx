@@ -2,10 +2,10 @@
 
 import { Trash2 } from "lucide-react";
 import { type JSX, useState } from "react";
+import { BottomSheet } from "@/components/primitives/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/primitives/button/button";
+import { ConfirmDialog } from "@/components/primitives/confirm-dialog/confirm-dialog";
 import { MoveForm } from "@/components/tracker/move-form/move-form";
-import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
-import { Button } from "@/components/ui/button/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog/confirm-dialog";
 import { useMoveDraft } from "@/hooks/use-move-draft";
 import { fieldsFromMove } from "@/lib/move-draft";
 import { useTrackerStore } from "@/lib/tracker-store";

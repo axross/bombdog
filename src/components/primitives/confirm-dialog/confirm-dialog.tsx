@@ -3,7 +3,7 @@
 import { clsx } from "clsx";
 import { AlertDialog } from "radix-ui";
 import type { JSX, ReactNode } from "react";
-import { Button } from "@/components/ui/button/button";
+import { Button } from "@/components/primitives/button/button";
 import css from "./confirm-dialog.module.css";
 
 /**

@@ -3,15 +3,15 @@
 import { clsx } from "clsx";
 import { Tabs } from "radix-ui";
 import type { JSX } from "react";
-import { FieldHighlight } from "@/components/ui/field-highlight/field-highlight";
-import { OutcomeToggle } from "@/components/ui/outcome-toggle/outcome-toggle";
-import { PlayerPicker } from "@/components/ui/player-picker/player-picker";
+import { FieldHighlight } from "@/components/primitives/field-highlight/field-highlight";
 import {
 	SelectField,
 	type SelectOption,
-} from "@/components/ui/select-field/select-field";
-import { WirePad } from "@/components/ui/wire-pad/wire-pad";
-import { formatWire, targetPlayerOrder, wireLabel } from "@/lib/game";
+} from "@/components/primitives/select-field/select-field";
+import { OutcomeToggle } from "@/components/tracker/outcome-toggle/outcome-toggle";
+import { PlayerPicker } from "@/components/tracker/player-picker/player-picker";
+import { WirePad } from "@/components/tracker/wire-pad/wire-pad";
+import { formatWire, wireLabel } from "@/lib/game";
 import {
 	type DraftFields,
 	detectorValues,
@@ -113,26 +113,8 @@ function MoveFields({
 		nudge,
 		"data-testid": `highlight-${key}`,
 	});
-	// targets keep their play order (actor last), but self-targeting is legal
-	// yet rare, so the acting player is folded out of the one-tap segmented row
-	// into a trailing ⋯ overflow menu; every other player stays one tap.
-	const orderedTargets = targetPlayerOrder(players, fields.actorId);
-	const targetOptions: SelectOption[] = orderedTargets
-		.filter((p) => p.id !== fields.actorId)
-		.map((p) => ({ value: p.id, label: p.name }));
-	const selfTargetOptions: SelectOption[] = orderedTargets
-		.filter((p) => p.id === fields.actorId)
-		.map((p) => ({ value: p.id, label: `${p.name} (self)` }));
 	const update = (patch: Partial<DraftFields>) =>
 		onFieldsChange({ ...fields, ...patch });
-
-	// the structured equipment cards pick from every seat inline (no overflow
-	// menu): a Post-it usually reveals the actor's own wire, and the radar's
-	// holder subset can include anyone, so no choice is rare enough to fold.
-	const seatOptions: SelectOption[] = players.map((p) => ({
-		value: p.id,
-		label: p.name,
-	}));
 
 	const isDetector = type === "detector";
 	const detector = detectorOption(fields.detector);
@@ -173,10 +155,10 @@ function MoveFields({
 								? "Target (whole stand)"
 								: "Target"
 						}
+						players={players}
 						value={fields.targetId}
 						onValueChange={(targetId) => update({ targetId })}
-						options={targetOptions}
-						menuOptions={selfTargetOptions}
+						foldSelfId={fields.actorId}
 						menuLabel="Other targets"
 						data-testid="target"
 					/>
@@ -290,12 +272,15 @@ function MoveFields({
 						<>
 							{/* the target revealed one of their wires; blue-only pad, since
 							    the card deals in numbered wires. */}
+							{/* every seat inline (no overflow menu): a Post-it usually
+							    reveals the actor's own wire, so no choice is rare enough
+							    to fold away. */}
 							<FieldHighlight {...flag("target")}>
 								<PlayerPicker
 									label="Target"
+									players={players}
 									value={fields.targetId}
 									onValueChange={(targetId) => update({ targetId })}
-									options={seatOptions}
 									data-testid="target"
 								/>
 							</FieldHighlight>
@@ -327,9 +312,9 @@ function MoveFields({
 							<PlayerPicker
 								label="Holders"
 								multiple
+								players={players}
 								values={fields.holderIds}
 								onValuesChange={(holderIds) => update({ holderIds })}
-								options={seatOptions}
 								data-testid="holders"
 							/>
 						</>

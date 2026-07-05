@@ -4,11 +4,11 @@ import { clsx } from "clsx";
 import { Check, Ellipsis } from "lucide-react";
 import { DropdownMenu, ToggleGroup } from "radix-ui";
 import type { JSX } from "react";
-import type { SelectOption } from "@/components/ui/select-field/select-field";
-import css from "./player-picker.module.css";
+import type { SelectOption } from "@/components/primitives/select-field/select-field";
+import css from "./segmented-picker.module.css";
 
 /**
- * Options shared by both selection modes of {@link PlayerPicker}.
+ * Options shared by both selection modes of {@link SegmentedPicker}.
  */
 interface BaseProps {
 	label: string;
@@ -18,7 +18,7 @@ interface BaseProps {
 }
 
 /**
- * Single-select picker: exactly one player (or none yet).
+ * Single-select picker: exactly one option (or none yet).
  */
 interface SingleProps extends BaseProps {
 	multiple?: false;
@@ -26,8 +26,8 @@ interface SingleProps extends BaseProps {
 	onValueChange: (value: string) => void;
 	/**
 	 * Secondary options folded into a trailing ⋯ overflow menu instead of the
-	 * one-tap segmented row — for rare-but-legal choices (e.g. self-targeting).
-	 * Omit, or pass an empty array, to render no menu.
+	 * one-tap segmented row — for rare-but-legal choices. Omit, or pass an
+	 * empty array, to render no menu.
 	 */
 	menuOptions?: SelectOption[];
 	/**
@@ -38,9 +38,9 @@ interface SingleProps extends BaseProps {
 }
 
 /**
- * Multi-select picker: any subset of players, including none (e.g. the General
- * Radar's holder selection). Every option stays a one-tap toggle — a subset
- * pick has no rare choice to fold away, so there is no overflow menu.
+ * Multi-select picker: any subset of options, including none. Every option
+ * stays a one-tap toggle — a subset pick has no rare choice to fold away, so
+ * there is no overflow menu.
  */
 interface MultiProps extends BaseProps {
 	multiple: true;
@@ -49,22 +49,23 @@ interface MultiProps extends BaseProps {
 }
 
 /**
- * A {@link PlayerPicker} in either mode, discriminated by the `multiple` flag.
+ * A {@link SegmentedPicker} in either mode, discriminated by the `multiple` flag.
  */
-type PlayerPickerProps = SingleProps | MultiProps;
+type SegmentedPickerProps = SingleProps | MultiProps;
 
 /**
- * A segmented control for choosing a player — one tap, versus the two taps a
- * dropdown needs. Buttons fill the row and wrap when names are long. Defaults
- * to single-select; pass `multiple` to toggle any subset of players instead.
+ * A segmented control for choosing among a handful of options — one tap,
+ * versus the two taps a dropdown needs. Buttons fill the row and wrap when
+ * labels are long. Defaults to single-select; pass `multiple` to toggle any
+ * subset of options instead.
  *
  * In single mode, `menuOptions` moves rare choices out of the segmented row
- * into a trailing ⋯ overflow menu, keeping the common one-tap targets
+ * into a trailing ⋯ overflow menu, keeping the common one-tap choices
  * uncrowded. Both the segmented items and the menu items feed the same
  * `value`/`onValueChange`, so the selection is one controlled field regardless
  * of where it lives.
  */
-export function PlayerPicker(props: PlayerPickerProps): JSX.Element {
+export function SegmentedPicker(props: SegmentedPickerProps): JSX.Element {
 	const { label, options, className } = props;
 	const dataTestId = props["data-testid"];
 
@@ -114,13 +115,13 @@ export function PlayerPicker(props: PlayerPickerProps): JSX.Element {
 		<div className={clsx(css.field, className)}>
 			<span className={css.label}>{label}</span>
 			{/* the testid spans the whole picker (segmented row + ⋯ overflow) so both
-			    the one-tap players and the folded-away menu are addressable under it. */}
+			    the one-tap options and the folded-away menu are addressable under it. */}
 			<div className={css.row} data-testid={dataTestId}>
 				<ToggleGroup.Root
 					type="single"
 					value={value}
 					onValueChange={(next) => {
-						// ignore the empty value so tapping the selected player again does
+						// ignore the empty value so tapping the selected option again does
 						// not clear a required field.
 						if (next) onValueChange(next);
 					}}

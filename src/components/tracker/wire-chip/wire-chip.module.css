@@ -1,0 +1,25 @@
+@layer components {
+	/* Wire colour variants layered onto the generic Chip primitive, which owns
+	   the shape. Each variant is its own scope root at zero specificity so a
+	   caller's className still wins. */
+	@scope (.blue) {
+		:where(:scope) {
+			color: var(--wire-blue-contrast);
+			background-color: var(--wire-blue);
+		}
+	}
+
+	@scope (.yellow) {
+		:where(:scope) {
+			color: var(--wire-yellow-contrast);
+			background-color: var(--wire-yellow);
+		}
+	}
+
+	@scope (.unknown) {
+		:where(:scope) {
+			color: var(--surface);
+			background-color: var(--text-muted);
+		}
+	}
+}

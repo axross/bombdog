@@ -2,9 +2,9 @@
 
 import { Redo2, Undo2 } from "lucide-react";
 import { type JSX, useState } from "react";
+import { BottomSheet } from "@/components/primitives/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/primitives/button/button";
 import { MoveForm } from "@/components/tracker/move-form/move-form";
-import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
-import { Button } from "@/components/ui/button/button";
 import { useMoveDraft } from "@/hooks/use-move-draft";
 import { useNextActor } from "@/hooks/use-next-actor";
 import { emptyDraftFields, type MoveFieldKey } from "@/lib/move-draft";

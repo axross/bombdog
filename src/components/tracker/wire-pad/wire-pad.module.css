@@ -1,28 +1,8 @@
 @layer components {
+	/* Wire colour variants layered onto the generic ToggleGrid's cells; the
+	   wrapper layout, label, grid, and selection mechanics all come from the
+	   primitive. */
 	@scope (.wirePad) {
-		:where(:scope) {
-			display: flex;
-			flex-direction: column;
-			gap: var(--space-1);
-			min-inline-size: 0;
-		}
-
-		.label {
-			font-size: 0.8rem;
-			font-weight: 600;
-			color: var(--text-muted);
-		}
-
-		.pad {
-			display: grid;
-			grid-template-columns: repeat(7, 1fr);
-			gap: var(--space-2);
-
-			@container (width < 22rem) {
-				grid-template-columns: repeat(6, 1fr);
-			}
-		}
-
 		.wire {
 			display: flex;
 			align-items: center;

@@ -3,10 +3,10 @@
 import { clsx } from "clsx";
 import { ArrowRight, Check, Pencil, X } from "lucide-react";
 import { type JSX, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/primitives/button/button";
 import { MoveEditor } from "@/components/tracker/move-editor/move-editor";
 import { StartingInfo } from "@/components/tracker/starting-info/starting-info";
-import { Button } from "@/components/ui/button/button";
-import { WireChip } from "@/components/ui/wire-chip/wire-chip";
+import { WireChip } from "@/components/tracker/wire-chip/wire-chip";
 import { useFilteredMoves } from "@/hooks/use-filtered-moves";
 import { formatWire, getPlayerName } from "@/lib/game";
 import { useTrackerStore } from "@/lib/tracker-store";

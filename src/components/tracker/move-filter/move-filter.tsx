@@ -3,8 +3,8 @@
 import { clsx } from "clsx";
 import { Check, ListFilter } from "lucide-react";
 import { type JSX, useState } from "react";
-import { BottomSheet } from "@/components/ui/bottom-sheet/bottom-sheet";
-import { Button } from "@/components/ui/button/button";
+import { BottomSheet } from "@/components/primitives/bottom-sheet/bottom-sheet";
+import { Button } from "@/components/primitives/button/button";
 import { isFilterActive } from "@/lib/game";
 import { EMPTY_MOVE_FILTER, type MoveFilter as Filter } from "@/lib/types";
 import css from "./move-filter.module.css";

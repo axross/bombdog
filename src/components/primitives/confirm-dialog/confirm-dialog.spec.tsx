@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { Button } from "@/components/ui/button/button";
+import { Button } from "@/components/primitives/button/button";
 import { ConfirmDialog } from "./confirm-dialog";
 
 function renderDialog(onConfirm = vi.fn()) {
