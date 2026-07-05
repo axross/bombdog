@@ -44,7 +44,7 @@ Elevation has a deliberate split — each floating layer type has one delineatio
 - MUST NOT introduce new `box-shadow` values; the only sanctioned shadow is `--shadow-popover`, and only on anchored popovers.
 - MUST dim every modal with the shared `--scrim` token on its overlay; MUST NOT re-declare an inline scrim `color-mix`.
 - MUST use the radius roles: `--radius-sm` for controls and chips, `--radius` for cards and popovers, `--radius-lg` for modal surfaces; `50%` only for genuinely circular dots/radios.
-- MUST derive hover fills from the adjacent ramp step (`--surface-2` → `--surface-3`, `--surface-3` → `--surface-hover`), never from an ad-hoc `color-mix`.
+- MUST derive hover fills from the adjacent ramp step, per [UI and Components › Styling](../ui-and-components/SKILL.md#styling) (never an ad-hoc `color-mix`).
 - SHOULD reserve `--border-strong` for emphasized outlines: checkbox rests, the status strip's tiny copy squares, neutral row accents.
 
 ## Control Selection
