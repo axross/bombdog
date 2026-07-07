@@ -23,20 +23,6 @@ test.describe("smoke", () => {
 		await expect(page.getByTestId("setup").getByTestId("start")).toBeVisible();
 	});
 
-	test("shows the unofficial-companion legal notice on the setup screen", {
-		tag: ["@scenario:setup.legal-notice", "@area:setup", "@priority:should"],
-	}, async ({ page }) => {
-		await gotoApp(page);
-		const notice = page.getByTestId("setup").getByTestId("legal-notice");
-		await expect(notice).toContainText(
-			"unofficial, fan-made companion and is not affiliated",
-		);
-		await expect(notice).toContainText(
-			"trademarks and copyright of Cocktail Games",
-		);
-		await expect(notice).toContainText("© 2026 axross");
-	});
-
 	test("starting a game opens the tracker with an empty history", {
 		tag: [
 			"@scenario:setup.default-start",

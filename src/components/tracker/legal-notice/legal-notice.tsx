@@ -1,7 +1,11 @@
+"use client";
+
 import type { JSX } from "react";
 import css from "./legal-notice.module.css";
 
-/** BoardGameGeek entry for Bomb Busters — the canonical reference for the game. */
+/**
+ * BoardGameGeek entry for Bomb Busters — the canonical reference for the game.
+ */
 const GAME_URL = "https://boardgamegeek.com/boardgame/413246/bomb-busters";
 
 /**
@@ -12,7 +16,13 @@ const GAME_URL = "https://boardgamegeek.com/boardgame/413246/bomb-busters";
  */
 export function LegalNotice(): JSX.Element {
 	return (
-		<footer className={css.notice} data-testid="legal-notice">
+		// role="contentinfo": nested inside <main>, a bare <footer> loses its
+		// implicit contentinfo landmark, so restore it explicitly for AT navigation.
+		<footer
+			className={css.notice}
+			role="contentinfo"
+			data-testid="legal-notice"
+		>
 			<p>
 				Bombdog is an unofficial, fan-made companion and is not affiliated with,
 				endorsed by, or associated with Cocktail Games or the creators of{" "}

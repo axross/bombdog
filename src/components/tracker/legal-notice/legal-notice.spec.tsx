@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { LegalNotice } from "./legal-notice";
 
@@ -25,10 +25,13 @@ describe("<LegalNotice>", () => {
 		expect(screen.getByText("© 2026 axross")).toBeInTheDocument();
 	});
 
-	it("links the game to its BoardGameGeek page from a footer element", () => {
+	it("exposes a contentinfo landmark linking the game to BoardGameGeek", () => {
 		render(<LegalNotice />);
-		expect(screen.getByTestId("legal-notice").tagName).toBe("FOOTER");
-		expect(screen.getByRole("link", { name: "Bomb Busters" })).toHaveAttribute(
+		const landmark = screen.getByRole("contentinfo");
+		expect(landmark.tagName).toBe("FOOTER");
+		expect(
+			within(landmark).getByRole("link", { name: "Bomb Busters" }),
+		).toHaveAttribute(
 			"href",
 			"https://boardgamegeek.com/boardgame/413246/bomb-busters",
 		);
