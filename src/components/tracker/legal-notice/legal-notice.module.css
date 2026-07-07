@@ -1,0 +1,27 @@
+@layer components {
+	/* A subdued informational block at the bottom of the setup screen: quiet
+	   enough to stay out of the way, legible enough to read the disclaimer. */
+	@scope (.notice) {
+		:where(:scope) {
+			display: flex;
+			flex-direction: column;
+			gap: var(--space-2);
+			color: var(--text-muted);
+			font-size: 0.75rem;
+			line-height: 1.5;
+			text-align: center;
+			text-wrap: balance;
+		}
+
+		.link {
+			color: var(--accent);
+			text-decoration: underline;
+		}
+
+		/* The app's own copyright reads as the closing line, set apart from the
+		   attribution paragraphs above it. */
+		.copyright {
+			font-weight: 600;
+		}
+	}
+}

@@ -32,6 +32,7 @@ carries its `@scenario:<id>` tag. The reporter
 | setup.name-select-on-focus | Focusing a seat name selects its whole value for quick replacement | setup | should |
 | setup.info-tokens | Place starting info tokens and see them in the tracker's Starting info strip | setup | should |
 | setup.skip-info-tokens | Skip the starting info token phase at setup | setup | should |
+| setup.legal-notice | The setup screen shows the unofficial-companion legal notice | setup | should |
 | log.dual-cut.success | Log a successful dual cut | logging | must |
 | log.dual-cut.fail-reveal | A failed dual cut records the revealed wire | logging | must |
 | log.dual-cut.fail-yellow | A failed dual cut revealing the yellow wire is recorded | logging | may |
