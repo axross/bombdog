@@ -9,6 +9,7 @@ import {
 	RadioGroup,
 	RadioGroupItem,
 } from "@/components/primitives/radio-group/radio-group";
+import { LegalNotice } from "@/components/tracker/legal-notice/legal-notice";
 import { WirePad } from "@/components/tracker/wire-pad/wire-pad";
 import { usePlayerSetupForm } from "@/hooks/use-player-setup-form";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/lib/types";
@@ -136,6 +137,8 @@ export function PlayerSetup(): JSX.Element {
 			>
 				Start tracking
 			</Button>
+
+			<LegalNotice className={css.legal} />
 		</main>
 	);
 }

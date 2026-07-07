@@ -44,6 +44,20 @@ test.describe("setup", () => {
 		await expect(composer(page).getByTestId("acting")).toContainText("Uno");
 	});
 
+	test("shows the unofficial-companion legal notice", {
+		tag: ["@scenario:setup.legal-notice", "@area:setup", "@priority:should"],
+	}, async ({ page }) => {
+		await gotoApp(page);
+		const notice = page.getByTestId("setup").getByTestId("legal-notice");
+		await expect(notice).toContainText(
+			"unofficial, fan-made companion and is not affiliated",
+		);
+		await expect(notice).toContainText(
+			"trademarks and copyright of Cocktail Games",
+		);
+		await expect(notice).toContainText("© 2026 axross");
+	});
+
 	test("selects a seat name when it gains keyboard focus", {
 		tag: [
 			"@scenario:setup.name-select-on-focus",
