@@ -139,5 +139,11 @@
 			font-size: 1.05rem;
 			font-weight: 700;
 		}
+
+		/* Extra breathing room above the legal notice so it reads as a distinct
+		   footer, set apart from the hero call-to-action rather than crowding it. */
+		.legal {
+			margin-block-start: var(--space-5);
+		}
 	}
 }

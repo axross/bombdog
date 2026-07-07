@@ -138,7 +138,7 @@ export function PlayerSetup(): JSX.Element {
 				Start tracking
 			</Button>
 
-			<LegalNotice />
+			<LegalNotice className={css.legal} />
 		</main>
 	);
 }

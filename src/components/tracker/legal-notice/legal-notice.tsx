@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 import type { JSX } from "react";
 import css from "./legal-notice.module.css";
 
@@ -10,14 +11,18 @@ const GAME_URL = "https://boardgamegeek.com/boardgame/413246/bomb-busters";
  * The app's legal notice, shown at the bottom of the setup screen. Bombdog is an
  * unofficial companion to the board game Bomb Busters, so it must disclaim any
  * affiliation and attribute the game to its rights holders; the copyright line
- * covers Bombdog itself.
+ * covers Bombdog itself. `className` lets the parent own its outer spacing.
  */
-export function LegalNotice(): JSX.Element {
+export function LegalNotice({
+	className,
+}: {
+	className?: string;
+}): JSX.Element {
 	return (
 		// role="contentinfo": nested inside <main>, a bare <footer> loses its
 		// implicit contentinfo landmark, so restore it explicitly for AT navigation.
 		<footer
-			className={css.notice}
+			className={clsx(css.notice, className)}
 			role="contentinfo"
 			data-testid="legal-notice"
 		>
