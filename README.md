@@ -152,7 +152,8 @@ Chromium instead of its managed download, set
 ## Project layout
 
 - `src/app/` — App Router routes, layout, and global styles
-- `src/components/` — UI components (each with its `*.module.css` and `*.test.tsx`)
+- `src/components/` — UI components, split into domain-agnostic `primitives/` and domain `tracker/` tiers (each with its `*.module.css` and `*.spec.tsx`)
+- `src/hooks/` — reusable React hooks
 - `src/lib/` — domain types, the zustand store, IndexedDB storage adapter, helpers
 - `e2e/` — Playwright specs
 - `public/` — static assets
