@@ -20,7 +20,7 @@ Apply these rules whenever you author a Git commit or amend an existing one in t
 
 ## Pull Request Titles
 
-The header format is not commit-only: a pull request title MUST follow the same `<type>[scope][!]: <description>` shape as a commit header. This project's default squash merge uses the pull request title as the resulting commit's subject on `main`, so a title without a type prefix silently lands a non-conforming commit on the default branch — this is the failure the rule prevents. The title carries only the header; the body/footer live in the pull request description, not the title.
+The header format is not commit-only: a pull request title MUST follow the same `<type>[scope][!]: <description>` shape as a commit header. This project's default squash merge uses the pull request title as the resulting commit's subject on `main`, so a title without a type prefix silently lands a non-conforming commit on the default branch — this is the failure the rule prevents. The title carries only the header; the body/footer live in the pull request description, not the title — write that description per [pull-request-descriptions.md](./pull-request-descriptions.md).
 
 **Guidelines:**
 

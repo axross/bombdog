@@ -1,10 +1,11 @@
 # bombdog
 
 A **Bomb Busters move tracker** — a phone-first companion for the board game
-[Bomb Busters](https://boardgamegeek.com/boardgame/413246/bomb-busters). Log every
-player's turn (dual cut, solo cut, detectors, equipment) with a running
-history that persists in the browser until you reset. Built with
-[Next.js](https://nextjs.org) (App Router) and TypeScript.
+[Bomb Busters](https://boardgamegeek.com/boardgame/413246/bomb-busters). Log
+every player's turn (dual cut, solo cut, detectors, equipment) with a running
+history that persists in the browser until you reset. It runs entirely in the
+browser with no backend — state lives in IndexedDB — so a group can share one
+phone to track a game.
 
 ## What it does
 
@@ -15,59 +16,140 @@ history that persists in the browser until you reset. Built with
 - State is stored in **IndexedDB** (via zustand `persist`) and survives reloads
   until you **Reset**.
 
-## Stack
+## Tech stack
 
-- **Next.js 16** (App Router) + **React 19**
-- **TypeScript** (strict), path alias `@/*` → `src/*`
-- **Radix UI** primitives, styled with **CSS Modules** (`@layer` + `@scope`) and **OKLCH / Display-P3** color tokens (no Tailwind)
-- **zustand** (+ `persist`) with **idb-keyval** for IndexedDB persistence
-- **Biome** — linting + formatting
-- **Vitest** + **Testing Library** — unit tests
-- **Playwright** — end-to-end tests
-- **npm** for package management (Node version pinned in `.nvmrc`)
+| Area | Tool |
+| ---- | ---- |
+| Language | TypeScript (strict), path alias `@/*` → `src/*` |
+| App framework / runtime | Next.js 16 (App Router) + React 19 |
+| Package manager | npm (Node version pinned in `.nvmrc`) |
+| Linting & formatting | Biome |
+| Unit tests | Vitest + Testing Library |
+| E2E tests | Playwright |
+| State & persistence | zustand (+ `persist`) with `idb-keyval` for IndexedDB |
+| UI & styling | Radix UI primitives, CSS Modules (`@layer` + `@scope`), OKLCH / Display-P3 color tokens (no Tailwind), `lucide-react` icons |
+| Hosting | Vercel |
 
-## Getting Started
+## Getting started
 
-```bash
-npm install
-npm run dev
-```
+Requires Node.js as pinned in [`.nvmrc`](./.nvmrc) (`nvm use` picks it up).
 
-Open [http://localhost:3000](http://localhost:3000).
+1. Install dependencies: `npm install`
+2. Start developing: `npm run dev`, then open [http://localhost:3000](http://localhost:3000)
+3. Production build and start: `npm run build`, then `npm run start`
 
-## Deploying to Vercel
+## Development workflow
 
-The app is a client-rendered Next.js app and deploys to Vercel with zero extra
-configuration. Import the GitHub repo at [vercel.com/new](https://vercel.com/new)
-(**Import Git Repository → `axross/bombdog`**); the default framework preset and
-build settings work as-is, and pushes then deploy automatically.
+Development in this repository is agent-assisted via
+[Claude Code](https://claude.com/claude-code). The working agreement lives in
+[`AGENTS.md`](./AGENTS.md) (loaded through [`CLAUDE.md`](./CLAUDE.md)) and routes
+to the detailed skills under [`.claude/skills/`](./.claude/skills) (adapted from
+[axross/repo-agents](https://github.com/axross/repo-agents)). Human and agent
+contributors follow the same loop: plan → implement → self-review → verify →
+report. The hooks in [`.claude/`](./.claude) provision the toolchain, format on
+edit, and run lint + unit tests before a task completes.
 
-## Scripts
+Three Claude Code slash commands (in [`.claude/commands/`](./.claude/commands))
+drive delivery:
 
-| Command | What it does |
-|---|---|
-| `npm run dev` | Start the dev server |
-| `npm run build` | Production build |
-| `npm run start` | Serve the production build |
-| `npm run format` | Format with Biome |
-| `npm run lint` | Lint (and check formatting) with Biome |
-| `npm run lint:fix` | Lint + auto-fix and format |
-| `npm run typecheck` | Type-check with `tsc --noEmit` |
-| `npm run test` / `npm run test:unit` | Run Vitest unit tests |
-| `npm run test:watch` | Vitest in watch mode |
-| `npm run test:e2e` | Run Playwright e2e tests |
+### `/address` — deliver a unit of work end-to-end
 
-### Running e2e tests
+[`/address`](./.claude/commands/address.md) is the main delivery entry point.
+It takes one unit of work — a GitHub issue, a pull request, or a free-form
+prompt — from intake to a merge-ready pull request in a single continuing
+session:
 
-Playwright is configured in `playwright.config.ts` and starts the dev server automatically. Specs live in `e2e/`.
+1. **Plan** — reads the issue and its thread, asks you the product and scope
+   questions the spec leaves open, and rewrites the issue body into a
+   reviewable plan with acceptance criteria.
+2. **Code + verify** — implements on an agent-namespaced branch, runs the
+   checks the changed surface requires, and self-reviews the diff.
+3. **Independent review** — opens a draft pull request and requests the CI
+   reviewer, a separate bot session, so the code's author never certifies its
+   own work.
+4. **Address** — fixes review findings and CI failures, tying each resolved
+   thread to the resolving commit, for up to four rounds.
+5. **Ready** — flips the pull request to ready and pings the maintainer once
+   CI is green and the review is clean. Merging always stays a human decision.
 
-```bash
-npm run test:e2e
-```
+The run pauses whenever it genuinely needs a human — an ambiguous requirement,
+a plan approval, a judgment call on conflicting changes — and `/address
+continue` picks it back up where it stopped.
 
-If you need to point Playwright at a system-provided Chromium instead of its managed download, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to the browser binary.
+### `/review` — get findings on any diff
 
-## Project Layout
+[`/review`](./.claude/commands/review.md) runs this repository's review policy
+([`REVIEW.md`](./REVIEW.md)) — severity-tagged findings with `file:line`
+evidence and concrete fixes — on a pull request (`/review 57`), a ref range
+(`/review main...feature`), or the current branch's diff (`/review`). Use it
+for a pre-merge check on a hand-written change or a second opinion before
+pushing; the same policy runs automatically in CI
+([`claude-review.yaml`](./.github/workflows/claude-review.yaml)) against
+`/address` pull requests.
+
+### `/handoff` — suspend work for another session
+
+[`/handoff`](./.claude/commands/handoff.md) packages in-progress work — goal,
+current state, remaining to-dos, uncommitted changes — into a downloadable
+`handoff-<epoch>.md` (plus an optional zip of supporting files). Use it when a
+session is running low on context, or to park work for later; a fresh session
+takes the package over with `/address continue`.
+
+Changes made without an agent follow the same bar: branch, implement, run the
+checks below, open a pull request, and get it reviewed before merge.
+
+### Automated code review
+
+[`.github/workflows/claude-review.yaml`](./.github/workflows/claude-review.yaml)
+runs an **independent** review — a separate Claude Code session on a GitHub
+runner, under a bot identity distinct from the author — whenever a trusted user
+comments **`@claude review`** on a pull request. It runs the official
+`code-review` plugin (the same practice `/review` runs locally) and posts
+findings as a single **COMMENT**-type GitHub review: inline comments anchored to
+the diff, tagged by severity with a concrete fix, plus a summary. It never
+approves or requests changes — GitHub rejects those from a pull request's own
+author — and the reviewer is advisory: it does not block merges.
+
+Review **policy** — severity calibration, skip rules, repo-specific checks, and
+reporting format — lives in [`REVIEW.md`](./REVIEW.md), the same portable
+review-only file that managed
+[Code Review](https://code.claude.com/docs/en/code-review) reads natively; the
+review methodology stays in
+[`code-review-guideline`](./.claude/skills/code-review-guideline/SKILL.md).
+
+**One-time setup** to enable the reviewer (repo admin):
+
+1. Install the [Claude GitHub App](https://github.com/apps/claude) on the repository.
+2. Run `claude setup-token` and add the output as the repository secret
+   `CLAUDE_CODE_OAUTH_TOKEN` (reviews run on your Claude subscription).
+
+> `issue_comment` workflows run only from the default branch, so the reviewer
+> starts firing on pull requests once `claude-review.yaml` is on `main`.
+
+## Testing
+
+Unit tests (Vitest + Testing Library) cover components and the domain
+store/helpers; end-to-end tests (Playwright) exercise the tracker flows in a
+real browser. Lint and unit tests gate merges via
+[`merge-checks.yaml`](./.github/workflows/merge-checks.yaml).
+
+| Check | Command |
+| ----- | ------- |
+| Format | `npm run format` |
+| Lint | `npm run lint` |
+| Type-check | `npm run typecheck` |
+| Unit tests | `npm run test:unit` |
+| E2E tests | `npm run test:e2e` |
+
+Run format + lint after every change, and the suites relevant to the changed
+surface before opening a pull request — see the Verification section of
+[`AGENTS.md`](./AGENTS.md). Playwright is configured in
+[`playwright.config.ts`](./playwright.config.ts) and starts the dev server
+automatically; specs live in `e2e/`. To point Playwright at a system-provided
+Chromium instead of its managed download, set
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to the browser binary.
+
+## Project layout
 
 - `src/app/` — App Router routes, layout, and global styles
 - `src/components/` — UI components (each with its `*.module.css` and `*.test.tsx`)
@@ -78,37 +160,15 @@ If you need to point Playwright at a system-provided Chromium instead of its man
 - `.claude/` — Claude Code harness (hooks, settings, and slash commands)
 - `.github/workflows/` — CI (`merge-checks.yaml`) and the automated reviewer (`claude-review.yaml`)
 
-## Working with AI agents
+## Deployment
 
-This repo ships an [`AGENTS.md`](./AGENTS.md)-driven skill system (adapted from
-[axross/repo-agents](https://github.com/axross/repo-agents)). `AGENTS.md` is the
-routing index; detailed conventions live under `.claude/skills/`. Claude Code
-loads it via [`CLAUDE.md`](./CLAUDE.md), and the hooks in `.claude/` provision
-the toolchain, format on edit, and run lint + unit tests before a task
-completes.
+The app is a client-rendered Next.js app and deploys to Vercel with zero extra
+configuration. Import the GitHub repo at [vercel.com/new](https://vercel.com/new)
+(**Import Git Repository → `axross/bombdog`**); the default framework preset and
+build settings work as-is, and pushes then deploy automatically.
 
-### Slash commands
+## Related links
 
-Two Claude Code slash commands (in [`.claude/commands/`](./.claude/commands)) drive delivery:
-
-- **`/address <issue | pull request | prompt>`** — takes one unit of work from intake to a review-ready pull request in a single continuing session: plan → implement → request an independent review → respond to it. It polls CI and the review autonomously (via `send_later`, capped at 2 hours) and ends the turn at every human-gated decision; resume a paused run with **`/address continue`**. See [`.claude/commands/address.md`](./.claude/commands/address.md).
-- **`/review <pull request | ref-range | (empty)>`** — a comprehensive review against this repo's [Code Review Guideline](./.claude/skills/code-review-guideline/SKILL.md). It is the single source of truth for how review is done here: run it ad-hoc, and the CI reviewer invokes the same command. See [`.claude/commands/review.md`](./.claude/commands/review.md).
-
-### Automated code review
-
-[`.github/workflows/claude-review.yaml`](./.github/workflows/claude-review.yaml) runs an **independent** review — a separate Claude Code session on a GitHub runner, under a bot identity distinct from the author — whenever a trusted user comments **`@claude review`** on a pull request. It runs the official `code-review` plugin — the same practice `/review` runs locally — and posts findings as a single **COMMENT**-type GitHub review (inline comments anchored to the diff, plus a summary). It never approves or requests changes — GitHub rejects those from a pull request's own author — and never leaves loose conversation comments.
-
-Review **policy** — severity calibration, skip rules, repo-specific checks, and reporting format — lives in [`REVIEW.md`](./REVIEW.md) at the repository root. It's the same portable, review-only file that managed [Code Review](https://code.claude.com/docs/en/code-review) reads natively; the self-hosted workflow and `/review` bootstrap it via a system prompt, and the review methodology stays in [`code-review-guideline`](./.claude/skills/code-review-guideline/SKILL.md).
-
-Conventions the agents follow:
-
-- Findings are posted as a GitHub review, tagged by severity with `file:line` evidence and a concrete fix.
-- When a commit resolves a review comment, the agent replies `Resolved in <short-hash>` with a one-line summary and resolves the thread.
-- The reviewer is advisory: it does not block merges — merging stays a human decision.
-
-**One-time setup** to enable the reviewer (repo admin):
-
-1. Install the [Claude GitHub App](https://github.com/apps/claude) on the repository.
-2. Run `claude setup-token` and add the output as the repository secret `CLAUDE_CODE_OAUTH_TOKEN` (reviews run on your Claude subscription).
-
-> `issue_comment` workflows run only from the default branch, so the reviewer starts firing on pull requests once `claude-review.yaml` is on `main`.
+- [Bomb Busters on BoardGameGeek](https://boardgamegeek.com/boardgame/413246/bomb-busters)
+- [Next.js documentation](https://nextjs.org/docs)
+- [axross/repo-agents](https://github.com/axross/repo-agents) — the skill system this repo adapts

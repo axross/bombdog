@@ -45,6 +45,7 @@ These are the default draft, branch, link, and review conventions for in-session
 
 - MUST open a pull request in **draft** while work is in progress, include `Closes #<n>` to link its issue, and leave merging to a human.
 - MUST title every pull request with a Conventional Commits header (`<type>[scope][!]: <description>`), the same format as a commit — a squash merge uses the title as the commit subject on `main`. See [commit-messages.md › Pull Request Titles](../development-guidelines/references/commit-messages.md#pull-request-titles). Issue titles are exempt; they stay plain descriptive prose.
+- MUST structure every pull request body per [pull-request-descriptions.md](../development-guidelines/references/pull-request-descriptions.md) — reproduce the repository pull request template's sections when authoring the body through the API, where GitHub does not pre-fill it.
 - MUST NOT push to `main`; work on a `claude/`-prefixed branch, the cloud session's push-allowed convention.
 - SHOULD, when rewriting an issue body, preserve the original description verbatim in a collapsed `<details>` section rather than discarding it.
 - MUST post any pull-request review as a **COMMENT**-type review — never APPROVE or REQUEST_CHANGES. Reviews here are advisory and must not gate merges, and GitHub outright rejects (422) APPROVE / REQUEST_CHANGES whenever the reviewing identity is the pull request's own author — so COMMENT is the only universally safe review event.
