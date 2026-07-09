@@ -20,7 +20,7 @@ Apply these rules whenever you author a Git commit or amend an existing one in t
 
 ## Pull Request Titles
 
-The header format is not commit-only: a pull request title MUST follow the same `<type>[scope][!]: <description>` shape as a commit header. This project's default squash merge uses the pull request title as the resulting commit's subject on `main`, so a title without a type prefix silently lands a non-conforming commit on the default branch — this is the failure the rule prevents. The title carries only the header; the body/footer live in the pull request description, not the title.
+The header format is not commit-only: a pull request title MUST follow the same `<type>[scope][!]: <description>` shape as a commit header. This project's default squash merge uses the pull request title as the resulting commit's subject on `main`, so a title without a type prefix silently lands a non-conforming commit on the default branch — this is the failure the rule prevents. The title carries only the header; the body/footer live in the pull request description, not the title — write that description per [pull-request-descriptions.md](./pull-request-descriptions.md).
 
 **Guidelines:**
 
@@ -87,7 +87,7 @@ Footers carry machine-parseable trailers — issue references, review credits, b
 **Guidelines:**
 
 - MAY place one or more footers one blank line after the body (or after the description, if the body is omitted).
-- MUST write each footer as a word token, followed by either `: ` (colon + space) or ` #` (space + hash), followed by the value. Tokens MUST use `-` instead of whitespace, e.g., `Reviewed-by:`, `Acked-by:`, `Co-authored-by:`, `Refs: #123`, `Closes: #45`.
+- MUST write each footer as a word token, followed by either `: ` (colon + space) or ` #` (space + hash), followed by the value. Tokens MUST use `-` instead of whitespace, e.g., `Reviewed-by:`, `Acked-by:`, `Co-authored-by:`, `Refs: #123`, `Refs #45`.
 - MAY allow footer values to span spaces and newlines; a value terminates only when the next valid footer token is parsed.
 
 ## Breaking Changes
