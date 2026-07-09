@@ -141,6 +141,9 @@ real browser. Lint and unit tests gate merges via
 | Unit tests | `npm run test:unit` |
 | E2E tests | `npm run test:e2e` |
 
+During development, `npm run lint:fix` auto-fixes lint and formatting, and
+`npm run test:watch` runs the unit suite in watch mode.
+
 Run format + lint after every change, and the suites relevant to the changed
 surface before opening a pull request — see the Verification section of
 [`AGENTS.md`](./AGENTS.md). Playwright is configured in
