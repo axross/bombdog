@@ -87,7 +87,7 @@ Footers carry machine-parseable trailers — issue references, review credits, b
 **Guidelines:**
 
 - MAY place one or more footers one blank line after the body (or after the description, if the body is omitted).
-- MUST write each footer as a word token, followed by either `: ` (colon + space) or ` #` (space + hash), followed by the value. Tokens MUST use `-` instead of whitespace, e.g., `Reviewed-by:`, `Acked-by:`, `Co-authored-by:`, `Refs: #123`, `Closes: #45`.
+- MUST write each footer as a word token, followed by either `: ` (colon + space) or ` #` (space + hash), followed by the value. Tokens MUST use `-` instead of whitespace, e.g., `Reviewed-by:`, `Acked-by:`, `Co-authored-by:`, `Refs: #123`, `Refs #45`.
 - MAY allow footer values to span spaces and newlines; a value terminates only when the next valid footer token is parsed.
 
 ## Breaking Changes
