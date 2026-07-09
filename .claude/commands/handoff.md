@@ -90,4 +90,5 @@ Create a single comprehensive markdown document in a working location outside th
 Both modes run into ambiguity: an unclear argument, an unreadable or conflicting package, a diverged precondition, a to-do whose intent is uncertain.
 
 - MUST route every such decision through the harness's dedicated question tool (in Claude Code, `AskUserQuestion`): frame it as 2–4 concrete options, mark the default you would otherwise take as recommended, and use the answer inline.
+- MUST, if the question tool errors (or a synchronous answer is otherwise unavailable), re-present the decision in plain text — the question and its options with the recommended default marked — and call `AskUserQuestion` again, holding for the human. Do not route around the human or end the turn as blocked; a closed or errored stream means *re-present and wait* — the same asking-behavior as [`/address`](./address.md#asking-the-human).
 - MUST NOT proceed on an unstated assumption when the handoff content plus local investigation cannot settle the question.
