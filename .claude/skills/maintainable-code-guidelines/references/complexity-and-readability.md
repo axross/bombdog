@@ -41,7 +41,7 @@ Commented-out code cannot be tested or type-checked and only rots, and version c
 
 ## Comments and Doc-Comments
 
-The project's comment and doc-comment rules are owned by [development-guidelines › code-quality › Comments](../../development-guidelines/references/code-quality.md); this lens flags violations of them and links back rather than restating them.
+The project's comment and doc-comment rules are owned by the project's development guidelines (code-quality rules); this lens flags violations of them and links back rather than restating them.
 
 **Guidelines:**
 

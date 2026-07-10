@@ -1,6 +1,6 @@
 # E2E Coverage
 
-Apply these rules to verify the change has the right e2e coverage. The project relies on Playwright e2e tests as the **primary** verification mechanism per [development-guidelines › verification](../../development-guidelines/references/verification.md).
+Apply these rules to verify the change has the right e2e coverage. The project relies on Playwright e2e tests as the **primary** verification mechanism per the project's development guidelines (verification rules).
 
 ## Coverage Floor
 
@@ -11,7 +11,7 @@ A new route or surface with no test is a hole in the project's primary verificat
 - MUST flag a Critical when the diff adds a new route or top-level entry point without a co-located test file in the test directory (e2e/).
 - MUST flag a Major when the diff adds a new visually distinct surface to an existing route without a new test case (or sub-step) covering it.
 - MUST flag a Major when the diff adds a new user-facing feature (a new interactive element, a new server action, a new endpoint) without an e2e assertion that exercises the user-observable outcome.
-- SHOULD NOT demand unit tests for pure logic unless the logic is complex enough that e2e would not adequately exercise edge cases — the project explicitly de-prioritizes unit tests per [development-guidelines › verification](../../development-guidelines/references/verification.md).
+- SHOULD NOT demand unit tests for pure logic unless the logic is complex enough that e2e would not adequately exercise edge cases — the project explicitly de-prioritizes unit tests per the project's development guidelines (verification rules).
 
 ## Test-ID Hooks
 
@@ -21,7 +21,7 @@ Because the suite locates elements only by stable test id — never by text — 
 
 - MUST flag a Major when the diff introduces a new visually distinct element (a new section, a new button, a new image, a new list) without a stable test id attribute. The e2e suite cannot target it otherwise.
 - MUST flag a Critical when the diff **removes** a test id that an existing e2e test references. Cross-check by searching the test directory.
-- MUST flag any use of text-content matching in a new or modified test where the project rule is stable-test-id locators only, per [e2e-testing-guidelines › conventions](../../e2e-testing-guidelines/references/conventions.md).
+- MUST flag any use of text-content matching in a new or modified test where the project rule is stable-test-id locators only, per the project's end-to-end testing guidelines (conventions rules).
 - MUST flag a test id value that does not follow the project's required casing convention.
 - SHOULD flag a test id value chosen to be globally unique (e.g., `"record-header-title"`) instead of scope-relative (`"title"`) when the project chains locators by nesting, per the project's testable-component conventions, if defined.
 
@@ -42,12 +42,12 @@ Consistent names and locations are what let the runner discover route tests and 
 
 - MUST flag a new test file that does not follow the project's test-file naming convention.
 - MUST flag a new route-specific test file placed outside the test directory (e2e/) layout the project uses for route tests.
-- MUST flag a test body that does not group each action into discrete steps per [e2e-testing-guidelines › structure](../../e2e-testing-guidelines/references/structure.md).
+- MUST flag a test body that does not group each action into discrete steps per the project's end-to-end testing guidelines (structure rules).
 - MUST flag a chained-locator chain that re-roots at the page level mid-test instead of narrowing from a previously captured locator — defeats the readability of the nesting pattern.
 
 ## Scenario Coverage
 
-Scenario Coverage is this project's E2E coverage metric: *which real user journeys the Playwright suite exercises*, tracked via an authored catalog — a markdown table at `e2e/scenarios.md` — and per-test tags: a `@scenario:<id>` join tag plus `@area:`/`@priority:` facet tags. It is **not** E2E line coverage — no app instrumentation is used. See [e2e-testing-guidelines › scenario-coverage](../../e2e-testing-guidelines/references/scenario-coverage.md) for the mechanism.
+Scenario Coverage is this project's E2E coverage metric: *which real user journeys the Playwright suite exercises*, tracked via an authored catalog — a markdown table at `e2e/scenarios.md` — and per-test tags: a `@scenario:<id>` join tag plus `@area:`/`@priority:` facet tags. It is **not** E2E line coverage — no app instrumentation is used. See the project's end-to-end testing guidelines (scenario-coverage rules) for the mechanism.
 
 **Guidelines:**
 
@@ -64,5 +64,5 @@ Inline setup duplicated across tests drifts out of sync as the resource changes;
 **Guidelines:**
 
 - MUST flag a setup or API call made inline in a test body when an existing shared helper exists for that resource. Use the helper.
-- MUST flag a new helper that does not live in the project's shared test-helper location or does not follow the helper signature/conventions per [e2e-testing-guidelines › conventions](../../e2e-testing-guidelines/references/conventions.md).
+- MUST flag a new helper that does not live in the project's shared test-helper location or does not follow the helper signature/conventions per the project's end-to-end testing guidelines (conventions rules).
 - MUST flag a test that calls auth-requiring helpers without the project's authenticated session/storage-state setup when the resource requires authentication (anything that hits authenticated or non-default-state endpoints).

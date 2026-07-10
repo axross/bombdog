@@ -44,8 +44,8 @@ This review focuses on major-severity cases where a new mutation handler (`POST`
 
 ## Out-of-Scope
 
-If the data/content layer ships its own admin UI under a dedicated route segment, that segment owns its own CSRF and request validation and is out of scope for this lens. The reviewer MUST NOT flag findings inside that directory per [code-review-guideline › scoping](../../code-review-guideline/references/scoping.md).
+If the data/content layer ships its own admin UI under a dedicated route segment, that segment owns its own CSRF and request validation and is out of scope for this lens. The reviewer MUST NOT flag findings inside that directory per the project's code-review guideline (scoping rules).
 
 **Guidelines:**
 
-- MUST NOT flag findings inside a tool-owned admin route segment per [code-review-guideline › scoping](../../code-review-guideline/references/scoping.md); the data/content layer owns its CSRF and request validation there.
+- MUST NOT flag findings inside a tool-owned admin route segment per the project's code-review guideline (scoping rules); the data/content layer owns its CSRF and request validation there.

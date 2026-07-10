@@ -32,5 +32,5 @@ Apply this reference when creating a component file, naming its exports, typing 
 **Guidelines:**
 
 - MUST colocate a component, its `<component>.module.css`, and its `<component>.spec.tsx` in the same folder.
-- SHOULD test rendered behavior and accessible roles/names via Testing Library rather than implementation details; see [Unit Test Guidelines](../../unit-test-guidelines/SKILL.md).
-- SHOULD cover user-facing flows with a Playwright spec under `e2e/tests/`; see [E2E Testing Guidelines](../../e2e-testing-guidelines/SKILL.md).
+- SHOULD test rendered behavior and accessible roles/names via Testing Library rather than implementation details; see the project's unit-test guidelines.
+- SHOULD cover user-facing flows with a Playwright spec under `e2e/tests/`; see the project's end-to-end testing guidelines.

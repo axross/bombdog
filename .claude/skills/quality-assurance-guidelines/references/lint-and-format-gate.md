@@ -2,7 +2,7 @@
 
 Apply these rules to verify the author respected the project's mandatory checks.
 
-> In a **posted** PR review, repo policy (`REVIEW.md`) excludes CI-enforced Biome lint/format and TypeScript findings — omit them there. The Critical/Major flags below govern internal self-review triage; see the [Repository Review Policy Overlay](../../code-review-guideline/SKILL.md#repository-review-policy-overlay).
+> In a **posted** PR review, repo policy (`REVIEW.md`) excludes CI-enforced Biome lint/format and TypeScript findings — omit them there. The Critical/Major flags below govern internal self-review triage; see the project's code-review guideline.
 
 ## Format
 
@@ -11,7 +11,7 @@ Formatting drift is caught by CI, so an unformatted diff is a guaranteed red bui
 **Guidelines:**
 
 - MUST mentally run `npm run format` (Biome) over the diff. Flag any tab/space inconsistency, trailing whitespace, missing trailing newline, or quote-style drift as Critical (lint will fail).
-- MUST flag a hand-applied formatting change to a file the diff did not otherwise need to touch — that violates [development-guidelines › change-management](../../development-guidelines/references/change-management.md) scope discipline.
+- MUST flag a hand-applied formatting change to a file the diff did not otherwise need to touch — that violates the project's development guidelines (change-management rules) scope discipline.
 
 ## Lint
 
@@ -26,7 +26,7 @@ A lint error fails the build, and most of the categories the linter promotes to 
   - an access to environment variables outside the file(s) where the linter whitelists it
   - any other project-specific rule the linter is configured to treat as an error
 - MUST flag a Major when modified files carry **new** lint warnings.
-- SHOULD report pre-existing lint warnings in changed files as Minor with a "consider fixing while you're here" framing — these are explicitly allowed to be cleaned up per [development-guidelines › code-quality](../../development-guidelines/references/code-quality.md).
+- SHOULD report pre-existing lint warnings in changed files as Minor with a "consider fixing while you're here" framing — these are explicitly allowed to be cleaned up per the project's development guidelines (code-quality rules).
 
 ## Suppressions
 

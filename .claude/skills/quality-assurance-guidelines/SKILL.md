@@ -20,7 +20,7 @@ See [verification-evidence.md](./references/verification-evidence.md) for:
 
 See [lint-and-format-gate.md](./references/lint-and-format-gate.md) for:
 
-- The author ran the format and lint commands per [development-guidelines › code-quality](../development-guidelines/references/code-quality.md)
+- The author ran the format and lint commands per the project's development guidelines (code-quality rules)
 - No new inline linter suppressions without an inline justification
 - No new lint warnings introduced into modified files
 
@@ -30,13 +30,13 @@ See [e2e-coverage.md](./references/e2e-coverage.md) for:
 
 - Every new route, feature, or visually distinct surface has co-located test coverage in the test directory
 - New visually distinct UI elements expose a stable test id per the project's testable-component conventions, if defined
-- Test files use the project's required locator and structure conventions per [e2e-testing-guidelines](../e2e-testing-guidelines/SKILL.md)
+- Test files use the project's required locator and structure conventions per the project's end-to-end testing guidelines
 - Shared test helpers are reused (not duplicated inline in the test file)
 - Scenario-coverage evidence (`npm run coverage:scenarios`): a new user-facing journey is added to the `e2e/scenarios.md` catalog table and tagged; a new `must` journey is a blocker until covered. This tracks **scenario** coverage (user journeys), not E2E line coverage.
 
 ## Unit Test Coverage
 
-See [unit-test-guidelines › Project Defaults](../unit-test-guidelines/SKILL.md#project-defaults) for:
+See the project's unit-test guidelines for:
 
 - The coverage command and enforced thresholds to confirm were run after `src/lib` or component-logic changes
 - The justification policy every sub-100% branch must satisfy — a defensive/unreachable guard (prefer deleting genuinely dead code), or browser-only behavior covered by e2e, marked with `/* v8 ignore next */` and a reason — rather than an unexplained gap

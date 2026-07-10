@@ -49,7 +49,7 @@ When the review output is a **posted** pull-request review — the `/review` com
 - MUST treat every acceptance criterion of the linked issue that the diff leaves unmet or unverifiable as an **Important** posted finding.
 - MUST report **every** finding in a posted review — `REVIEW.md` sets no nit cap, so do not drop or summarize findings away (repeated identical nits may share one comment).
 - MUST NOT report, in a posted review, findings the repo policy excludes — CI-enforced Biome lint/format and TypeScript errors — even though the severity floors below would otherwise rate them Critical.
-- MUST keep a posted review COMMENT-type (never APPROVE / REQUEST_CHANGES), per [github-operations](../github-operations/SKILL.md); the reviewer is advisory and does not gate merges.
+- MUST keep a posted review COMMENT-type (never APPROVE / REQUEST_CHANGES), per the project's GitHub operation guidelines; the reviewer is advisory and does not gate merges.
 
 ## Evidence-Based Reporting
 
@@ -85,18 +85,18 @@ Consult the appropriate skill for detailed review checklists in each lens. These
 
 | Lens | Skill |
 |---|---|
-| Readability, naming, complexity, abstraction boundaries, scope discipline, dead code | [Maintainable Code Guidelines](../maintainable-code-guidelines/SKILL.md) |
-| Verifying e2e coverage, snapshot handling, flakiness, manual verification, lint/format gate | [Quality Assurance Guidelines](../quality-assurance-guidelines/SKILL.md) |
-| OWASP-lens application security — secrets, input validation, access control, XSS, SSRF, auth, supply chain | [Application Security Requirements](../application-security-requirements/SKILL.md) |
-| Data-layer query cost (N+1), server/client boundary cost, caching correctness, asset/image optimization, bundle weight, error and observability hooks | [Performance and Reliability Requirements](../performance-and-reliability-requirements/SKILL.md) |
+| Readability, naming, complexity, abstraction boundaries, scope discipline, dead code | the project's maintainable-code guidelines |
+| Verifying e2e coverage, snapshot handling, flakiness, manual verification, lint/format gate | the project's quality-assurance guidelines |
+| OWASP-lens application security — secrets, input validation, access control, XSS, SSRF, auth, supply chain | the project's application-security requirements |
+| Data-layer query cost (N+1), server/client boundary cost, caching correctness, asset/image optimization, bundle weight, error and observability hooks | the project's performance-and-reliability requirements |
 
-In addition to the lenses above, the reviewer MUST also load the project's own topic-specific skills when they overlap the diff — repository structure and file placement via [Project Structure](../project-structure/SKILL.md), and components, hooks, styling, and UI implementation via [React Guidelines](../react-guidelines/SKILL.md). Consult whichever ones overlap the change.
+In addition to the lenses above, the reviewer MUST also load the project's own topic-specific skills when they overlap the diff — repository structure and file placement via the project's project-structure guidelines, and components, hooks, styling, and UI implementation via the project's React guidelines. Consult whichever ones overlap the change.
 
 **Guidelines:**
 
 - MUST choose every topic-specific lens that materially overlaps the diff before reporting findings.
 - SHOULD cite the owning lens when a finding depends on a specialized project rule.
-- MUST NOT treat this table as exhaustive when the diff has an obvious topic covered by a developer-facing skill below or by a project-specific skill such as [Project Structure](../project-structure/SKILL.md) or [React Guidelines](../react-guidelines/SKILL.md).
+- MUST NOT treat this table as exhaustive when the diff has an obvious topic covered by a developer-facing skill below or by a project-specific skill such as the project's project-structure guidelines or the project's React guidelines.
 
 ## Developer-Facing Guidelines (defer, do not duplicate)
 
@@ -104,11 +104,11 @@ Developer-facing skills own how to write project-conforming code. The review ski
 
 | Topic | Skill |
 |---|---|
-| Format/lint loop, change scope discipline, and dependency rules | [Development Guidelines](../development-guidelines/SKILL.md) |
-| End-to-end test structure, conventions, and commands | [E2E Testing Guidelines](../e2e-testing-guidelines/SKILL.md) |
-| Unit test structure, conventions, mocks/fixtures, and commands | [Unit Test Guidelines](../unit-test-guidelines/SKILL.md) |
+| Format/lint loop, change scope discipline, and dependency rules | the project's development guidelines |
+| End-to-end test structure, conventions, and commands | the project's end-to-end testing guidelines |
+| Unit test structure, conventions, mocks/fixtures, and commands | the project's unit-test guidelines |
 
-In addition, the reviewer MUST defer to the project's own developer-facing skills — repository structure and file placement via [Project Structure](../project-structure/SKILL.md), and component conventions, hooks, styling, and UI implementation via [React Guidelines](../react-guidelines/SKILL.md). Cite whichever ones overlap the change instead of restating their rules.
+In addition, the reviewer MUST defer to the project's own developer-facing skills — repository structure and file placement via the project's project-structure guidelines, and component conventions, hooks, styling, and UI implementation via the project's React guidelines. Cite whichever ones overlap the change instead of restating their rules.
 
 **Guidelines:**
 

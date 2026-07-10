@@ -15,11 +15,11 @@ This review focuses on critical-severity cases where a new unit renders a raw, u
 
 ## Unoptimized-Path Discipline
 
-This review focuses on critical-severity cases where the unoptimized image path is used with a user-controlled URL whose host is not in the project's allowlist of permitted external image hosts. Cross-reference with [application-security-requirements › ssrf-and-embeds](../../application-security-requirements/references/ssrf-and-embeds.md).
+This review focuses on critical-severity cases where the unoptimized image path is used with a user-controlled URL whose host is not in the project's allowlist of permitted external image hosts. Cross-reference with the project's application-security requirements (ssrf-and-embeds rules).
 
 **Guidelines:**
 
-- MUST flag a Critical when the unoptimized image path is used with a user-controlled URL whose host is not in the project's allowlist of permitted external image hosts. Cross-reference with [application-security-requirements › ssrf-and-embeds](../../application-security-requirements/references/ssrf-and-embeds.md).
+- MUST flag a Critical when the unoptimized image path is used with a user-controlled URL whose host is not in the project's allowlist of permitted external image hosts. Cross-reference with the project's application-security requirements (ssrf-and-embeds rules).
 - MUST flag a Major when the unoptimized path is used for an image whose dimensions are known (a field on the record, or a static asset). Optimization saves bandwidth — unoptimized should be a fallback, not a default.
 
 ## Loading and Priority

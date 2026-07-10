@@ -44,4 +44,4 @@ Components that accept callbacks or render children are easy to test badly becau
 - MUST NOT extract and export private callback functions solely to make them unit-testable.
 - MUST NOT mock a callback-driving dependency solely to inspect private callback arguments.
 - SHOULD test component behavior through rendered output and user-visible interaction when callbacks, providers, or browser behavior are involved.
-- SHOULD consult [E2E Testing Guidelines](../../e2e-testing-guidelines/SKILL.md) and [React Guidelines](../../react-guidelines/SKILL.md) when the unit under discussion is a component rather than a pure helper.
+- SHOULD consult the project's end-to-end testing guidelines and the project's React guidelines when the unit under discussion is a component rather than a pure helper.
