@@ -75,11 +75,11 @@ Consult the appropriate skill for detailed guidance on each area:
 
 | Topic | Skill |
 |---|---|
-| Error-propagation and failure-mode review | [Performance and Reliability Requirements](../performance-and-reliability-requirements/SKILL.md) |
-| Unit test structure, conventions, mocks/fixtures, and commands | [Unit Test Guidelines](../unit-test-guidelines/SKILL.md) |
-| End-to-end test structure, conventions, and commands | [E2E Testing Guidelines](../e2e-testing-guidelines/SKILL.md) |
-| Repository layout, file placement, and stack conventions | [Project Structure](../project-structure/SKILL.md) |
-| React components, hooks, composition, Server/Client boundaries, and CSS Modules | [React Guidelines](../react-guidelines/SKILL.md) |
+| Error-propagation and failure-mode review | the project's performance-and-reliability requirements |
+| Unit test structure, conventions, mocks/fixtures, and commands | the project's unit-test guidelines |
+| End-to-end test structure, conventions, and commands | the project's end-to-end testing guidelines |
+| Repository layout, file placement, and stack conventions | the project's project-structure guidelines |
+| React components, hooks, composition, Server/Client boundaries, and CSS Modules | the project's React guidelines |
 
 **Guidelines:**
 

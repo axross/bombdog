@@ -5,7 +5,7 @@ description: Apply this skill when writing, placing, reviewing, or refactoring a
 
 # React Guidelines
 
-Apply this skill for any React work in bombdog: components, pages, layouts, hooks, and their styling. The app uses the Next.js App Router (React 19) with CSS Modules. It is the source of truth for both the component separation/composition strategy and the implementation mechanics; [UI Appearance](../ui-appearance/SKILL.md) owns which appearance treatment a surface gets (color roles, elevation, control selection, modal vs bottom sheet — consult it before styling a new component or state), and [Project Structure](../project-structure/SKILL.md) owns where the files live on disk.
+Apply this skill for any React work in bombdog: components, pages, layouts, hooks, and their styling. The app uses the Next.js App Router (React 19) with CSS Modules. It is the source of truth for both the component separation/composition strategy and the implementation mechanics; the project's UI-appearance conventions own which appearance treatment a surface gets (color roles, elevation, control selection, modal vs bottom sheet — consult them before styling a new component or state), and the project's project-structure guidelines own where the files live on disk.
 
 The composition strategy in one sentence: **strictly domain-agnostic primitives compose upward into domain components, domain content enters only through wrapper components and hooks, and consumers extend primitives via `className` instead of re-declaring their styling.**
 

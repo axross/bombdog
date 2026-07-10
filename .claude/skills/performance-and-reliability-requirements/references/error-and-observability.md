@@ -41,11 +41,11 @@ This review focuses on critical-severity cases where the diff logs an error thro
 
 ## Log Hygiene
 
-This review focuses on critical-severity cases where a log line interpolates a secret (token, password, session ID, full request body). Cross-reference with [application-security-requirements › secret-handling](../../application-security-requirements/references/secret-handling.md).
+This review focuses on critical-severity cases where a log line interpolates a secret (token, password, session ID, full request body). Cross-reference with the project's application-security requirements (secret-handling rules).
 
 **Guidelines:**
 
-- MUST flag a Critical when a log line interpolates a secret (token, password, session ID, full request body). Cross-reference with [application-security-requirements › secret-handling](../../application-security-requirements/references/secret-handling.md).
+- MUST flag a Critical when a log line interpolates a secret (token, password, session ID, full request body). Cross-reference with the project's application-security requirements (secret-handling rules).
 - MUST flag a Major when a log message violates the project's established message style (the linter/formatter and convention enforce it).
 - MUST flag a Major when an info-level log is emitted for a high-frequency operation (e.g., per-render of a server unit, per-iteration inside a tight loop). Log at the boundary of the operation, not inside it.
 

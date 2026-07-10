@@ -27,12 +27,12 @@ Place shared logic at the lowest tier that has more than one caller. Most projec
 
 - MUST flag a new file placed in a group-shared or global tier that is consumed by only one route/feature — it SHOULD live in that route's local tier instead.
 - MUST flag a new file placed in a route-local tier that is also imported by another route/feature — it SHOULD be promoted to the lowest shared tier covering all its callers.
-- MUST flag a new file placed in the data-layer-owned realm that does not belong there, per [development-guidelines › change-management](../../development-guidelines/references/change-management.md).
+- MUST flag a new file placed in the data-layer-owned realm that does not belong there, per the project's development guidelines (change-management rules).
 - MUST flag any helper or component placed where the framework would misinterpret it (e.g., a non-route file dropped directly into a directory the framework treats as a route segment).
 
 ## Route File Layout
 
-When the diff adds or moves a route/feature, the reviewer MUST verify it against [Project Structure](../../project-structure/SKILL.md), which covers route placement under `src/app`. Typical co-location expectations include:
+When the diff adds or moves a route/feature, the reviewer MUST verify it against the project's project-structure guidelines, which covers route placement under `src/app`. Typical co-location expectations include:
 
 - A props/types module co-located with the route entry, declaring the route's input shape (params and query, including any framework-required async typing).
 - A not-found / fallback module co-located when the route can fail to resolve (e.g., a dynamic record id/slug that may not exist).
@@ -41,7 +41,7 @@ When the diff adds or moves a route/feature, the reviewer MUST verify it against
 
 **Guidelines:**
 
-- MUST verify added or moved route files against [Project Structure](../../project-structure/SKILL.md) before approving their placement.
+- MUST verify added or moved route files against the project's project-structure guidelines before approving their placement.
 
 ## Identifier Naming
 
