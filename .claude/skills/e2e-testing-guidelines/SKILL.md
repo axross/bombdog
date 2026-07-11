@@ -1,6 +1,8 @@
 ---
 name: e2e-testing-guidelines
-description: Use this skill whenever writing, reviewing, refactoring, or running Playwright end-to-end tests in this project, or when a change needs verification via the e2e suite. Covers the `e2e/tests` layout and `<name>.test.ts` naming, `test.step` structuring, stable test-id chained/scoped locators (never text matching), framework-native auto-waiting assertions over manual DOM reads, polling/wait-for helpers instead of fixed sleeps for scroll- or animation-driven settling, reusable UI helpers in `e2e/helpers`, the `@scenario` coverage-catalog tagging, and the snapshot-update flow. Use even when the user only mentions e2e tests, snapshots, test IDs, polling/waiting, focus assertions, or a failing test run.
+description: Conventions for Playwright end-to-end tests in this project. Covers the `e2e/tests` layout and `<name>.test.ts` naming, `test.step` structuring, stable test-id chained/scoped locators (never text matching), framework-native auto-waiting assertions over manual DOM reads, polling/wait-for helpers instead of fixed sleeps for scroll- or animation-driven settling, reusable UI helpers in `e2e/helpers`, the `@scenario` coverage-catalog tagging, and the snapshot-update flow.
+when_to_use: Use whenever writing, reviewing, refactoring, or running Playwright end-to-end tests, or when a change needs verification via the e2e suite — even when the user only mentions e2e tests, snapshots, test IDs, polling/waiting, focus assertions, or a failing test run.
+user-invocable: false
 ---
 
 # E2E Testing Guidelines

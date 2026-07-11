@@ -1,6 +1,8 @@
 ---
 name: code-review-guideline
-description: Apply this skill at the start of EVERY review task, including post-implementation self-review. Covers reviewer-mode reset, diff scoping with `git status`/`git diff`, severity labels, file-line evidence, fix snippets, verification evidence, second-pass re-review after fixes, escalation for high-risk changes, and topic-specific lenses for maintainability, QA, security, performance/reliability, project structure, UI/components, and e2e tests. Use for "review", "PR", "audit", "check this change", or self-review prompts.
+description: The review methodology for every review task, including post-implementation self-review. Covers reviewer-mode reset, diff scoping with `git status`/`git diff`, severity labels, file-line evidence, fix snippets, verification evidence, second-pass re-review after fixes, escalation for high-risk changes, and topic-specific lenses for maintainability, QA, security, performance/reliability, project structure, UI/components, and e2e tests.
+when_to_use: Apply at the start of EVERY review task — "review", "PR", "audit", "check this change", or a self-review of your own diff before claiming completion.
+user-invocable: false
 ---
 
 # Code Review Guideline
@@ -39,7 +41,7 @@ See [severity.md](./references/severity.md) for:
 
 ## Repository Review Policy Overlay
 
-When the review output is a **posted** pull-request review — the `/review` command and the CI reviewer — [`REVIEW.md`](../../../REVIEW.md) at the repo root is the authoritative policy and overrides the vocabulary below where they differ. The internal Critical/Major/Minor/Nit triage still drives self-review; the posted report follows `REVIEW.md`.
+When the review output is a **posted** pull-request review — the CI reviewer — [`REVIEW.md`](../../../REVIEW.md) at the repo root is the authoritative policy and overrides the vocabulary below where they differ. The internal Critical/Major/Minor/Nit triage still drives self-review; the posted report follows `REVIEW.md`.
 
 **Guidelines:**
 

@@ -41,6 +41,15 @@ Apply these keywords consistently in this document and the documents linked from
 | [UI Appearance](.claude/skills/ui-appearance/SKILL.md) | Deciding how a surface should look — color roles, elevation (borders/shadows/fills), which control element to use, modal dialog vs bottom sheet, wire indicator states, or cut outcome treatment |
 | [Unit Test Guidelines](.claude/skills/unit-test-guidelines/SKILL.md) | Writing, refactoring, reviewing, or running unit tests, including mocks/fakes, fixtures, schema tests, and behavior-focused assertions |
 
+### Workflow Entry Points
+
+Unlike the guideline skills above, these skills are runnable workflows: a human launches one as `/<name>` (or the agent invokes it when its `when_to_use` matches), so they carry `user-invocable: true` and an `argument-hint` per [Agent Skills Best Practices](.claude/skills/agent-skills-best-practices/SKILL.md).
+
+| Skill | What it drives |
+| ----- | -------------- |
+| [Address](.claude/skills/address/SKILL.md) | Delivering one unit of work — an issue, a pull request, or a free-form prompt — end-to-end: plan, human approval, code, independent review, address findings; `continue` resumes a paused run or takes over a handoff package |
+| [Handoff](.claude/skills/handoff/SKILL.md) | Suspending in-progress work into a downloadable package that a fresh-context session takes over with `/address continue` |
+
 ## Response Approach
 
 Use this workflow for single-agent work in this project. The agent owns planning, implementation, investigation, verification, review, and reporting directly.

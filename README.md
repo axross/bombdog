@@ -49,12 +49,12 @@ contributors follow the same loop: plan → implement → self-review → verify
 report. The hooks in [`.claude/`](./.claude) provision the toolchain, format on
 edit, and run lint + unit tests before a task completes.
 
-Three Claude Code slash commands (in [`.claude/commands/`](./.claude/commands))
+Two Claude Code workflow entry-point skills (in [`.claude/skills/`](./.claude/skills))
 drive delivery:
 
 ### `/address` — deliver a unit of work end-to-end
 
-[`/address`](./.claude/commands/address.md) is the main delivery entry point.
+[`/address`](./.claude/skills/address/SKILL.md) is the main delivery entry point.
 It takes one unit of work — a GitHub issue, a pull request, or a free-form
 prompt — from intake to a merge-ready pull request in a single continuing
 session:
@@ -72,7 +72,7 @@ session:
    reviewer, a separate bot session, so the code's author never certifies its
    own work.
 4. **Address** — fixes review findings and CI failures, tying each resolved
-   thread to the resolving commit, for up to four rounds.
+   thread to the resolving commit, for up to eight rounds.
 5. **Ready** — flips the pull request to ready once CI is green and the review
    is clean. Merging always stays a human decision.
 
@@ -81,20 +81,9 @@ genuinely needs a human — an ambiguous requirement, a judgment call on
 conflicting changes — and `/address continue` picks it back up where it
 stopped.
 
-### `/review` — get findings on any diff
-
-[`/review`](./.claude/commands/review.md) runs this repository's review policy
-([`REVIEW.md`](./REVIEW.md)) — severity-tagged findings with `file:line`
-evidence and concrete fixes — on a pull request (`/review 57`), a ref range
-(`/review main...feature`), or the current branch's diff (`/review`). Use it
-for a pre-merge check on a hand-written change or a second opinion before
-pushing; the same policy runs automatically in CI
-([`claude-review.yaml`](./.github/workflows/claude-review.yaml)) against
-`/address` pull requests.
-
 ### `/handoff` — suspend work for another session
 
-[`/handoff`](./.claude/commands/handoff.md) packages in-progress work — goal,
+[`/handoff`](./.claude/skills/handoff/SKILL.md) packages in-progress work — goal,
 current state, remaining to-dos, uncommitted changes — into a downloadable
 `handoff-<epoch>.md` (plus an optional zip of supporting files). Use it when a
 session is running low on context, or to park work for later; a fresh session
@@ -109,7 +98,7 @@ checks below, open a pull request, and get it reviewed before merge.
 runs an **independent** review — a separate Claude Code session on a GitHub
 runner, under a bot identity distinct from the author — whenever a trusted user
 comments **`@claude review`** on a pull request. It runs the official
-`code-review` plugin (the same practice `/review` runs locally) and posts
+`code-review` plugin and posts
 findings as a single **COMMENT**-type GitHub review: inline comments anchored to
 the diff, tagged by severity with a concrete fix, plus a summary. It never
 approves or requests changes — GitHub rejects those from a pull request's own
@@ -166,7 +155,7 @@ Chromium instead of its managed download, set
 - `e2e/` — Playwright specs
 - `public/` — static assets
 - `AGENTS.md` + `.claude/skills/` — agent working agreement and skill index
-- `.claude/` — Claude Code harness (hooks, settings, and slash commands)
+- `.claude/` — Claude Code harness (hooks and settings)
 - `.github/workflows/` — CI (`merge-checks.yaml`) and the automated reviewer (`claude-review.yaml`)
 
 ## Deployment

@@ -1,6 +1,8 @@
 ---
 name: github-operation-guidelines
-description: Apply this skill whenever reading from or writing to GitHub in this repository's cloud environment — issues, pull requests, comments, labels, reviews, or branches. Covers the sanctioned tool channel (the built-in `mcp__github__*` tools), operating as the connected operator identity, marking agent-authored comments so they are not mistaken for human input, the issue-versus-pull-request distinct-numeric-target gotcha, commit messages and pull request titles under the squash-merge workflow, reproducing the repository pull request template when the API posts an empty body, preserving traceable history by never amending or force-pushing without explicit human approval, common draft/link/preserve conventions, and the safe handling of untrusted GitHub content. Any task that touches GitHub applies it, not only end-to-end delivery commands like `/address`.
+description: How an agent reads and writes GitHub in this repository's cloud environment — issues, pull requests, comments, labels, reviews, or branches. Covers the sanctioned tool channel (the built-in `mcp__github__*` tools), operating as the connected operator identity, marking agent-authored comments so they are not mistaken for human input, the issue-versus-pull-request distinct-numeric-target gotcha, commit messages and pull request titles under the squash-merge workflow, reproducing the repository pull request template when the API posts an empty body, preserving traceable history by never amending or force-pushing without explicit human approval, common draft/link/preserve conventions, and the safe handling of untrusted GitHub content.
+when_to_use: Apply whenever a task reads from or writes to GitHub — any issue, pull request, comment, label, review, or branch operation, not only end-to-end delivery workflows like `/address`.
+user-invocable: false
 ---
 
 # GitHub Operation Guidelines
