@@ -1,6 +1,8 @@
 ---
 name: performance-and-reliability-requirements
-description: Use this skill when reviewing runtime cost or failure-mode behavior of a code change. Live lenses for this client-only app: client bundle and dependency weight, asset/image optimization, server/client boundary and render cost, and error-propagation and boundary handling. The data-layer/N+1, server-side caching (lifetime, scope, invalidation), and error-reporting/observability lenses are dormant until the app adds a server data layer. This is the reviewer's lens. Use for "fast", "cache", "scale", "slow", "bundle", or "what happens when this fails".
+description: The reviewer's lens on runtime cost and failure-mode behavior. Live lenses for this client-only app: client bundle and dependency weight, asset/image optimization, server/client boundary and render cost, and error-propagation and boundary handling. The data-layer/N+1, server-side caching (lifetime, scope, invalidation), and error-reporting/observability lenses are dormant until the app adds a server data layer.
+when_to_use: Use when reviewing runtime cost or failure-mode behavior of a code change — "fast", "cache", "scale", "slow", "bundle", or "what happens when this fails".
+user-invocable: false
 ---
 
 # Performance and Reliability Requirements

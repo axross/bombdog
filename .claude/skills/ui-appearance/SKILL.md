@@ -1,6 +1,8 @@
 ---
 name: ui-appearance
-description: Apply this skill when deciding how any bombdog surface should look — which color role to use (accent vs success/danger vs wire hues vs neutrals), borders/shadows/background fills and elevation, which control element fits a decision (segmented toggle, chip toggle-group, dropdown select, check-toggle, checkbox), modal dialog vs bottom sheet, how wire states are drawn (uncut/revealed/cut/selected), or how successful vs failed cuts are expressed. Use before styling any new component or state and when reviewing UI for appearance consistency, even if the user only mentions a color, a shadow, a dialog, a chip, a wire, or an outcome badge.
+description: How any bombdog surface should look. Covers which color role to use (accent vs success/danger vs wire hues vs neutrals), borders/shadows/background fills and elevation, which control element fits a decision (segmented toggle, chip toggle-group, dropdown select, check-toggle, checkbox), modal dialog vs bottom sheet, how wire states are drawn (uncut/revealed/cut/selected), and how successful vs failed cuts are expressed.
+when_to_use: Apply when deciding how a surface should look — before styling any new component or state, and when reviewing UI for appearance consistency, even if the user only mentions a color, a shadow, a dialog, a chip, a wire, or an outcome badge.
+user-invocable: false
 ---
 
 # UI Appearance

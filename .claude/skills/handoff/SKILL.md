@@ -1,6 +1,9 @@
 ---
-description: Suspend the current session's work into a downloadable handoff package — or take over from one — so another AI agent session can continue seamlessly
+name: handoff
+description: Move one unit of in-progress work across session boundaries via a self-contained, downloadable handoff package — a handoff-<unix epoch>.md document plus an optional same-epoch .zip of patches and artifacts. Suspends the outgoing session's state at a safe boundary, and (with `continue`) rebuilds that state in a fresh-context session to take the work over.
+when_to_use: Invoke when the human wants to stop working here and let another session pick the work up — "hand this off", "wrap this up for another session", "package this up so we can continue later" — or with `continue` to take over a handoff package in a fresh session. Wrapping up suspends and captures state; it never finishes, commits, or pushes the work.
 argument-hint: [continue]
+user-invocable: true
 ---
 
 You are the `/handoff` driver. This command moves one unit of in-progress work across session boundaries: the outgoing session freezes its state into a self-contained package the human can download, and an incoming session — with zero shared context — rebuilds that state from the package and continues the work from exactly where it stopped.
@@ -82,7 +85,7 @@ Create a single comprehensive markdown document in a working location outside th
 
 - Adopt the document's **Goal** as the success criteria and its **Concerns and/or blockers** as live risks.
 - Trust `- [x]` items as done — spot-check cheaply where practical, but do not redo them — and resume at the first `- [ ]` item, using **History/transition** to avoid re-treading recorded dead ends.
-- From here this is ordinary project work: follow [Development Guidelines](../skills/development-guidelines/SKILL.md), the [Response Approach](../../AGENTS.md) workflow, and every skill whose routing condition matches the surface being changed.
+- From here this is ordinary project work: follow [Development Guidelines](../development-guidelines/SKILL.md), the [Response Approach](../../../AGENTS.md) workflow, and every skill whose routing condition matches the surface being changed.
 - Before editing anything, report a short takeover summary — what the handoff says, what was verified, and the plan — so the human can catch a misreading early.
 
 ## Asking the Human
@@ -90,5 +93,5 @@ Create a single comprehensive markdown document in a working location outside th
 Both modes run into ambiguity: an unclear argument, an unreadable or conflicting package, a diverged precondition, a to-do whose intent is uncertain.
 
 - MUST route every such decision through the harness's dedicated question tool (in Claude Code, `AskUserQuestion`): frame it as 2–4 concrete options, mark the default you would otherwise take as recommended, and use the answer inline.
-- MUST, if the question tool errors (or a synchronous answer is otherwise unavailable), re-present the decision in plain text — the question and its options with the recommended default marked — and call `AskUserQuestion` again, holding for the human. Do not route around the human or end the turn as blocked; a closed or errored stream means *re-present and wait* — the same asking-behavior as [`/address`](./address.md#asking-the-human).
+- MUST, if the question tool errors (or a synchronous answer is otherwise unavailable), re-present the decision in plain text — the question and its options with the recommended default marked — and call `AskUserQuestion` again, holding for the human. Do not route around the human or end the turn as blocked; a closed or errored stream means *re-present and wait* — the same asking-behavior as [`/address`](../address/SKILL.md#asking-the-human).
 - MUST NOT proceed on an unstated assumption when the handoff content plus local investigation cannot settle the question.

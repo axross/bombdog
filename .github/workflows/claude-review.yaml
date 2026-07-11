@@ -4,9 +4,8 @@ name: Claude Code Review
 # GitHub-hosted runner — a different session, on different infrastructure, under
 # a bot identity distinct from the operator (@axross) — triggered by an
 # `@claude review` comment on a PR. It runs the official `code-review` plugin
-# (`code-review@claude-code-plugins`); the repo's `/review` command runs the same
-# code-review practice locally/ad-hoc. This is the authoritative review for the
-# `/address` flow (.claude/commands/address.md), which posts `@claude review`
+# (`code-review@claude-code-plugins`). This is the authoritative review for the
+# `/address` flow (.claude/skills/address/SKILL.md), which posts `@claude review`
 # after opening a PR and then addresses the findings this workflow leaves.
 #
 # NOTE: issue_comment workflows run only from the version on the DEFAULT branch,

@@ -1,6 +1,8 @@
 ---
 name: project-structure
-description: Use this skill when navigating the bombdog repository, locating a file, deciding where a new module/route/component/test belongs, or checking stack and directory conventions. Covers the top-level layout, the Next.js App Router structure under src/app, where unit tests and Playwright e2e tests live, the tooling stack (npm, Biome, Vitest, Playwright), and the agent-harness files under .claude. Use even when the user only mentions "where does X go", file placement, the folder layout, or the project's stack.
+description: The bombdog repository's structure and stack conventions. Covers the top-level layout, the Next.js App Router structure under src/app, where unit tests and Playwright e2e tests live, the tooling stack (npm, Biome, Vitest, Playwright), and the agent-harness files under .claude.
+when_to_use: Use when navigating the repository, locating a file, deciding where a new module/route/component/test belongs, or checking stack and directory conventions — even when the user only mentions "where does X go", file placement, the folder layout, or the project's stack.
+user-invocable: false
 ---
 
 # Project Structure
