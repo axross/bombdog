@@ -31,7 +31,7 @@ Apply this skill to navigate bombdog and to place new files consistently. bombdo
 | `e2e/tests/` | Playwright end-to-end specs (`*.test.ts`) |
 | `e2e/helpers/` | Reusable e2e helpers (page setup, chained-locator shortcuts) |
 | `public/` | Static assets served from the site root |
-| `.claude/` | Claude Code harness binding (commands, hooks, settings) |
+| `.claude/` | Claude Code harness binding (hooks, settings) |
 | `.claude/skills/` | Project skill library, routed from `AGENTS.md` |
 | `biome.json`, `vitest.config.ts`, `playwright.config.ts`, `next.config.ts`, `tsconfig.json` | Tooling configuration |
 

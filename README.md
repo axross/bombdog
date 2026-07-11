@@ -98,7 +98,7 @@ checks below, open a pull request, and get it reviewed before merge.
 runs an **independent** review — a separate Claude Code session on a GitHub
 runner, under a bot identity distinct from the author — whenever a trusted user
 comments **`@claude review`** on a pull request. It runs the official
-`code-review` plugin (the same practice `/review` runs locally) and posts
+`code-review` plugin and posts
 findings as a single **COMMENT**-type GitHub review: inline comments anchored to
 the diff, tagged by severity with a concrete fix, plus a summary. It never
 approves or requests changes — GitHub rejects those from a pull request's own
@@ -155,7 +155,7 @@ Chromium instead of its managed download, set
 - `e2e/` — Playwright specs
 - `public/` — static assets
 - `AGENTS.md` + `.claude/skills/` — agent working agreement and skill index
-- `.claude/` — Claude Code harness (hooks, settings, and slash commands)
+- `.claude/` — Claude Code harness (hooks and settings)
 - `.github/workflows/` — CI (`merge-checks.yaml`) and the automated reviewer (`claude-review.yaml`)
 
 ## Deployment

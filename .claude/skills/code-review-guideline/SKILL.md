@@ -41,7 +41,7 @@ See [severity.md](./references/severity.md) for:
 
 ## Repository Review Policy Overlay
 
-When the review output is a **posted** pull-request review — the `/review` command and the CI reviewer — [`REVIEW.md`](../../../REVIEW.md) at the repo root is the authoritative policy and overrides the vocabulary below where they differ. The internal Critical/Major/Minor/Nit triage still drives self-review; the posted report follows `REVIEW.md`.
+When the review output is a **posted** pull-request review — the CI reviewer — [`REVIEW.md`](../../../REVIEW.md) at the repo root is the authoritative policy and overrides the vocabulary below where they differ. The internal Critical/Major/Minor/Nit triage still drives self-review; the posted report follows `REVIEW.md`.
 
 **Guidelines:**
 
